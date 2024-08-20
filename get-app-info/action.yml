@@ -1,0 +1,35 @@
+name: Get App Name
+description: Gets the name of the App from EAS configuration
+# This action requires EAS being set up. In some other task before.
+
+inputs:
+  environment:
+    description: 'Environment to get the app name for'
+    required: true
+  # This is needed because of the way the EAS CLI works
+  # Provide any platform the app supports as input
+  platform:
+    description: 'Platform to get the app name for'
+    required: true
+
+outputs:
+  appName:
+    description: "The new version of the project"
+    value: ${{ steps.parse.outputs.appName }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get EAS Config
+      id: get-config
+      run: |
+        easConfig=$(APP_VARIANT=${{ inputs.environment }} eas config -e ${{ inputs.environment }} -p ${{ inputs.platform == 'all' && 'ios' || inputs.platform }} --non-interactive --json)
+        echo "config=$(echo "$easConfig" | tr -d '\n')" >> $GITHUB_OUTPUT
+        echo "EAS config:"
+        echo $easConfig
+      shell: bash
+    - name: Get New Version
+      id: parse
+      shell: bash
+      run: |
+        echo 'appName=${{ fromJson(steps.get-config.outputs.config).appConfig.name }}' >> $GITHUB_OUTPUT

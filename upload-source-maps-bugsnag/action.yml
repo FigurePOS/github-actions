@@ -1,0 +1,66 @@
+name: Upload Source Maps to Bugsnag
+description: Uploads source maps to Bugsnag
+
+inputs:
+  bugsnagApiKey:
+    description: 'Auth token for the Bugsnag API'
+    required: true
+  version:
+    description: 'Version of the app'
+    required: true
+  platform:
+    description: 'Platform to upload source maps for'
+    required: true
+    # options: ios, android, all
+  environment:
+    description: 'Environment to upload source maps for'
+    required: true
+    # options: development, production
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Find Source Maps for iOS
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
+      id: find-source-maps-ios
+      shell: bash
+      run: |
+        echo "Finding source maps for iOS..."
+        bundle=$(find "dist/_expo/static/js/ios" -type f -iname "index-*.hbc")
+        map=$(find "dist/_expo/static/js/ios" -type f -iname "index-*.map")
+        echo "iOS bundle: $bundle"
+        echo "iOS map: $map"
+        echo "bundle=$bundle" >> $GITHUB_OUTPUT
+        echo "map=$map" >> $GITHUB_OUTPUT
+    - name: Upload Source Maps to Bugsnag for iOS
+      if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
+      shell: bash
+      run: |
+        yarn bugsnag-source-maps upload-react-native \
+          --api-key ${{ inputs.bugsnagApiKey }} \
+          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
+          --platform ios \
+          --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
+          --bundle ${{ steps.find-source-maps-ios.outputs.bundle }}
+    - name: Find Source Maps for Android
+      if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+      id: find-source-maps-android
+      shell: bash
+      run: |
+        echo "Finding source maps for Android..."
+        bundle=$(find "dist/_expo/static/js/android" -type f -iname "index-*.hbc")
+        map=$(find "dist/_expo/static/js/android" -type f -iname "index-*.map")
+        echo "Android bundle: $bundle"
+        echo "Android map: $map"
+        echo "bundle=$bundle" >> $GITHUB_OUTPUT
+        echo "map=$map" >> $GITHUB_OUTPUT
+    - name: Upload Source Maps to Bugsnag for Android
+      if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+      shell: bash
+      run: |
+          yarn bugsnag-source-maps upload-react-native \
+          --api-key ${{ inputs.bugsnagApiKey }} \
+          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
+          --platform android \
+          --source-map ${{ steps.find-source-maps-android.outputs.map }} \
+          --bundle ${{ steps.find-source-maps-android.outputs.bundle }}

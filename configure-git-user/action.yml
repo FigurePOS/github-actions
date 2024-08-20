@@ -1,0 +1,21 @@
+name: Configure Git User
+
+description: Configure the git user for the current repository
+
+inputs:
+  email:
+    description: "The email address to use for the git user"
+    default: "github-actions[bot]@users.noreply.github.com"
+  name:
+    description: "The name to use for the git user"
+    default: "github-actions[bot]"
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Git User
+      shell: bash
+      run: |
+        git config --global user.email "${{ inputs.email }}"
+        git config --global user.name "${{ inputs.name }}"
