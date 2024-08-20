@@ -1,5 +1,5 @@
-name: Get App Name
-description: Gets the name of the App from EAS configuration
+name: Get Expo App Name
+description: Get the name of the App from EAS configuration
 # This action requires EAS being set up. In some other task before.
 
 inputs:
@@ -14,7 +14,7 @@ inputs:
 
 outputs:
   appName:
-    description: "The new version of the project"
+    description: "App name of the project"
     value: ${{ steps.parse.outputs.appName }}
 
 runs:
@@ -28,7 +28,7 @@ runs:
         echo "EAS config:"
         echo $easConfig
       shell: bash
-    - name: Get New Version
+    - name: Get the app name
       id: parse
       shell: bash
       run: |

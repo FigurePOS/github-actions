@@ -2,8 +2,8 @@ name: Install Dependencies
 description: Install dependencies using yarn
 
 inputs:
-  auth-token:
-    description: 'Auth token for the npm registry'
+  token:
+    description: 'Auth token for the Figure Github npm registry'
     required: true
 
 runs:
@@ -13,7 +13,7 @@ runs:
       shell: bash
       run: |
         npm config set @figurepos:registry https://npm.pkg.github.com/
-        npm config set //npm.pkg.github.com/:_authToken ${{ inputs.auth-token }}
+        npm config set //npm.pkg.github.com/:_authToken ${{ inputs.token }}
 
     - name: Setup node cache
       id: node-cache

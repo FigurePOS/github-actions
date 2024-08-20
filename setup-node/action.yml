@@ -2,8 +2,8 @@ name: Setup Node
 description: "Set up Node.js"
 
 inputs:
-  node-version:
-    description: "The Node.js version to use"
+  version:
+    description: "Node.js version to use"
     default: "20.x"
 
 runs:
@@ -12,5 +12,5 @@ runs:
     - name: Set Up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ inputs.node-version }}
+        node-version: ${{ inputs.version }}
         cache: "yarn"

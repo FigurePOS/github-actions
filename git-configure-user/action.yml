@@ -1,13 +1,12 @@
 name: Configure Git User
-
-description: Configure the git user for the current repository
+description: Configure git user for the current repository
 
 inputs:
   email:
-    description: "The email address to use for the git user"
+    description: "Email address to use for the git user"
     default: "github-actions[bot]@users.noreply.github.com"
   name:
-    description: "The name to use for the git user"
+    description: "Name to use for the git user"
     default: "github-actions[bot]"
 
 
