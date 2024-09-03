@@ -1,0 +1,37 @@
+name: Use release-it to Bump Version
+description: Bumps the version of the project with release-it
+
+inputs:
+  github-token:
+    description: "Auth token for the GitHub API"
+    required: true
+  config-file:
+    description: "Path to the release-it configuration file"
+    required: false
+
+outputs:
+  new-version:
+    description: "The new version of the project"
+    value: ${{ steps.get-version.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Bump version with Release It
+      run: |
+        if [[ -n "${{ inputs.config-file }}" ]]; then
+          yarn release-it patch --config "${{ inputs.config-file }}"
+        else
+          yarn release-it patch
+        fi
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+    
+    - name: Get the new version
+      id: get-version
+      shell: bash
+      run: |
+        version=$(cat "package.json" | grep version | head -1 | awk -F= "{ print $2 }" | sed 's/[version:,\",]//g' | tr -d '[[:space:]]')
+        echo "version=$(echo $version)" >> $GITHUB_OUTPUT
+        echo "Detected version: '$version'"
