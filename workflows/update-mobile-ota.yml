@@ -1,0 +1,107 @@
+name: "Update mobile app OTA (over the air)"
+
+on:
+  workflow_call:
+    inputs:
+      author:
+        description: "Author of the update"
+        required: false
+        type: string
+      buddy-trigger-url:
+        description: "Buddy trigger URL"
+        required: true
+        type: string
+      bugsnag-api-key:
+        description: "Bugsnag API key"
+        required: true
+        type: string
+      environment:
+        description: "Environment"
+        required: true
+        type: string
+        #options: development, production
+      expo-token:
+        description: "EXPO token"
+        required: true
+        type: string
+      github-token:
+        description: "GitHub token"
+        required: true
+        type: string
+      platform:
+        description: "Platform"
+        required: true
+        default: "all"
+        type: string
+        # options: all, ios, android
+      version:
+        description: "Version"
+        required: true
+        type: string
+      
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  version:
+    name: "Update DEV"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "v${{ inputs.version }}"
+          # This makes sure there are two commits in the git history, needed for getting the previous commit message.
+          fetch-depth: 2
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/actions/setup-node@v0.0.2
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/actions/install-dependencies@v0.0.2
+        with:
+          token: ${{ inputs.github-token }}
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ inputs.expo-token }}
+      - name: Get Git Message
+        id: get-git-message
+        uses: FigurePOS/github-actions/actions/git-get-message@v0.0.2
+        with:
+          commit-offset: 2
+      - name: Get App Info
+        uses: FigurePOS/github-actions/actions/eas-get-app-info@v0.0.2
+        id: get-app-info
+        with:
+          environment: ${{ inputs.environment }}
+          platform: ${{ inputs.platform }}
+      - name: Update DEV with Expo Updates
+        run: |
+          message="v${{ inputs.version }}: ${{ steps.get-git-message.outputs.message }}"
+          echo "Running deployment for:"
+          echo "  environment: '${{ inputs.environment }}'"
+          echo "  platform: '${{ inputs.platform }}'"
+          echo "  message: '$message'"
+          echo "  author: '${{ inputs.author }}'"
+          APP_VARIANT=${{ inputs.environment }} eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
+      - name: Upload Source Maps to Bugsnag
+        uses: FigurePOS/github-actions/actions/bugsnag-upload-source-maps-mobile@v0.0.2
+        with:
+            apiKey: ${{ inputs.bugsnag-api-key }}
+            version: ${{ inputs.version }}
+            platform: ${{ inputs.platform }}
+            environment: ${{ inputs.environment }}
+      - name: Send Slack Notification
+        uses: FigurePOS/github-actions/actions/buddy-notify-deploy-mobile@v0.0.2
+        with:
+            triggerUrl: ${{ inputs.buddy-trigger-url }}
+            appName: ${{ steps.get-app-info.outputs.appName }}
+            appVersion: ${{ inputs.version }}
+            environment: ${{ inputs.environment }}
+            platform: ${{ inputs.platform }}
+            commitMessage: ${{ steps.get-git-message.outputs.message }}
+            author: ${{ inputs.author }}
+            buildType: "over-the-air"
+

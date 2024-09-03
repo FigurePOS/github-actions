@@ -5,17 +5,17 @@ inputs:
   apiKey:
     description: "Auth token for the Bugsnag API"
     required: true
-  version:
-    description: "Version of the app"
-    required: true
-  platform:
-    description: "Platform to upload source maps for"
-    required: true
-    # options: ios, android, all
   environment:
     description: "Environment to upload source maps for"
     required: true
     # options: development, production
+  platform:
+    description: "Platform to upload source maps for"
+    required: true
+    # options: ios, android, all
+  version:
+    description: "Version of the app"
+    required: true
 
 runs:
   using: composite

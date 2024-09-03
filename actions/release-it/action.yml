@@ -2,12 +2,13 @@ name: Use release-it to Bump Version
 description: Bumps the version of the project with release-it
 
 inputs:
-  github-token:
-    description: "Auth token for the GitHub API"
-    required: true
   config-file:
     description: "Path to the release-it configuration file"
     required: false
+  github-token:
+    description: "Auth token for the GitHub API"
+    required: true
+  
 
 outputs:
   new-version:

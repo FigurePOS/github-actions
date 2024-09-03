@@ -2,26 +2,15 @@ name: Notify Buddy about backend deployment
 description: Sends a notification about backend deployment through Buddy to Slack
 
 inputs:
-  triggerUrl:
-    description: "URL to trigger the notification"
-    required: true
   appName:
     description: "Name of the app"
     required: true
   appVersion:
     description: "Version of the app"
     required: true
-  environment:
-    description: "Environment of the app"
-    required: true
-    # options: development, production
-  platform:
-    description: "Platform of the app"
-    required: true
-    # options: ios, android, all
-  commitMessage:
-    description: "Commit message of the build"
-    required: true
+  author:
+    description: "Author of the build"
+    required: false
   buildType:
     description: "Type of the build"
     required: true
@@ -32,9 +21,20 @@ inputs:
   commitHash:
     description: "Commit hash of the build"
     required: false
-  author:
-    description: "Author of the build"
-    required: false
+  commitMessage:
+    description: "Commit message of the build"
+    required: true
+  environment:
+    description: "Environment of the app"
+    required: true
+    # options: development, production
+  platform:
+    description: "Platform of the app"
+    required: true
+    # options: ios, android, all
+  triggerUrl:
+    description: "URL to trigger the notification"
+    required: true
 
 runs:
   using: composite
