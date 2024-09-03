@@ -13,9 +13,9 @@ outputs:
     value: ${{ steps.get-git-message.outputs.message }}
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
-    - name: Get Git Message
+    - name: Get git message
       id: get-git-message
       shell: bash
       run: |

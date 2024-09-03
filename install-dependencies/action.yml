@@ -3,11 +3,11 @@ description: Install dependencies using yarn
 
 inputs:
   token:
-    description: 'Auth token for the Figure Github npm registry'
+    description: "Auth token for the Figure Github npm registry"
     required: true
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
     - name: Set GitHub packages token
       shell: bash
@@ -19,13 +19,13 @@ runs:
       id: node-cache
       uses: actions/cache@v4
       with:
-        path: '**/node_modules'
+        path: "**/node_modules"
         key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('package.json') }}
         restore-keys:
           yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('package.json') }}
           yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-
           yarn-${{ runner.os }}-
 
-    - name: Install Dependencies
+    - name: Install dependencies
       shell: bash
       run: yarn install --frozen-lockfile

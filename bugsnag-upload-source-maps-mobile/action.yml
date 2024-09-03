@@ -3,24 +3,24 @@ description: Uploads source maps to Bugsnag
 
 inputs:
   apiKey:
-    description: 'Auth token for the Bugsnag API'
+    description: "Auth token for the Bugsnag API"
     required: true
   version:
-    description: 'Version of the app'
+    description: "Version of the app"
     required: true
   platform:
-    description: 'Platform to upload source maps for'
+    description: "Platform to upload source maps for"
     required: true
     # options: ios, android, all
   environment:
-    description: 'Environment to upload source maps for'
+    description: "Environment to upload source maps for"
     required: true
     # options: development, production
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
-    - name: Find Source Maps for iOS
+    - name: Find source maps for iOS
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       id: find-source-maps-ios
       shell: bash
@@ -32,7 +32,8 @@ runs:
         echo "iOS map: $map"
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
         echo "map=$map" >> $GITHUB_OUTPUT
-    - name: Upload Source Maps to Bugsnag for iOS
+    
+    - name: Upload source maps for iOS to Bugsnag
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       shell: bash
       run: |
@@ -42,7 +43,8 @@ runs:
           --platform ios \
           --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
           --bundle ${{ steps.find-source-maps-ios.outputs.bundle }}
-    - name: Find Source Maps for Android
+    
+    - name: Find source maps for Android
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       id: find-source-maps-android
       shell: bash
@@ -54,7 +56,8 @@ runs:
         echo "Android map: $map"
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
         echo "map=$map" >> $GITHUB_OUTPUT
-    - name: Upload Source Maps to Bugsnag for Android
+    
+    - name: Upload source maps for Android to Bugsnag
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash
       run: |

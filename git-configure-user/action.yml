@@ -11,7 +11,7 @@ inputs:
 
 
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Set Git User
       shell: bash
