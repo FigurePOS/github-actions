@@ -1,0 +1,65 @@
+name: Notify Buddy about backend deployment
+description: Sends a notification about backend deployment through Buddy to Slack
+
+inputs:
+  triggerUrl:
+    description: "URL to trigger the notification"
+    required: true
+  appName:
+    description: "Name of the app"
+    required: true
+  appVersion:
+    description: "Version of the app"
+    required: true
+  environment:
+    description: "Environment of the app"
+    required: true
+    # options: development, production
+  platform:
+    description: "Platform of the app"
+    required: true
+    # options: ios, android, all
+  commitMessage:
+    description: "Commit message of the build"
+    required: true
+  buildType:
+    description: "Type of the build"
+    required: true
+    # options: over-the-air, native
+  buildUrl:
+    description: "URL of the build"
+    required: false
+  commitHash:
+    description: "Commit hash of the build"
+    required: false
+  author:
+    description: "Author of the build"
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Send notification
+      shell: bash
+      run: |
+        echo "Sending notification to Buddy..."
+        payload=$(jq -n \
+          --arg appName "${{ inputs.appName }}" \
+          --arg appVersion "${{ inputs.appVersion }}" \
+          --arg environment "${{ inputs.environment }}" \
+          --arg platform "${{ inputs.platform }}" \
+          --arg commitMessage "${{ inputs.commitMessage }}" \
+          --arg buildType "${{ inputs.buildType }}" \
+          --arg buildUrl "${{ inputs.buildUrl }}" \
+          --arg commitHash "${{ inputs.commitHash }}" \
+          --arg author "${{ inputs.author }}" \
+          '{"type": "dev-deployed", "mobile": true, "app_name": $appName, "app_version": $appVersion, "env": $environment, "platform": $platform, "commit_message": $commitMessage, "build_type": $buildType, "build_url": $buildUrl, "commit_hash": $commitHash, "author": $author}')
+        echo "  payload: $payload"
+        echo "  triggerUrl: ${{ inputs.triggerUrl }}"
+        
+        curl \
+          -X POST \
+          -H "Content-type: application/json" \
+          --data "$payload" \
+          ${{ inputs.triggerUrl }}
+        echo "Notification was sent to Slack"
