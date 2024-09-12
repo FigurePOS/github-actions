@@ -20,6 +20,11 @@ on:
         required: true
         type: string
         #options: development, production
+      whitelabel:
+        description: "Whitelabel (used for mobile ordering)"
+        required: false
+        type: string
+        default: ""
       expo-token:
         description: "EXPO token"
         required: true
@@ -38,7 +43,7 @@ on:
         description: "Version"
         required: true
         type: string
-      
+
 
 permissions:
   contents: read
@@ -48,6 +53,9 @@ jobs:
   version:
     name: "Update DEV"
     runs-on: "ubuntu-latest"
+    env:
+      APP_VARIANT: ${{ inputs.environment }}
+      WHITELABEL: ${{ inputs.whitelabel }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,6 +85,7 @@ jobs:
         with:
           environment: ${{ inputs.environment }}
           platform: ${{ inputs.platform }}
+          whitelabel: ${{ inputs.whitelabel }}
       - name: Update DEV with Expo Updates
         run: |
           message="v${{ inputs.version }}: ${{ steps.get-git-message.outputs.message }}"
@@ -85,7 +94,7 @@ jobs:
           echo "  platform: '${{ inputs.platform }}'"
           echo "  message: '$message'"
           echo "  author: '${{ inputs.author }}'"
-          APP_VARIANT=${{ inputs.environment }} eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
+          eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
       - name: Upload Source Maps to Bugsnag
         uses: FigurePOS/github-actions/actions/bugsnag-upload-source-maps-mobile@v0.0.2
         with:
