@@ -11,6 +11,10 @@ inputs:
   platform:
     description: "Platform to get the app name for"
     required: true
+  whitelabel:
+    description: "Whitelabel (used for mobile ordering)"
+    required: false
+    default: ""
 
 outputs:
   appName:
@@ -22,8 +26,11 @@ runs:
   steps:
     - name: Get EAS Config
       id: get-config
+      env:
+        APP_VARIANT: ${{ inputs.environment }}
+        WHITELABEL: ${{ inputs.whitelabel }}
       run: |
-        easConfig=$(APP_VARIANT=${{ inputs.environment }} eas config -e ${{ inputs.environment }} -p ${{ inputs.platform == 'all' && 'ios' || inputs.platform }} --non-interactive --json)
+        easConfig=$(eas config -e ${{ inputs.environment }} -p ${{ inputs.platform == 'all' && 'ios' || inputs.platform }} --non-interactive --json)
         echo "config=$(echo "$easConfig" | tr -d '\n')" >> $GITHUB_OUTPUT
         echo "EAS config:"
         echo $easConfig
