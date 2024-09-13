@@ -7,14 +7,6 @@ on:
         description: "Author of the update"
         required: false
         type: string
-      buddy-trigger-url:
-        description: "Buddy trigger URL"
-        required: true
-        type: string
-      bugsnag-api-key:
-        description: "Bugsnag API key"
-        required: true
-        type: string
       environment:
         description: "Environment"
         required: true
@@ -25,14 +17,6 @@ on:
         required: false
         type: string
         default: ""
-      expo-token:
-        description: "EXPO token"
-        required: true
-        type: string
-      github-token:
-        description: "GitHub token"
-        required: true
-        type: string
       platform:
         description: "Platform"
         required: true
@@ -43,6 +27,19 @@ on:
         description: "Version"
         required: true
         type: string
+    secrets:
+      BUDDY_TRIGGER_URL:
+        description: "Buddy trigger URL"
+        required: true
+      BUGSNAG_API_KEY:
+        description: "Bugsnag API key"
+        required: true
+      EXPO_TOKEN:
+        description: "EXPO token"
+        required: true
+      GITHUB_TOKEN:
+        description: "GitHub token"
+        required: true
 
 
 permissions:
@@ -64,23 +61,23 @@ jobs:
           # This makes sure there are two commits in the git history, needed for getting the previous commit message.
           fetch-depth: 2
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/actions/setup-node@v0.0.2
+        uses: .github/actions/setup-node
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/actions/install-dependencies@v0.0.2
+        uses: .github/actions/install-dependencies
         with:
-          token: ${{ inputs.github-token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
-          token: ${{ inputs.expo-token }}
+          token: ${{ secrets.EXPO_TOKEN }}
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/actions/git-get-message@v0.0.2
+        uses: .github/actions/git-get-message
         with:
           commit-offset: 2
       - name: Get App Info
-        uses: FigurePOS/github-actions/actions/eas-get-app-info@v0.0.2
+        uses: .github/actions/eas-get-app-info
         id: get-app-info
         with:
           environment: ${{ inputs.environment }}
@@ -96,16 +93,16 @@ jobs:
           echo "  author: '${{ inputs.author }}'"
           eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/actions/bugsnag-upload-source-maps-mobile@v0.0.2
+        uses: .github/actions/bugsnag-upload-source-maps-mobile
         with:
-            apiKey: ${{ inputs.bugsnag-api-key }}
+            apiKey: ${{ secrets.BUGSNAG_API_KEY }}
             version: ${{ inputs.version }}
             platform: ${{ inputs.platform }}
             environment: ${{ inputs.environment }}
       - name: Send Slack Notification
-        uses: FigurePOS/github-actions/actions/buddy-notify-deploy-mobile@v0.0.2
+        uses: .github/actions/buddy-notify-deploy-mobile
         with:
-            triggerUrl: ${{ inputs.buddy-trigger-url }}
+            triggerUrl: ${{ secrets.BUDDY_TRIGGER_URL }}
             appName: ${{ steps.get-app-info.outputs.appName }}
             appVersion: ${{ inputs.version }}
             environment: ${{ inputs.environment }}

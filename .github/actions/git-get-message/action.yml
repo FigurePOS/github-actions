@@ -2,7 +2,7 @@ name: Get Git Message From History
 description: Gets the git message for the current commit, or commit in history
 
 inputs:
-  offset:
+  commit-offset:
     required: true
     default: "1"
     description: "Commit offset from HEAD to get the message from. Default is 1 (current commit). Use 2 for the previous commit, 3 for the commit before that, etc."
@@ -19,6 +19,6 @@ runs:
       id: get-git-message
       shell: bash
       run: |
-        commit_message="$(git log --pretty=format:'%s' -n ${{ inputs.offset }} | tail -1)"
+        commit_message="$(git log --pretty=format:'%s' -n ${{ inputs.commit-offset }} | tail -1)"
         echo "message=$(echo $commit_message)" >> $GITHUB_OUTPUT
         echo "Detected message: '$commit_message'"
