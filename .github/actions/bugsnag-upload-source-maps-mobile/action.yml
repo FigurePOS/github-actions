@@ -26,13 +26,13 @@ runs:
       shell: bash
       run: |
         echo "Finding source maps for iOS..."
-        bundle=$(find "dist/_expo/static/js/ios" -type f -iname "index-*.hbc")
-        map=$(find "dist/_expo/static/js/ios" -type f -iname "index-*.map")
+        bundle=$(find "dist/_expo/static/js/ios" -type f -iname "*.hbc")
+        map=$(find "dist/_expo/static/js/ios" -type f -iname "*.map")
         echo "iOS bundle: $bundle"
         echo "iOS map: $map"
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
         echo "map=$map" >> $GITHUB_OUTPUT
-    
+
     - name: Upload source maps for iOS to Bugsnag
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       shell: bash
@@ -43,7 +43,7 @@ runs:
           --platform ios \
           --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
           --bundle ${{ steps.find-source-maps-ios.outputs.bundle }}
-    
+
     - name: Find source maps for Android
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       id: find-source-maps-android
@@ -56,7 +56,7 @@ runs:
         echo "Android map: $map"
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
         echo "map=$map" >> $GITHUB_OUTPUT
-    
+
     - name: Upload source maps for Android to Bugsnag
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash

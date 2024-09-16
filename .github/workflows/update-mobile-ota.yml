@@ -60,13 +60,13 @@ jobs:
           # This makes sure there are two commits in the git history, needed for getting the previous commit message.
           fetch-depth: 2
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/setup-node@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v0.0.12
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.0.12
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v0.0.12
         with:
           env-json: ${{ secrets.ENV_JSON }}
       - name: Setup EAS
@@ -76,11 +76,11 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v0.0.12
         with:
           commit-offset: 2
       - name: Get App Info
-        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v0.0.12
         id: get-app-info
         with:
           environment: ${{ inputs.environment }}
@@ -96,14 +96,14 @@ jobs:
           echo "  author: '${{ inputs.author }}'"
           eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v0.0.12
         with:
             apiKey: ${{ secrets.BUGSNAG_API_KEY }}
             version: ${{ inputs.version }}
             platform: ${{ inputs.platform }}
             environment: ${{ inputs.environment }}
       - name: Send Slack Notification
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.0.10
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.0.12
         with:
             triggerUrl: ${{ secrets.BUDDY_TRIGGER_URL }}
             appName: ${{ steps.get-app-info.outputs.appName }}
