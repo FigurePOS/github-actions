@@ -1,0 +1,16 @@
+name: Mobile Set Env
+description: Creates the env.json file for the app from the input JSON
+
+inputs:
+  env_json:
+    description: 'The JSON'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run white label config checks
+      if: ${{ inputs.env_json }}
+      shell: bash
+      run: 'echo "${{ inputs.env_json }}" > env.json'
+
