@@ -50,8 +50,8 @@ runs:
       shell: bash
       run: |
         echo "Finding source maps for Android..."
-        bundle=$(find "dist/_expo/static/js/android" -type f -iname "index-*.hbc")
-        map=$(find "dist/_expo/static/js/android" -type f -iname "index-*.map")
+        bundle=$(find "dist/_expo/static/js/android" -type f -iname "*.hbc")
+        map=$(find "dist/_expo/static/js/android" -type f -iname "*.map")
         echo "Android bundle: $bundle"
         echo "Android map: $map"
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
