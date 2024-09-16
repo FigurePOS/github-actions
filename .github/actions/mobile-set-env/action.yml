@@ -12,5 +12,8 @@ runs:
     - name: Run white label config checks
       if: ${{ inputs.env_json }}
       shell: bash
-      run: 'echo "${{ inputs.env_json }}" > env.json'
+      # We have to pass the input as environment variable to the script because it's a secret and GHA masks it
+      run: 'echo "$ENV_JSON" > env.json'
+      env:
+        ENV_JSON: ${{ inputs.env_json }}
 
