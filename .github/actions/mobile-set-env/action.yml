@@ -2,7 +2,7 @@ name: Mobile Set Env
 description: Creates the env.json file for the app from the input JSON
 
 inputs:
-  env_json:
+  env-json:
     description: 'The JSON'
     required: false
 
@@ -10,7 +10,10 @@ runs:
   using: 'composite'
   steps:
     - name: Run white label config checks
-      if: ${{ inputs.env_json }}
+      if: ${{ inputs.env-json }}
       shell: bash
-      run: 'echo "${{ inputs.env_json }}" > env.json'
+      # We have to pass the input as environment variable to the script because it's a secret and GHA masks it
+      run: 'echo "$ENV_JSON" > env.json'
+      env:
+        ENV_JSON: ${{ inputs.env-json }}
 
