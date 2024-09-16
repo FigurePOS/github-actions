@@ -37,10 +37,6 @@ on:
       EXPO_TOKEN:
         description: "EXPO token"
         required: true
-      GITHUB_TOKEN:
-        description: "GitHub token"
-        required: true
-
 
 permissions:
   contents: read
