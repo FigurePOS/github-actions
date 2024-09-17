@@ -27,6 +27,11 @@ on:
         description: "Version"
         required: true
         type: string
+      should-notify:
+        description: "Should send a notification to Buddy"
+        required: false
+        type: boolean
+        default: true
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
@@ -47,7 +52,7 @@ permissions:
 
 jobs:
   version:
-    name: "Update DEV"
+    name: "Update OTA"
     runs-on: "ubuntu-latest"
     env:
       APP_VARIANT: ${{ inputs.environment }}
@@ -86,7 +91,7 @@ jobs:
           environment: ${{ inputs.environment }}
           platform: ${{ inputs.platform }}
           whitelabel: ${{ inputs.whitelabel }}
-      - name: Update DEV with Expo Updates
+      - name: Update OTA with Expo Updates
         run: |
           message="v${{ inputs.version }}: ${{ steps.get-git-message.outputs.message }}"
           echo "Running deployment for:"
@@ -104,6 +109,7 @@ jobs:
             environment: ${{ inputs.environment }}
       - name: Send Slack Notification
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.0.13
+        if: ${{ inputs.should-notify }}
         with:
             triggerUrl: ${{ secrets.BUDDY_TRIGGER_URL }}
             appName: ${{ steps.get-app-info.outputs.appName }}
