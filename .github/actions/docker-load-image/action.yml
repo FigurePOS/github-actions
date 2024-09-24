@@ -1,0 +1,20 @@
+name: Load Docker image downloaded from artifacts
+
+runs:
+  using: composite
+  steps:
+    - id: sha_short
+      shell: bash
+      run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+
+    - id: docker_file
+      shell: bash
+      run: echo "file_name=$(echo ${{ inputs.repository_name }} | tr / -)-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
+
+    - uses: actions/download-artifact@v4.1.0
+      with:
+        name: ${{ steps.docker_file.outputs.file_name }}
+        path: docker-images
+    
+    - run: docker image load < docker-images/${{ steps.docker_file.outputs.file_name }}
+      shell: bash
