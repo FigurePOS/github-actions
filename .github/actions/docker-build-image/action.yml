@@ -1,0 +1,44 @@
+name: Build Docker image and upload to artifacts
+
+inputs:
+  repository_name:
+    required: true
+  repository_url:
+    required: false
+    default: 637192944017.dkr.ecr.us-east-1.amazonaws.com
+
+runs:
+  using: composite
+  steps:
+    - id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+    
+    - uses: docker/setup-buildx-action@v3
+
+    - name: Create and use a new builder instance
+      shell: bash
+      run: |
+        docker buildx create --name fgrbuilder --use
+    
+    - id: sha_short
+      shell: bash
+      run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+
+    - id: docker_file
+      shell: bash
+      run: echo "file_name=$(echo ${{ inputs.repository_name }} | tr / -)-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
+
+    - uses: docker/build-push-action@v5
+      with:
+        context: .
+        load: true
+        tags: ${{ inputs.repository_url }}/${{ inputs.repository_name }}:${{ steps.sha_short.outputs.sha_short }}
+        builder: fgrbuilder
+        cache-from: type=registry,ref=${{ inputs.repository_url }}/${{ inputs.repository_name }}:cache
+        cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ inputs.repository_url }}/${{ inputs.repository_name }}:cache
+        outputs: type=docker,dest=/tmp/${{ steps.docker_file.outputs.file_name }}
+    
+    - uses: actions/upload-artifact@v4.1.0
+      with:
+        name: ${{ steps.docker_file.outputs.file_name }}
+        path: "/tmp/${{ steps.docker_file.outputs.file_name }}"

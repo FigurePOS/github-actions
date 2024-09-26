@@ -2,6 +2,10 @@ name: Install Dependencies
 description: Install dependencies using yarn
 
 inputs:
+  prod:
+    type: boolean
+    required: false
+    default: false
   token:
     description: "Auth token for the Figure Github npm registry"
     required: true
@@ -28,4 +32,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: yarn install --frozen-lockfile
+      run: yarn install ${{ inputs.prod == true && '--prod' || '' }} --frozen-lockfile
