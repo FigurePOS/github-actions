@@ -1,0 +1,102 @@
+name: Terraform Plan
+
+inputs:
+  aws_account_id:
+    required: true
+  aws_region:
+    required: false
+    default: us-east-1
+  db_tunnel_mapping:
+    required: false
+    default: ''
+  dir:
+    required: false
+    default: tf
+  env:
+    required: true
+  git_token:
+    required: true
+  service_name:
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - id: sha_short
+    run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+    shell: bash
+
+  - uses: "./.github/actions/terraform_init"
+    with:
+      aws_region: ${{ inputs.aws_region }}
+      dir: ${{ inputs.dir }}
+      env: ${{ inputs.env }}
+      git_token: ${{ inputs.git_token }}
+      service_name: ${{ inputs.service_name }}
+      
+  - uses: "./.github/actions/ssh_tunnel"
+    if: inputs.db_tunnel_mapping != ''
+    with:
+      aws_region: ${{ inputs.aws_region }}
+      db_tunnel_mapping: ${{ inputs.db_tunnel_mapping }}
+  
+  - run: |-
+      cd "${{ inputs.dir }}" || exit
+
+      if terraform plan -detailed-exitcode --out tfplan.binary;
+      then
+          rm -rf tfplan.binary
+          echo "No changes detected."
+          echo -n "No changes detected." > plan.txt
+          COMMENT_TPL=$(cat <<EOF
+      Output from **${{ inputs.env }}** \`terraform plan\`:
+      \`\`\`
+      {{.}}
+      \`\`\`
+      EOF
+      )
+      else
+          if [ $? -eq 1 ]
+          then
+              echo "Error running terraform plan"
+              exit 1
+          fi
+          terraform show -no-color tfplan.binary > plan.txt
+
+          COMMENT_TPL=$(cat <<EOF
+      Output from **${{ inputs.env }}** \`terraform plan\`:
+
+      <details>
+
+      <summary>$(grep "Plan: " plan.txt)</summary>
+
+      \`\`\`
+      {{.}}
+      \`\`\`
+
+      </details>
+      EOF
+      )
+      fi
+
+      export PR_NUMBER=${{ github.event.pull_request.number }}
+      if [ -z "$PR_NUMBER" ]; then echo "Not a pull request - aborting"; exit 0; fi
+      
+      REPO_OWNER=$(echo "${{ github.repository }}" | cut -d '/' -f 1)
+      REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
+      github-commenter \
+          -owner "${REPO_OWNER}" \
+          -repo "${REPO_NAME}" \
+          -number "$PR_NUMBER" \
+          -edit-comment-regex "Output from \*\*${{ inputs.env }}\*\* \`terraform plan\`" \
+          -type pr \
+          -template "$COMMENT_TPL" < plan.txt
+      
+    env:
+      TF_VAR_aws_account_id: "${{ inputs.aws_account_id }}"
+      TF_VAR_aws_region: "${{ inputs.aws_region }}"
+      TF_VAR_deployment_tag: "${{ steps.sha_short.outputs.sha_short }}"
+      TF_VAR_env: "${{ inputs.env }}"
+      TF_VAR_git_commit_hash: "${{ github.sha }}"
+      TF_VAR_service_name: "${{ inputs.service_name }}"
+    shell: bash

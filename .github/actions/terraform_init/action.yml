@@ -1,0 +1,55 @@
+name: Terraform Actions
+
+inputs:
+  aws_account_id:
+    required: false
+    default: 637192944017 # Root account
+  aws_region:
+    required: false
+    default: us-east-1
+  dir:
+    required: false
+    default: tf
+  env:
+    required: true
+  git_token:
+    required: true
+  service_name:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws_region }}
+        role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.service_name }}__oidc
+        role-skip-session-tagging: true
+    
+    - run: |-
+    
+        DATADOG_API_KEY=$(aws ssm get-parameters --names "/terraform/datadog/api_key" --region="${{ inputs.aws_region }}" --query 'Parameters[].Value' --output text --with-decryption)
+        echo "DATADOG_API_KEY=$DATADOG_API_KEY" >> "$GITHUB_ENV"
+
+        DATADOG_APP_KEY=$(aws ssm get-parameters --names "/terraform/datadog/app_key" --region="${{ inputs.aws_region }}" --query 'Parameters[].Value' --output text --with-decryption)
+        echo "DATADOG_APP_KEY=$DATADOG_APP_KEY" >> "$GITHUB_ENV"
+      shell: bash
+    
+    - uses: philips-labs/terraform-private-modules-action@v1
+      with:
+        org: FigurePOS
+        token: ${{ inputs.git_token }}
+    
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.7.5
+    
+    - run: |-
+        cd ${{ inputs.dir }}
+        terraform init -reconfigure \
+          -backend-config="bucket=fgr-terraform-state" \
+          -backend-config="dynamodb_table=fgr-terraform-state-locks" \
+          -backend-config="key=app-${{ inputs.env }}/${{ inputs.service_name }}/infrastructure.tfstate" \
+          -backend-config="region=${{ inputs.aws_region }}"
+      shell: bash
+    
