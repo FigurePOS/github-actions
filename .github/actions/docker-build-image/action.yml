@@ -1,4 +1,4 @@
-name: Build Docker image
+name: Build Docker image and upload to artifacts
 
 inputs:
   aws_account_id:
