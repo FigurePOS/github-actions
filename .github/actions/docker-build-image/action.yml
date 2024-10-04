@@ -1,15 +1,29 @@
 name: Build Docker image and upload to artifacts
 
 inputs:
+  aws_account_id:
+    required: false
+    default: 637192944017 # Root account
+  aws_region:
+    required: false
+    default: us-east-1
   repository_name:
     required: true
   repository_url:
     required: false
     default: 637192944017.dkr.ecr.us-east-1.amazonaws.com
+  service_name:
+    required: true
 
 runs:
   using: composite
   steps:
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws_region }}
+        role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.service_name }}__oidc
+        role-skip-session-tagging: true
+    
     - id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
     
