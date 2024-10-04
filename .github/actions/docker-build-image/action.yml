@@ -1,18 +1,18 @@
 name: Build Docker image and upload to artifacts
 
 inputs:
-  aws_account_id:
+  aws-account-id:
     required: false
     default: 637192944017 # Root account
-  aws_region:
+  aws-region:
     required: false
     default: us-east-1
-  repository_name:
+  repository-name:
     required: true
-  repository_url:
+  repository-url:
     required: false
     default: 637192944017.dkr.ecr.us-east-1.amazonaws.com
-  service_name:
+  service-name:
     required: true
 
 runs:
@@ -20,8 +20,8 @@ runs:
   steps:
     - uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-region: ${{ inputs.aws_region }}
-        role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/${{ inputs.service_name }}__oidc
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
     
     - id: login-ecr
@@ -40,16 +40,16 @@ runs:
 
     - id: docker_file
       shell: bash
-      run: echo "file_name=$(echo ${{ inputs.repository_name }} | tr / -)-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
+      run: echo "file_name=$(echo ${{ inputs.repository-name }} | tr / -)-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
 
     - uses: docker/build-push-action@v5
       with:
         context: .
         load: true
-        tags: ${{ inputs.repository_url }}/${{ inputs.repository_name }}:${{ steps.sha_short.outputs.sha_short }}
+        tags: ${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}
         builder: fgrbuilder
-        cache-from: type=registry,ref=${{ inputs.repository_url }}/${{ inputs.repository_name }}:cache
-        cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ inputs.repository_url }}/${{ inputs.repository_name }}:cache
+        cache-from: type=registry,ref=${{ inputs.repository-url }}/${{ inputs.repository-name }}:cache
+        cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ inputs.repository-url }}/${{ inputs.repository-name }}:cache
         outputs: type=docker,dest=/tmp/${{ steps.docker_file.outputs.file_name }}
     
     - uses: actions/upload-artifact@v4.1.0
