@@ -2,7 +2,7 @@ name: Upload Source Maps to Bugsnag
 description: Uploads source maps to Bugsnag
 
 inputs:
-  apiKey:
+  api-key:
     description: "Auth token for the Bugsnag API"
     required: true
   environment:
@@ -38,7 +38,7 @@ runs:
       shell: bash
       run: |
         yarn bugsnag-source-maps upload-react-native \
-          --api-key ${{ inputs.apiKey }} \
+          --api-key ${{ inputs.api-key }} \
           --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
           --platform ios \
           --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
@@ -62,7 +62,7 @@ runs:
       shell: bash
       run: |
           yarn bugsnag-source-maps upload-react-native \
-          --api-key ${{ inputs.apiKey }} \
+          --api-key ${{ inputs.api-key }} \
           --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
           --platform android \
           --source-map ${{ steps.find-source-maps-android.outputs.map }} \

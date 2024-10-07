@@ -1,0 +1,89 @@
+name: Terraform Actions
+
+inputs:
+  aws-account-id:
+    required: false
+    default: 637192944017 # Root account
+  aws-region:
+    required: false
+    default: us-east-1
+  db-tunnel-mapping:
+    required: false
+    default: ''
+  dir:
+    required: false
+    default: tf
+  env:
+    required: true
+  git-token:
+    required: true
+  service-name:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+
+    - name: Set Up SSH tunnel
+      if: inputs.db-tunnel-mapping != ''
+      run: |
+        SSH_CMD="ssh -v -4 -N -o StrictHostKeyChecking=no"
+
+        # $db-tunnel-mapping has form of "port1:param1:port2:param2"
+        IFS=',' read -ra MAPPING <<< "$db-tunnel-mapping"
+        for i in "${MAPPING[@]}"; do
+              IFS=':' read -ra PARTS <<< "$i"
+              PORT=${PARTS[0]}
+              PARAM=${i#"$PORT":}
+
+              URL=$(aws ssm get-parameters --names "$PARAM" --region=$aws-region --query 'Parameters[].Value' --output text)
+              if [ $? -ne 0 ]; then
+                    echo "Error getting parameter $PARAM"
+                    exit 1
+              fi
+
+              SSH_CMD="$SSH_CMD -L $PORT:$URL:5432"
+        done
+
+        INSTANCE_ID=$(aws ec2 describe-instances --filter "Name=tag:Connection,Values=Bastion" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[] | [0]" --output text)
+
+        echo "Running: $SSH_CMD -o ProxyCommand=\"aws ssm start-session --target $INSTANCE_ID --document-name AWS-StartSSHSession --parameters portNumber=22\" ec2-user@bastion"
+
+        $SSH_CMD -o ProxyCommand="aws ssm start-session --target $INSTANCE_ID --document-name AWS-StartSSHSession --parameters portNumber=22" ec2-user@bastion &
+        sleep 1
+      env:
+        aws-region: ${{ inputs.aws-region }}
+        db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+    
+    - run: |-
+    
+        DATADOG_API_KEY=$(aws ssm get-parameters --names "/terraform/datadog/api_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
+        echo "DATADOG_API_KEY=$DATADOG_API_KEY" >> "$GITHUB_ENV"
+
+        DATADOG_APP_KEY=$(aws ssm get-parameters --names "/terraform/datadog/app_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
+        echo "DATADOG_APP_KEY=$DATADOG_APP_KEY" >> "$GITHUB_ENV"
+      shell: bash
+    
+    - uses: philips-labs/terraform-private-modules-action@v1
+      with:
+        org: FigurePOS
+        token: ${{ inputs.git-token }}
+    
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.7.5
+    
+    - run: |-
+        cd ${{ inputs.dir }}
+        terraform init -reconfigure \
+          -backend-config="bucket=fgr-terraform-state" \
+          -backend-config="dynamodb_table=fgr-terraform-state-locks" \
+          -backend-config="key=app-${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate" \
+          -backend-config="region=${{ inputs.aws-region }}"
+      shell: bash
+    

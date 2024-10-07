@@ -17,9 +17,9 @@ inputs:
     default: ""
 
 outputs:
-  appName:
+  app-name:
     description: "App name of the project"
-    value: ${{ steps.parse.outputs.appName }}
+    value: ${{ steps.parse.outputs.app-name }}
 
 runs:
   using: composite
@@ -39,4 +39,4 @@ runs:
       id: parse
       shell: bash
       run: |
-        echo 'appName=${{ fromJson(steps.get-config.outputs.config).appConfig.name }}' >> $GITHUB_OUTPUT
+        echo 'app-name=${{ fromJson(steps.get-config.outputs.config).appConfig.name }}' >> $GITHUB_OUTPUT

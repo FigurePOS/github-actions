@@ -1,23 +1,29 @@
 name: Push Docker image
 
 inputs:
-  aws_account_id:
+  aws-account-id:
     required: false
     default: 637192944017 # Root account
-  aws_region:
+  aws-region:
     required: false
     default: us-east-1
-  repository_name:
+  repository-name:
     required: true
-  repository_url:
+  repository-url:
     required: false
     default: 637192944017.dkr.ecr.us-east-1.amazonaws.com
-  service_name:
+  service-name:
     required: true
 
 runs:
   using: composite
   steps:
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+    
     - id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
@@ -26,18 +32,14 @@ runs:
       run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
 
     - run: |-
-        docker push "$REPOSITORY_URL/${{ inputs.repository_name }}:${{ steps.sha_short.outputs.sha_short }}"
+        docker push "${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}"
         
-        MANIFEST=$(aws ecr batch-get-image --region "${{ inputs.aws_region }}" --repository-name "${{ inputs.repository_name }}" --image-ids imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'images[].imageManifest' --output text)
+        MANIFEST=$(aws ecr batch-get-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'images[].imageManifest' --output text)
         
         # Check if the image with tags "latest" and "${{ steps.sha_short.outputs.sha_short }}" already exists 
-        if [ -n "$(aws ecr describe-images --region "${{ inputs.aws_region }}" --repository-name "${{ inputs.repository_name }}" --image-ids imageTag="latest" imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'imageDetails' --output json | jq --arg IMAGE_TAG "${{ steps.sha_short.outputs.sha_short }}" '.[] | select(.imageTags | contains(["latest", ${{ steps.sha_short.outputs.sha_short }}]))')" ]; then
+        if [ -n "$(aws ecr describe-images --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="latest" imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'imageDetails' --output json | jq --arg IMAGE_TAG "${{ steps.sha_short.outputs.sha_short }}" '.[] | select(.imageTags | contains(["latest", ${{ steps.sha_short.outputs.sha_short }}]))')" ]; then
           echo "Image with tags 'latest' and '${{ steps.sha_short.outputs.sha_short }}' already exists in the registry."
         else
-          aws ecr put-image --region "${{ inputs.aws_region }}" --repository-name "${{ inputs.repository_name }}" --image-tag "latest" --image-manifest "$MANIFEST"
+          aws ecr put-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-tag "latest" --image-manifest "$MANIFEST"
         fi
-      env:
-        AWS_REGION: "${{ inputs.aws_region }}"
-        REPOSITORY_NAME: "${{ inputs.repository_name }}"
-        REPOSITORY_URL: "${{ inputs.repository_url }}"
       shell: bash

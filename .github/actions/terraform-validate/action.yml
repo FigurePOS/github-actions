@@ -1,10 +1,10 @@
 name: Terraform Validate
 
 inputs:
-  aws_account_id:
+  aws-account-id:
     required: false
     default: 880892332156 # Dev account
-  aws_region:
+  aws-region:
     required: false
     default: us-east-1
   dir:
@@ -13,9 +13,7 @@ inputs:
   env:
     required: false
     default: development
-  git_token:
-    required: true
-  service_name:
+  service-name:
     required: true
 
 runs:
@@ -24,23 +22,15 @@ runs:
   - id: sha_short
     run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
     shell: bash
-      
-  - uses: "./.github/actions/terraform_init"
-    with:
-      aws_region: ${{ inputs.aws_region }}
-      dir: ${{ inputs.dir }}
-      env: ${{ inputs.env }}
-      git_token: ${{ inputs.git_token }}
-      service_name: ${{ inputs.service_name }}
-  
+
   - run: |-
       cd ${{ inputs.dir }}
       terraform validate
     env:
-      TF_VAR_aws_account_id: "${{ inputs.aws_account_id }}"
-      TF_VAR_aws_region: "${{ inputs.aws_region }}"
+      TF_VAR_aws-account-id: "${{ inputs.aws-account-id }}"
+      TF_VAR_aws-region: "${{ inputs.aws-region }}"
       TF_VAR_deployment_tag: "${{ steps.sha_short.outputs.sha_short }}"
       TF_VAR_env: "${{ inputs.env }}"
       TF_VAR_git_commit_hash: "${{ github.sha }}"
-      TF_VAR_service_name: "${{ inputs.service_name }}"
+      TF_VAR_service-name: "${{ inputs.service-name }}"
     shell: bash
