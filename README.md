@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/setup-node@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v0.2.0
 ```
 
 ### Install Node.js Dependencies
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Configure Git user
-        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v0.2.0
 ```
 
 ### Get Git commit message from history
@@ -63,7 +63,8 @@ Parameters:
 - `offset`: Commit offset from HEAD to get the message from. Default is 1 (current commit). Use 2 for the previous commit, 3 for the commit before that, etc.
   
 Outputs:
-- `message`: Message of the commit at the specified offset from HEAD.
+- `hash`: Hash of the commit.
+- `message`: Message of the commit.
 
 ```yml
 on: push
@@ -76,7 +77,7 @@ jobs:
       
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v0.2.0
 
       - name: Trigger DEV Build on EAS
         run: |
@@ -118,7 +119,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build image
-        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v0.2.0
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -128,12 +129,12 @@ jobs:
       - build
     steps:
       - name: Load image
-        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v0.2.0
         with:
           service-name: make-it-butter-api
       
       - name: Push image
-        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v0.1.0
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v0.2.0
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -166,14 +167,14 @@ jobs:
         token: ${{ secrets.EXPO_TOKEN }}
 
     - name: Get App Info
-      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v0.1.0
+      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v0.2.0
       id: get-app-info
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
 
     - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.1.0
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.2.0
       if: ${{ inputs.should-notify }}
       with:
           app-name: ${{ steps.get-app-info.outputs.app-name }}
@@ -200,7 +201,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Upload Source Maps to Bugsnag
-      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v0.1.0
+      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v0.2.0
       with:
         api-key: ${{ secrets.BUGSNAG_API_KEY }}
         version: ${{ inputs.version }}
@@ -220,7 +221,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v0.1.0"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v0.2.0"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -237,7 +238,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v0.1.0"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v0.2.0"
     with:
       aws-region: ${{ inputs.aws-region }}
       db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
@@ -256,7 +257,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v0.1.0"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v0.2.0"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -273,9 +274,69 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v0.1.0"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v0.2.0"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
       service-name: ${{ inputs.service-name }}
+```
+
+
+## Buddy
+
+### Notify about Mobile Deployment
+
+Parameters:
+- `app-name`: Name of the app.
+- `app-version`: Version of the app.
+- `author`: Author of the build (optional).
+- `build-type`: Type of the build. Options: `over-the-air`, `native`.
+- `build-url`: URL of the build (optional).
+- `commit-hash` (optional)
+- `commit-message`
+- `environment`: Options: `development`, `production`.
+- `platform`: Options: `ios`, `android`, `all`.
+- `trigger-url`: Buddy URL endpoint.
+
+```yml
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.2.0"
+    with:
+      app-name: Figure POS
+      app-version: 1.0.0
+      build-type: native
+      commit-message: "fix: typo"
+      environment: production
+      paltform: all
+      trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+```
+
+### Notify about Service Deployment
+
+Parameters:
+- `commit-hash`: Commit hash of the build, last commit hash by default.
+- `commit-message`: Commit message of the build, last commit message by default.
+- `service-name`
+- `trigger-url`: Buddy URL endpoint.
+
+```yml
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v0.2.0"
+    with:
+      commit-hash: 1e17438
+      commit-message: "fix: typo"
+      service-name: fgr-service-account
+      trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+```
+
+### Notify about Failed CI Pipeline
+
+Parameters:
+- `service-name`
+- `trigger-url`: Buddy URL endpoint.
+
+```yml
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v0.2.0"
+    if: failure() && github.ref == 'refs/heads/master'
+    with:
+      service-name: fgr-service-account
+      trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```

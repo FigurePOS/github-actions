@@ -8,6 +8,9 @@ inputs:
     description: "Commit offset from HEAD to get the message from. Default is 1 (current commit). Use 2 for the previous commit, 3 for the commit before that, etc."
 
 outputs:
+  hash:
+    description: "Hash of the commit at the specified offset from HEAD"
+    value: ${{ steps.get-git-message.outputs.hash }}
   message:
     description: "Message of the commit at the specified offset from HEAD"
     value: ${{ steps.get-git-message.outputs.message }}
@@ -19,6 +22,10 @@ runs:
       id: get-git-message
       shell: bash
       run: |
-        commit_message="$(git log --pretty=format:'%s' -n ${{ inputs.commit-offset }} | tail -1)"
+        commit_message="$(git log --pretty=format:'%s' -n ${{ inputs.commit-offset }} | less -F)"
         echo "message=$(echo $commit_message)" >> $GITHUB_OUTPUT
+
+        commit_hash="$(git log --pretty=format:'%h' -n ${{ inputs.commit-offset }} | less -F)"
+        echo "hash=$commit_hash" >> $GITHUB_OUTPUT
+
         echo "Detected message: '$commit_message'"

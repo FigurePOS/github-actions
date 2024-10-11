@@ -60,6 +60,12 @@ runs:
       )
       fi
 
+      if [ "$(stat -c%s plan.txt)" -gt 50000 ]; then
+          echo "The plan is too large, truncating..."
+          head -c 50000 plan.txt > plan.txt.tmp
+          mv plan.txt.tmp plan.txt
+      fi
+
       export PR_NUMBER=${{ github.event.pull_request.number }}
       if [ -z "$PR_NUMBER" ]; then echo "Not a pull request - aborting"; exit 0; fi
       
