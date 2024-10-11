@@ -56,6 +56,7 @@ runs:
 
         $SSH_CMD -o ProxyCommand="aws ssm start-session --target $INSTANCE_ID --document-name AWS-StartSSHSession --parameters portNumber=22" ec2-user@bastion &
         sleep 1
+      shell: bash
       env:
         aws-region: ${{ inputs.aws-region }}
         db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}

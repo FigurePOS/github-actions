@@ -13,7 +13,7 @@ runs:
 
     - id: docker_file
       shell: bash
-      run: echo "file_name=$(echo ${{ inputs.service-name }} | tr / -)-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
+      run: echo "file_name=${{ inputs.service-name }}-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
 
     - uses: actions/download-artifact@v4.1.0
       with:

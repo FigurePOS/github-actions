@@ -40,7 +40,7 @@ runs:
 
     - id: docker_file
       shell: bash
-      run: echo "file_name=$(echo ${{ inputs.repository-name }} | tr / -)-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
+      run: echo "file_name=${{ inputs.service-name }}-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
 
     - uses: docker/build-push-action@v5
       with:
