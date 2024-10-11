@@ -1,0 +1,51 @@
+name: Notify Buddy about service deployment
+description: Sends a notification about service deployment through Buddy to Slack
+
+inputs:
+  commit-hash:
+    description: "Commit hash of the build, last commit hash by default."
+    required: false
+  commit-message:
+    description: "Commit message of the build, last commit message by default."
+    required: false
+  service-name:
+    required: true
+  trigger-url:
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Send notification
+    shell: bash
+    run: |-
+      if [ -n "${{ inputs.commit-hash }}" ]; then
+        commit_hash="${{ inputs.commit-hash }}"
+      else
+        commit_hash="$(git log --pretty=format:'%h' -n 1 | less -F)"
+      fi
+
+      if [ -n "${{ inputs.commit-message }}" ]; then
+        commit_message="${{ inputs.commit-message }}"
+      else
+        commit_message="$(git log --pretty=format:'%s' -n 1 | less -F)"
+      fi
+      
+      payload=$(jq -n \
+        --arg author ${{ github.triggering_actor }} \
+        --arg commit_hash $commit_hash \
+        --arg commit_message $commit_message \
+        --arg service_name "${{ inputs.service-name }}" \
+        '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github"}')
+      
+      echo "Sending notification to Buddy..."
+      echo "  payload: $payload"
+      echo "  trigger-url: ${{ inputs.trigger-url }}"
+      
+      curl \
+          --retry 3 --retry-all-errors \
+          -X POST \
+          -H "Content-type: application/json" \
+          --data "$payload" \
+          ${{ inputs.trigger-url }}
+      echo "Notification was sent."

@@ -1,0 +1,39 @@
+name: Sends a notification about CI failure
+
+inputs:
+  service-name:
+    required: true
+  trigger-url:
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Send notification
+    shell: bash
+    run: |-
+      commit_hash="$(git log --pretty=format:'%h' -n 1 | less -F)"
+      commit_message="$(git log --pretty=format:'%s' -n 1 | less -F)"
+      
+      payload=$(jq -n \
+        --arg action_name ${{ github.action }} \
+        --arg author ${{ github.triggering_actor }} \
+        --arg commit_hash $commit_hash \
+        --arg commit_message $commit_message \
+        --arg pr_url ${{ github.event.pull_request.html_url || github.event.head_commit.url }} \
+        --arg run_id ${{ github.run_id }} \"
+        --arg run_url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+        --arg service_name "${{ inputs.service-name }}" \
+        '{"type": "ci-failed", "service_name": $service_name, "action_name": $action_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "pr_url": $pr_url, "run_id": $run_id, "run_url": $run_url, "ci": "github"}')
+      
+      echo "Sending notification to Buddy..."
+      echo "  payload: $payload"
+      echo "  trigger-url: ${{ inputs.trigger-url }}"
+      
+      curl \
+          --retry 3 --retry-all-errors \
+          -X POST \
+          -H "Content-type: application/json" \
+          --data "$payload" \
+          ${{ inputs.trigger-url }}
+      echo "Notification was sent."
