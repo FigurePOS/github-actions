@@ -14,3 +14,5 @@ runs:
       with:
         node-version: ${{ inputs.version }}
         cache: "yarn"
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
