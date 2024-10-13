@@ -6,10 +6,7 @@ inputs:
     type: boolean
     required: false
     default: false
-  token:
-    description: "Auth token for the Figure Github npm registry"
-    required: true
-
+  
 runs:
   using: composite
   steps:
@@ -17,7 +14,7 @@ runs:
       shell: bash
       run: |
         npm config set @figurepos:registry https://npm.pkg.github.com/
-        npm config set //npm.pkg.github.com/:_authToken ${{ inputs.token }}
+        npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
 
     - name: Setup node cache
       id: node-cache
@@ -33,3 +30,4 @@ runs:
     - name: Install dependencies
       shell: bash
       run: yarn install ${{ inputs.prod == true && '--prod' || '' }} --frozen-lockfile
+      

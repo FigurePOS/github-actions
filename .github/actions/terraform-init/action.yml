@@ -15,8 +15,6 @@ inputs:
     default: tf
   env:
     required: true
-  git-token:
-    required: true
   service-name:
     required: true
 
@@ -73,7 +71,7 @@ runs:
     - uses: philips-labs/terraform-private-modules-action@v1
       with:
         org: FigurePOS
-        token: ${{ inputs.git-token }}
+        token: ${{ github.token }}
     
     - uses: hashicorp/setup-terraform@v3
       with:

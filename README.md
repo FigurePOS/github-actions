@@ -21,6 +21,9 @@ jobs:
 
 Installs Node.js dependencies using yarn and authenticates Figure private Github package registry.
 
+Parameters:
+- `prod`: Whether to install only prod dependencies, default: `false`.
+
 ```yml
 on: push
 jobs:
@@ -33,7 +36,7 @@ jobs:
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.2.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          prod: false
 ```
 
 ## Git
@@ -234,7 +237,6 @@ Parameters:
 - `aws-account-id`
 - `db-tunnel-mapping`
 - `env`
-- `git-token`
 - `service-name`
 
 ```yml
@@ -243,7 +245,6 @@ Parameters:
       aws-region: ${{ inputs.aws-region }}
       db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
       env: ${{ inputs.env }}
-      git-token: ${{ inputs.git-token }}
       service-name: ${{ inputs.service-name }}
 ```
 
