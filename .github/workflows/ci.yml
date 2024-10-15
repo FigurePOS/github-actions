@@ -1,0 +1,22 @@
+name: Integration
+
+on:
+  push:
+
+permissions:
+  id-token: write # required for requesting the JWT
+  contents: read  # required for actions/checkout
+
+jobs:
+  lint:
+    runs-on: blacksmith-2vcpu-ubuntu-2204
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+  

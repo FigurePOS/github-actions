@@ -19,7 +19,7 @@ on:
         default: ""
       platform:
         description: "Platform"
-        required: true
+        required: false
         default: "all"
         type: string
         # options: all, ios, android
@@ -53,7 +53,7 @@ permissions:
 jobs:
   version:
     name: "Update OTA"
-    runs-on: "ubuntu-latest"
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       APP_VARIANT: ${{ inputs.environment }}
       WHITELABEL: ${{ inputs.whitelabel }}
@@ -65,13 +65,11 @@ jobs:
           # This makes sure there are two commits in the git history, needed for getting the previous commit message.
           fetch-depth: 2
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/setup-node@v0.2.0
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v0.2
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v0.2
       - name: Set Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v0.2.0
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v0.2
         with:
           env-json: ${{ secrets.ENV_JSON }}
       - name: Setup EAS
@@ -81,11 +79,11 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v0.2.0
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v0.2
         with:
           commit-offset: 2
       - name: Get App Info
-        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v0.2.0
+        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v0.2
         id: get-app-info
         with:
           environment: ${{ inputs.environment }}
@@ -101,14 +99,14 @@ jobs:
           echo "  author: '${{ inputs.author }}'"
           eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v0.2.0
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v0.2
         with:
             api-key: ${{ secrets.BUGSNAG_API_KEY }}
             version: ${{ inputs.version }}
             platform: ${{ inputs.platform }}
             environment: ${{ inputs.environment }}
       - name: Send Slack Notification
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.2.0
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v0.2
         if: ${{ inputs.should-notify }}
         with:
             trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
