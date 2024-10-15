@@ -341,3 +341,12 @@ Parameters:
       service-name: fgr-service-account
       trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
+
+---
+
+## Development
+
+We use GitHub releases to install specific versions of the actions. Note that GitHub Actions do not support semantic versioning by default. 
+
+If you want to allow it, you need to manually retag the major/minor version after each release. For example, when you release version `v1.3.2`, 
+you need to retag the release with `v1.3` and `v1` tags manually.
