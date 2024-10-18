@@ -2,6 +2,11 @@ name: Production Deployment
 on: 
   workflow_call:
     inputs:
+      db-tunnel-mapping:
+        description: "DB tunnel mapping"
+        required: false
+        type: string
+        default: ""
       runner: 
         description: "Runner"
         required: false
@@ -20,9 +25,6 @@ permissions:
   id-token: write
   packages: read
 
-env:
-  DB_TUNNEL_MAPPING: ""
-
 jobs:
   deploy:
     runs-on: ${{ inputs.runner }}
@@ -38,7 +40,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
           aws-account-id: '682919404744'
-          db-tunnel-mapping: "${{ env.DB_TUNNEL_MAPPING }}"
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           service-name: ${{ inputs.service-name }}
 
