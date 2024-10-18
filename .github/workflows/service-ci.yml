@@ -6,6 +6,11 @@ on:
         description: "ECR Docker repository name"
         required: true
         type: string
+      runner: 
+        description: "Runner"
+        required: false
+        type: string
+        default: "blacksmith-4vcpu-ubuntu-2204"
       service-name:
         description: "Service name"
         required: true
@@ -28,7 +33,7 @@ concurrency:
     
 jobs:
   build:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     env:
       AWS_REGION: us-east-1
     steps:
@@ -63,7 +68,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   test-unit:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,7 +96,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   test-e2e:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     needs:
       - build
     steps:
@@ -132,7 +137,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-validate:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     env:
       AWS_REGION: us-east-1
     steps:
@@ -161,7 +166,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
   terraform-plan-dev:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     container:
       image: figurepos/aws-node-terraform:ca354b2
       options: --user root
@@ -195,7 +200,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-plan-prod:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     container:
       image: figurepos/aws-node-terraform:ca354b2
       options: --user root
@@ -229,8 +234,8 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   push:
-    ## TODO if: github.ref == 'refs/heads/master'
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    if: github.ref == 'refs/heads/master'
+    runs-on: ${{ inputs.runner }}
     needs:
       - terraform-plan-dev
       - test-e2e
@@ -262,7 +267,7 @@ jobs:
   
   terraform-deploy-dev:
     if: github.ref == 'refs/heads/master'
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ${{ inputs.runner }}
     needs:
       - push
     env:
