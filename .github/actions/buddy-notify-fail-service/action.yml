@@ -9,7 +9,7 @@ inputs:
 runs:
   using: composite
   steps:
-  - name: Send notification
+  - name: Send Notification
     shell: bash
     run: |-
       commit_hash="$(git log --pretty=format:'%h' -n 1 | less -F)"

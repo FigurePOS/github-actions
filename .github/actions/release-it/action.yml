@@ -18,7 +18,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Bump version with Release It
+    - name: Bump Version With Release It
       run: |
         if [[ -n "${{ inputs.config-file }}" ]]; then
           yarn release-it patch --config "${{ inputs.config-file }}"
@@ -29,7 +29,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
     
-    - name: Get the new version
+    - name: Get the New Version
       id: get-version
       shell: bash
       run: |

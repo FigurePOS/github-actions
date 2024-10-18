@@ -34,7 +34,7 @@ jobs:
         with:
           ref: master
 
-      - name: Terraform init
+      - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
           aws-account-id: '682919404744'
@@ -42,14 +42,14 @@ jobs:
           env: production
           service-name: ${{ inputs.service-name }}
 
-      - name: Terraform apply
+      - name: Terraform Apply
         uses: FigurePOS/github-actions/.github/actions/terraform-apply@v1
         with:
           aws-account-id: '682919404744'
           env: production
           service-name: ${{ inputs.service-name }}
 
-      - name: Create a release tag and update the production tag
+      - name: Create a Release Tag And Update the Production Tag
         uses: actions/github-script@v7
         with:
           retries: 3
@@ -90,7 +90,7 @@ jobs:
               }
             }
 
-      - name: Send Slack notification about failure
+      - name: Send Slack Notification About Failure
         if: failure()
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:

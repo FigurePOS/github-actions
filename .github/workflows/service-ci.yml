@@ -45,24 +45,24 @@ jobs:
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1
       
-      - name: Install dev dependencies
+      - name: Install Dev Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
-      - name: Yarn build
+      - name: Yarn Build
         run: yarn build
 
-      - name: Install prod dependencies
+      - name: Install Prod Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         with:
           prod: true
 
-      - name: Build image
+      - name: Build Image
         uses: FigurePOS/github-actions/.github/actions/docker-build-image@v1
         with:
           repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -78,19 +78,19 @@ jobs:
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1
 
-      - name: Install dependencies
+      - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         
-      - name: Run typescript check
+      - name: Run Typescript Check
         run: yarn run build
 
-      - name: Run linter
+      - name: Run Linter
         run: yarn run lint
 
-      - name: Run unit tests
+      - name: Run Unit Tests
         run: yarn run test:ci
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -108,15 +108,15 @@ jobs:
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1
 
-      - name: Install dependencies
+      - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
-      - name: Load docker image
+      - name: Load Docker Image
         uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
         with:
           service-name: ${{ inputs.service-name }}
 
-      - name: Install prod dependencies
+      - name: Install Prod Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         with:
           prod: true
@@ -131,7 +131,7 @@ jobs:
         env:
           SERVICE_DOCKER_COMMAND: node --enable-source-maps build/index.js
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -146,21 +146,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Terraform init
+      - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           service-name: ${{ inputs.service-name }}
 
-      - name: Terraform validate
+      - name: Terraform Validate
         uses: FigurePOS/github-actions/.github/actions/terraform-validate@v1
         with:
           aws-account-id: '880892332156'
           env: development
           service-name: ${{ inputs.service-name }}
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -180,21 +180,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Terraform init
+      - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           service-name: ${{ inputs.service-name }}
 
-      - name: Terraform plan
+      - name: Terraform Plan
         uses: FigurePOS/github-actions/.github/actions/terraform-plan@v1
         with:
           aws-account-id: '880892332156'
           env: development
           service-name: ${{ inputs.service-name }}
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -214,21 +214,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Terraform init
+      - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           service-name: ${{ inputs.service-name }}
 
-      - name: Terraform plan
+      - name: Terraform Plan
         uses: FigurePOS/github-actions/.github/actions/terraform-plan@v1
         with:
           aws-account-id: '682919404744'
           env: production
           service-name: ${{ inputs.service-name }}
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -260,7 +260,7 @@ jobs:
           repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
@@ -277,14 +277,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Terraform init
+      - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           service-name: ${{ inputs.service-name }}
 
-      - name: Terraform deploy
+      - name: Terraform Deploy
         uses: FigurePOS/github-actions/.github/actions/terraform-apply@v1
         with:
           aws-account-id: '880892332156'
@@ -296,7 +296,7 @@ jobs:
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
-      - name: Send notification about failure
+      - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:

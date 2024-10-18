@@ -16,7 +16,7 @@ inputs:
 runs:
   using: composite
   steps:
-  - name: Send notification
+  - name: Send Notification
     shell: bash
     run: |-
       if [ -n "${{ inputs.commit-hash }}" ]; then

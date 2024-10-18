@@ -35,7 +35,7 @@ runs:
         echo "EAS config:"
         echo $easConfig
       shell: bash
-    - name: Get the app name
+    - name: Get the App Name
       id: parse
       shell: bash
       run: |

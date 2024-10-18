@@ -39,7 +39,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Send notification
+    - name: Send Notification
       shell: bash
       run: |
         payload=$(jq -n \

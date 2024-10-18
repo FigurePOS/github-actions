@@ -10,13 +10,13 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set GitHub packages token
+    - name: Set GitHub Packages Token
       shell: bash
       run: |
         npm config set @figurepos:registry https://npm.pkg.github.com/
         npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
 
-    - name: Setup node cache
+    - name: Setup Node Cache
       id: node-cache
       uses: useblacksmith/cache@v5
       with:
@@ -28,7 +28,7 @@ runs:
           yarn-${{ runner.os }}-${{ inputs.prod == true && 'prod' || 'dev' }}-
           yarn-${{ runner.os }}-
 
-    - name: Install dependencies
+    - name: Install Dependencies
       shell: bash
       run: yarn install ${{ inputs.prod == true && '--prod' || '' }} --frozen-lockfile
       
