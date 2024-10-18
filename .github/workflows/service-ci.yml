@@ -2,6 +2,11 @@ name: Integration
 on: 
   workflow_call:
     inputs:
+      db-tunnel-mapping:
+        description: "DB tunnel mapping"
+        required: false
+        type: string
+        default: ""
       ecr-repository-name:
         description: "ECR Docker repository name"
         required: true
@@ -23,9 +28,6 @@ permissions:
   contents: read
   id-token: write
   packages: read
-
-env:
-  DB_TUNNEL_MAPPING: ""
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
@@ -147,7 +149,7 @@ jobs:
       - name: Terraform init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
-          db-tunnel-mapping: "${{ env.DB_TUNNEL_MAPPING }}"
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           service-name: ${{ inputs.service-name }}
 
@@ -181,7 +183,7 @@ jobs:
       - name: Terraform init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
-          db-tunnel-mapping: "${{ env.DB_TUNNEL_MAPPING }}"
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           service-name: ${{ inputs.service-name }}
 
@@ -215,7 +217,7 @@ jobs:
       - name: Terraform init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
-          db-tunnel-mapping: "${{ env.DB_TUNNEL_MAPPING }}"
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           service-name: ${{ inputs.service-name }}
 
@@ -278,7 +280,7 @@ jobs:
       - name: Terraform init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
-          db-tunnel-mapping: "${{ env.DB_TUNNEL_MAPPING }}"
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           service-name: ${{ inputs.service-name }}
 
