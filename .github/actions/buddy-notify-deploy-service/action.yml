@@ -43,7 +43,7 @@ runs:
       echo "  trigger-url: ${{ inputs.trigger-url }}"
       
       curl \
-          --retry 3 --retry-all-errors \
+          --retry 3 --retry-connrefused \
           -X POST \
           -H "Content-type: application/json" \
           --data "$payload" \
