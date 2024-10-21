@@ -44,7 +44,6 @@ jobs:
       - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
-          aws-account-id: '682919404744'
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           service-name: ${{ inputs.service-name }}
