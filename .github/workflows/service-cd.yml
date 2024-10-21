@@ -33,9 +33,6 @@ permissions:
 jobs:
   deploy:
     runs-on: ${{ inputs.runner }}
-    container:
-      image: figurepos/aws-node-terraform:ca354b2
-      options: --user root
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:

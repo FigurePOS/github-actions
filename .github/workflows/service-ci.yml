@@ -145,9 +145,6 @@ jobs:
   
   terraform-validate:
     runs-on: ${{ inputs.runner }}
-    container:
-      image: figurepos/aws-node-terraform:ca354b2
-      options: --user root
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -177,9 +174,6 @@ jobs:
 
   terraform-plan-dev:
     runs-on: ${{ inputs.runner }}
-    container:
-      image: figurepos/aws-node-terraform:ca354b2
-      options: --user root
     needs:
     - terraform-validate
     env:
@@ -213,9 +207,6 @@ jobs:
     needs:
       - terraform-validate
     runs-on: ${{ inputs.runner }}
-    container:
-      image: figurepos/aws-node-terraform:ca354b2
-      options: --user root
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -280,9 +271,6 @@ jobs:
     needs:
       - push
     runs-on: ${{ inputs.runner }}
-    container:
-      image: figurepos/aws-node-terraform:ca354b2
-      options: --user root
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:

@@ -32,9 +32,9 @@ runs:
       fi
       
       payload=$(jq -n \
-        --arg author ${{ github.triggering_actor }} \
-        --arg commit_hash $commit_hash \
-        --arg commit_message $commit_message \
+        --arg author "${{ github.triggering_actor }}" \
+        --arg commit_hash "$commit_hash" \
+        --arg commit_message "$commit_message" \
         --arg service_name "${{ inputs.service-name }}" \
         '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github"}')
       
