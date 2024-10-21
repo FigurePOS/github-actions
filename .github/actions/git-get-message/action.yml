@@ -18,7 +18,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Get git message
+    - name: Get Git Message
       id: get-git-message
       shell: bash
       run: |

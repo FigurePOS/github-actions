@@ -9,7 +9,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Run white label config checks
+    - name: Run White Label Config Checks
       if: ${{ inputs.env-json }}
       shell: bash
       # We have to pass the input as environment variable to the script because it's a secret and GHA masks it

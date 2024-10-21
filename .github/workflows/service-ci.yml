@@ -1,0 +1,304 @@
+name: Integration
+on: 
+  workflow_call:
+    inputs:
+      db-tunnel-mapping:
+        description: "DB tunnel mapping"
+        required: false
+        type: string
+        default: ""
+      ecr-repository-name:
+        description: "ECR Docker repository name"
+        required: true
+        type: string
+      runner: 
+        description: "Runner"
+        required: false
+        type: string
+        default: "blacksmith-4vcpu-ubuntu-2204"
+      service-name:
+        description: "Service name"
+        required: true
+        type: string
+    secrets:
+      BUDDY_TRIGGER_URL:
+        description: "Buddy trigger URL"
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+    
+jobs:
+  build:
+    runs-on: ${{ inputs.runner }}
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+      
+      - name: Install Dev Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+      - name: Yarn Build
+        run: yarn build
+
+      - name: Install Prod Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        with:
+          prod: true
+
+      - name: Build Image
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v1
+        with:
+          repository-name: ${{ inputs.ecr-repository-name }}
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  test-unit:
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        
+      - name: Run Typescript Check
+        run: yarn run build
+
+      - name: Run Linter
+        run: yarn run lint
+
+      - name: Run Unit Tests
+        run: yarn run test:ci
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  test-e2e:
+    runs-on: ${{ inputs.runner }}
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+      - name: Load Docker Image
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+
+      - name: Install Prod Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        with:
+          prod: true
+
+      - run: cd tests && yarn install --frozen-lockfile
+
+      - name: Run Tests
+        run: |-
+          sha_short=$(git rev-parse --short ${{ github.sha }})
+          export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
+          TEST_CMD="yarn start" yarn test:integration:prepare
+        env:
+          SERVICE_DOCKER_COMMAND: node --enable-source-maps build/index.js
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  terraform-validate:
+    runs-on: ${{ inputs.runner }}
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Terraform Init
+        uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+        with:
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - name: Terraform Validate
+        uses: FigurePOS/github-actions/.github/actions/terraform-validate@v1
+        with:
+          aws-account-id: '880892332156'
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+
+  terraform-plan-dev:
+    runs-on: ${{ inputs.runner }}
+    container:
+      image: figurepos/aws-node-terraform:ca354b2
+      options: --user root
+    needs:
+    - terraform-validate
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Terraform Init
+        uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+        with:
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - name: Terraform Plan
+        uses: FigurePOS/github-actions/.github/actions/terraform-plan@v1
+        with:
+          aws-account-id: '880892332156'
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  terraform-plan-prod:
+    runs-on: ${{ inputs.runner }}
+    container:
+      image: figurepos/aws-node-terraform:ca354b2
+      options: --user root
+    needs:
+      - terraform-validate
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Terraform Init
+        uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+        with:
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          env: production
+          service-name: ${{ inputs.service-name }}
+
+      - name: Terraform Plan
+        uses: FigurePOS/github-actions/.github/actions/terraform-plan@v1
+        with:
+          aws-account-id: '682919404744'
+          env: production
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  push:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ${{ inputs.runner }}
+    needs:
+      - terraform-plan-dev
+      - test-e2e
+      - build
+      - test-unit
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load docker image
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+
+      - name: Push Docker Image
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v1
+        with:
+          repository-name: ${{ inputs.ecr-repository-name }}
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  terraform-deploy-dev:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ${{ inputs.runner }}
+    needs:
+      - push
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform Init
+        uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+        with:
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - name: Terraform Deploy
+        uses: FigurePOS/github-actions/.github/actions/terraform-apply@v1
+        with:
+          aws-account-id: '880892332156'
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}

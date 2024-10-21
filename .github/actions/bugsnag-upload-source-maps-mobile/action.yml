@@ -20,7 +20,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Find source maps for iOS
+    - name: Find Source Maps For iOS
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       id: find-source-maps-ios
       shell: bash
@@ -33,7 +33,7 @@ runs:
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
         echo "map=$map" >> $GITHUB_OUTPUT
 
-    - name: Upload source maps for iOS to Bugsnag
+    - name: Upload Source Maps For iOS to Bugsnag
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       shell: bash
       run: |
@@ -44,7 +44,7 @@ runs:
           --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
           --bundle ${{ steps.find-source-maps-ios.outputs.bundle }}
 
-    - name: Find source maps for Android
+    - name: Find Source Maps For Android
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       id: find-source-maps-android
       shell: bash
@@ -57,7 +57,7 @@ runs:
         echo "bundle=$bundle" >> $GITHUB_OUTPUT
         echo "map=$map" >> $GITHUB_OUTPUT
 
-    - name: Upload source maps for Android to Bugsnag
+    - name: Upload Source Maps For Android to Bugsnag
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash
       run: |

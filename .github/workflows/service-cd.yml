@@ -1,0 +1,100 @@
+name: Production Deployment
+on: 
+  workflow_call:
+    inputs:
+      db-tunnel-mapping:
+        description: "DB tunnel mapping"
+        required: false
+        type: string
+        default: ""
+      runner: 
+        description: "Runner"
+        required: false
+        type: string
+        default: "blacksmith-4vcpu-ubuntu-2204"
+      service-name:
+        description: "Service name"
+        required: true
+        type: string
+    secrets:
+      BUDDY_TRIGGER_URL:
+        description: "Buddy trigger URL"
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+jobs:
+  deploy:
+    runs-on: ${{ inputs.runner }}
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Terraform Init
+        uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+        with:
+          aws-account-id: '682919404744'
+          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          env: production
+          service-name: ${{ inputs.service-name }}
+
+      - name: Terraform Apply
+        uses: FigurePOS/github-actions/.github/actions/terraform-apply@v1
+        with:
+          aws-account-id: '682919404744'
+          env: production
+          service-name: ${{ inputs.service-name }}
+
+      - name: Create a Release Tag And Update the Production Tag
+        uses: actions/github-script@v7
+        with:
+          retries: 3
+          script: |
+            const date = new Date();
+            const tag = date.toISOString().replace(/[-:Z]/g, "").replace(/[T\.]/g, "-");
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/release-${tag}`,
+              sha: context.sha
+            })
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "tags/production"
+              });
+              // If the tag exists, update it
+              await github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "refs/tags/production",
+                sha: context.sha,
+                force: true
+              });
+            } catch (error) {
+              if (error.status === 404) {
+              // If the tag does not exist, create it
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "refs/tags/production",
+                sha: context.sha
+              });
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Send Slack Notification About Failure
+        if: failure()
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}

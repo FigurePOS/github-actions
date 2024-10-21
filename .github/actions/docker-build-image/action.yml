@@ -29,7 +29,7 @@ runs:
     
     - uses: docker/setup-buildx-action@v3
 
-    - name: Create and use a new builder instance
+    - name: Create and Use a New Builder Instance
       shell: bash
       run: |
         docker buildx create --name fgrbuilder --use
