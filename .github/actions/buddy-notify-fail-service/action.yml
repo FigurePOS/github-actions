@@ -15,8 +15,6 @@ runs:
       commit_hash="$(git log --pretty=format:'%h' -n 1 | less -F)"
       commit_message="$(git log --pretty=format:'%s' -n 1 | less -F)"
 
-      echo "${{ toJson(github) }}"
-      
       payload=$(jq -n \
         --arg author "${{ github.triggering_actor }}" \
         --arg commit_hash "$commit_hash" \
