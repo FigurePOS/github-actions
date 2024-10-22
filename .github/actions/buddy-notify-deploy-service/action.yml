@@ -32,9 +32,9 @@ runs:
       fi
       
       payload=$(jq -n \
-        --arg author ${{ github.triggering_actor }} \
-        --arg commit_hash $commit_hash \
-        --arg commit_message $commit_message \
+        --arg author "${{ github.triggering_actor }}" \
+        --arg commit_hash "$commit_hash" \
+        --arg commit_message "$commit_message" \
         --arg service_name "${{ inputs.service-name }}" \
         '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github"}')
       
@@ -43,7 +43,7 @@ runs:
       echo "  trigger-url: ${{ inputs.trigger-url }}"
       
       curl \
-          --retry 3 --retry-all-errors \
+          --retry 3 --retry-connrefused \
           -X POST \
           -H "Content-type: application/json" \
           --data "$payload" \

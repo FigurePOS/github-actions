@@ -2,6 +2,11 @@ name: Production Deployment
 on: 
   workflow_call:
     inputs:
+      aws-region:
+        description: "AWS region"
+        required: false
+        type: string
+        default: "us-east-1"
       db-tunnel-mapping:
         description: "DB tunnel mapping"
         required: false
@@ -29,7 +34,7 @@ jobs:
   deploy:
     runs-on: ${{ inputs.runner }}
     env:
-      AWS_REGION: us-east-1
+      AWS_REGION: ${{ inputs.aws-region }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +44,6 @@ jobs:
       - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
         with:
-          aws-account-id: '682919404744'
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           service-name: ${{ inputs.service-name }}
