@@ -18,67 +18,17 @@ runs:
   using: composite
   steps:
   - id: sha_short
-    run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
     shell: bash
-      
-  - run: |-
-      cd "${{ inputs.dir }}" || exit
-
-      if terraform plan -detailed-exitcode --out tfplan.binary;
-      then
-          rm -rf tfplan.binary
-          echo "No changes detected."
-          echo -n "No changes detected." > plan.txt
-          COMMENT_TPL=$(cat <<EOF
-      Output from **${{ inputs.env }}** \`terraform plan\`:
-      \`\`\`
-      {{.}}
-      \`\`\`
-      EOF
-      )
-      else
-          if [ $? -eq 1 ]
-          then
-              echo "Error running terraform plan"
-              exit 1
-          fi
-          terraform show -no-color tfplan.binary > plan.txt
-
-          COMMENT_TPL=$(cat <<EOF
-      Output from **${{ inputs.env }}** \`terraform plan\`:
-
-      <details>
-
-      <summary>$(grep "Plan: " plan.txt)</summary>
-
-      \`\`\`
-      {{.}}
-      \`\`\`
-
-      </details>
-      EOF
-      )
-      fi
-
-      if [ "$(stat -c%s plan.txt)" -gt 50000 ]; then
-          echo "The plan is too large, truncating..."
-          head -c 50000 plan.txt > plan.txt.tmp
-          mv plan.txt.tmp plan.txt
-      fi
-
-      export PR_NUMBER=${{ github.event.pull_request.number }}
-      if [ -z "$PR_NUMBER" ]; then echo "Not a pull request - aborting"; exit 0; fi
-      
-      REPO_OWNER=$(echo "${{ github.repository }}" | cut -d '/' -f 1)
-      REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
-      github-commenter \
-          -owner "${REPO_OWNER}" \
-          -repo "${REPO_NAME}" \
-          -number "$PR_NUMBER" \
-          -edit-comment-regex "Output from \*\*${{ inputs.env }}\*\* \`terraform plan\`" \
-          -type pr \
-          -template "$COMMENT_TPL" < plan.txt
-      
+    run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+    
+  - id: plan
+    shell: bash
+    working-directory: ${{ inputs.dir }}
+    run: |-
+      trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
+      args=" -detailed-exitcode -out=tf.plan"
+      echo "terraform plan${args}" | sed 's/ -/\n -/g' > tf.command.txt
+      terraform plan${args} > >(tee -a tf.console.txt) 2> tf.console.txt
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
@@ -86,4 +36,101 @@ runs:
       TF_VAR_env: "${{ inputs.env }}"
       TF_VAR_git_commit_hash: "${{ github.sha }}"
       TF_VAR_service_name: "${{ inputs.service-name }}"
+  - if: failure()
     shell: bash
+    run: |
+      echo "Contents of tf.console.txt:\n"
+      cat tf.console.txt
+
+  - id: show
+    shell: bash
+    working-directory: ${{ inputs.dir }}
+    run: |
+      terraform show tf.plan -no-color > tf.console.txt
+
+      # Diff of changes.
+      # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
+      grep -E '^  # ' tf.console.txt | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be updated\|.* be replaced\)/! \1/' -e 's/^  # \(.* be read\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
+
+  - id: post
+    shell: bash
+    working-directory: ${{ inputs.dir }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      # Post output.
+      # Parse the tf.command.txt file.
+      command=$(cat tf.command.txt)
+
+      # Parse the tf.console.txt file, truncated for character limit.
+      console=$(grep -v '\.\.\.$' tf.console.txt | head -c 42000 | sed '${/^  /d}')
+      { echo 'result<<EOTFVIAPR'
+        echo "$console"
+        echo EOTFVIAPR
+      } >> "$GITHUB_OUTPUT"
+
+      # Parse the tf.console.txt file for the summary.
+      summary=$(cat tf.console.txt | tac | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac || echo "View output.")
+      echo "summary=$summary" >> "$GITHUB_OUTPUT"
+
+      # If tf.diff.txt exists, display it within a diff block, truncated for character limit.
+      if [[ -s tf.diff.txt ]]; then
+        { echo 'diff<<EOTFVIAPR'
+          head -c 24000 tf.diff.txt
+          echo EOTFVIAPR
+        } >> "$GITHUB_OUTPUT"
+
+        diff="
+        ## Terraform 
+        
+        ${summary}
+      
+      \`\`\`diff
+      $(head -c 24000 tf.diff.txt)
+      \`\`\`
+      "
+      else
+        diff=""
+      fi
+
+      body=$(cat <<EOTFVIAPR
+      ${diff}
+      <!-- placeholder-3 -->
+      <details><summary>Detailed Plan</br>
+
+      <!-- placeholder-4 -->
+      ###### By @${GITHUB_TRIGGERING_ACTOR} at ${{ github.event.pull_request.updated_at || github.event.head_commit.timestamp || github.event.merge_group.head_commit.timestamp }} [(view log)](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+      </summary>
+
+      \`\`\`hcl
+      ${console}
+      \`\`\`
+      </details>
+      <!-- placeholder-5 -->
+      <!-- pr-${{ github.event.pull_request.number }} -->
+      <!-- placeholder-6 -->
+      EOTFVIAPR
+      )
+
+      # Post output to job summary.
+      echo "$body" >> $GITHUB_STEP_SUMMARY
+      
+      # Post PR comment per update and if the PR number is not 0.
+      # Check if the PR contains a bot comment with the same identifier.
+      list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method GET --field per_page=100)
+      bot_comment=$(echo "$list_comments" | jq -r --arg identifier "pr-${{ github.event.pull_request.number }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
+      
+      if [[ -n "$bot_comment" ]]; then
+        # Update existing comment.
+        pr_comment=$(gh api /repos/${{ github.repository }}/issues/comments/${bot_comment} --method PATCH --field "body=${body}")
+        echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+      else
+        # Post new comment.
+        pr_comment=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method POST --field "body=${body}")
+        echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+      fi
+
+      # Clean up files.
+      rm -f tf.command.txt tf.console.txt tf.diff.txt "${{ format('{0}{1}tf.plan', inputs.arg-chdir || inputs.working-directory, (inputs.arg-chdir || inputs.working-directory) && '/' || '') }}"
+
+
