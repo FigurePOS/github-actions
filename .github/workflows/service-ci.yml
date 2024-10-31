@@ -30,9 +30,18 @@ on:
         description: "Buddy trigger URL"
 
 permissions:
+  # Required to query workflow run status and trigger other workflows
+  actions: read
+  # Allows the workflow to create and update check runs (e.g., test results, linting)
+  checks: write 
+  # Needed to checkout repository code and read repository contents
   contents: read
+  # Required for OIDC authentication with AWS
   id-token: write
+  # Allows reading from GitHub container registry (ghcr.io)
   packages: read
+  # Enables commenting and updating PR status (e.g., posting test results, terraform plans)
+  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}

@@ -26,8 +26,11 @@ on:
         description: "Buddy trigger URL"
 
 permissions:
+  # Needed to checkout repository code and read repository contents
   contents: read
+  # Required for OIDC authentication with AWS
   id-token: write
+  # Allows reading from GitHub container registry (ghcr.io)
   packages: read
 
 jobs:
