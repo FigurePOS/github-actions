@@ -100,14 +100,8 @@ jobs:
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         
-      - name: Run Typescript Check
-        run: yarn run build
-
-      - name: Run Linter
-        run: yarn run lint
-
-      - name: Run Unit Tests
-        run: yarn run test:ci
+      - name: Run Linters and Unit Tests
+        run: yarn run ci
 
       - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
