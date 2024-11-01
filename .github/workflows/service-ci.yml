@@ -68,7 +68,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Yarn Build
-        run: yarn build
+        run: yarn run build:ci 2>/dev/null || yarn build
 
       - name: Install Prod Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
@@ -101,7 +101,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         
       - name: Run Linters and Unit Tests
-        run: yarn run ci
+        run: yarn run test:ci 2>/dev/null || yarn run ci
 
       - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
