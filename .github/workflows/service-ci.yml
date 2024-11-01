@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ""
+      docker-command:
+        description: "Command to start the service in Docker"
+        required: false
+        type: string
+        default: "build/index.js"
       ecr-repository-name:
         description: "ECR Docker repository name"
         required: true
@@ -143,7 +148,7 @@ jobs:
           export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
           TEST_CMD="yarn start" yarn test:integration:prepare
         env:
-          SERVICE_DOCKER_COMMAND: node --enable-source-maps build/index.js
+          SERVICE_DOCKER_COMMAND: node --enable-source-maps ${{ inputs.docker-command }}
 
       - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
