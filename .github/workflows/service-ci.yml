@@ -182,9 +182,10 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
   terraform-plan-dev:
-    runs-on: ${{ inputs.runner }}
+    if: github.event_name == 'pull_request'
     needs:
-    - terraform-validate
+      - terraform-validate
+    runs-on: ${{ inputs.runner }}
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -213,6 +214,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-plan-prod:
+    if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
     runs-on: ${{ inputs.runner }}
@@ -246,9 +248,8 @@ jobs:
   push:
     if: github.ref == 'refs/heads/master'
     needs:
-      - terraform-plan-dev
-      - test-e2e
       - build
+      - test-e2e
       - test-unit
     runs-on: ${{ inputs.runner }}
     env:

@@ -17,7 +17,7 @@ runs:
 
       payload=$(jq -n \
         --arg author "${{ github.triggering_actor }}" \
-        --arg commit_hash "$commit_hash" \ 
+        --arg commit_hash "$commit_hash" \
         --arg commit_message "$commit_message" \
         --arg pr_url "${{ github.event.pull_request.html_url || github.event.head_commit.url }}" \
         --arg run_id "${{ github.run_id }}" \
