@@ -36,10 +36,5 @@ runs:
         
         MANIFEST=$(aws ecr batch-get-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'images[].imageManifest' --output text)
         
-        # Check if the image with tags "latest" and "${{ steps.sha_short.outputs.sha_short }}" already exists 
-        if [ -n "$(aws ecr describe-images --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="latest" imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'imageDetails' --output json | jq --arg IMAGE_TAG "${{ steps.sha_short.outputs.sha_short }}" '.[] | select(.imageTags | contains(["latest", ${{ steps.sha_short.outputs.sha_short }}]))')" ]; then
-          echo "Image with tags 'latest' and '${{ steps.sha_short.outputs.sha_short }}' already exists in the registry."
-        else
-          aws ecr put-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-tag "latest" --image-manifest "$MANIFEST"
-        fi
+        aws ecr put-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-tag "latest" --image-manifest "$MANIFEST"
       shell: bash
