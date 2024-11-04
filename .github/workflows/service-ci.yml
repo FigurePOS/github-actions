@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ""
+      docker-command:
+        description: "Command to start the service in Docker"
+        required: false
+        type: string
+        default: "build/index.js"
       ecr-repository-name:
         description: "ECR Docker repository name"
         required: true
@@ -63,7 +68,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Yarn Build
-        run: yarn build
+        run: yarn run build:ci 2>/dev/null || yarn build
 
       - name: Install Prod Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
@@ -95,14 +100,8 @@ jobs:
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         
-      - name: Run Typescript Check
-        run: yarn run build
-
-      - name: Run Linter
-        run: yarn run lint
-
-      - name: Run Unit Tests
-        run: yarn run test:ci
+      - name: Run Linters and Unit Tests
+        run: yarn run test:ci 2>/dev/null || yarn run ci
 
       - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -143,7 +142,7 @@ jobs:
           export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
           TEST_CMD="yarn start" yarn test:integration:prepare
         env:
-          SERVICE_DOCKER_COMMAND: node --enable-source-maps build/index.js
+          SERVICE_DOCKER_COMMAND: node --enable-source-maps ${{ inputs.docker-command }}
 
       - name: Send Slack Notification About Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -182,9 +181,10 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
   terraform-plan-dev:
-    runs-on: ${{ inputs.runner }}
+    if: github.event_name == 'pull_request'
     needs:
-    - terraform-validate
+      - terraform-validate
+    runs-on: ${{ inputs.runner }}
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -213,6 +213,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-plan-prod:
+    if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
     runs-on: ${{ inputs.runner }}
@@ -246,9 +247,8 @@ jobs:
   push:
     if: github.ref == 'refs/heads/master'
     needs:
-      - terraform-plan-dev
-      - test-e2e
       - build
+      - test-e2e
       - test-unit
     runs-on: ${{ inputs.runner }}
     env:

@@ -81,7 +81,7 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
         diff="
-        ## Terraform 
+        ## terraform infrastructure for ${{ inputs.env }} 
         
         ${summary}
       
@@ -107,7 +107,7 @@ runs:
       \`\`\`
       </details>
       <!-- placeholder-5 -->
-      <!-- pr-${{ github.event.pull_request.number }} -->
+      <!-- pr-${{ github.event.pull_request.number }}-${{ inputs.env }} -->
       <!-- placeholder-6 -->
       EOTFVIAPR
       )
@@ -118,7 +118,7 @@ runs:
       # Post PR comment per update and if the PR number is not 0.
       # Check if the PR contains a bot comment with the same identifier.
       list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method GET --field per_page=100)
-      bot_comment=$(echo "$list_comments" | jq -r --arg identifier "pr-${{ github.event.pull_request.number }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
+      bot_comment=$(echo "$list_comments" | jq -r --arg identifier "pr-${{ github.event.pull_request.number }}-${{ inputs.env }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
       
       if [[ -n "$bot_comment" ]]; then
         # Update existing comment.
