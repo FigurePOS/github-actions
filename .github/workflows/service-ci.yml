@@ -118,25 +118,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check if Tests Directory Exists
+        id: check
+        run: |-
+          if [[ ! -d "./tests" ]]; then
+            echo "::warning title=Missing e2e tests::Tests directory not found, skipping e2e tests"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set Up Node.js
+        if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1
 
       - name: Install Dependencies
+        if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Load Docker Image
+        if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
         with:
           service-name: ${{ inputs.service-name }}
 
       - name: Install Prod Dependencies
+        if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         with:
           prod: true
 
-      - run: cd tests && yarn install --frozen-lockfile
+      - name: Install Dependencies in Tests Directory
+        if: steps.check.outputs.skip != 'true'
+        run: cd tests && yarn install --frozen-lockfile
 
       - name: Run Tests
+        if: steps.check.outputs.skip != 'true'
         run: |-
           sha_short=$(git rev-parse --short ${{ github.sha }})
           export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
@@ -145,7 +160,7 @@ jobs:
           SERVICE_DOCKER_COMMAND: node --enable-source-maps ${{ inputs.docker-command }}
 
       - name: Send Slack Notification About Failure
-        if: failure() && github.ref == 'refs/heads/master'
+        if: failure() && github.ref == 'refs/heads/master' && steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
           service-name: ${{ inputs.service-name }}
