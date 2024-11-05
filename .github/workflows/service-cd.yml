@@ -58,7 +58,7 @@ jobs:
           env: production
           service-name: ${{ inputs.service-name }}
 
-      - name: Create a Release Tag And Update the Production Tag
+      - name: Create a Release Tag and Update the Production Tag
         uses: actions/github-script@v7
         with:
           retries: 3
