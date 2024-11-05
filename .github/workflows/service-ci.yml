@@ -148,7 +148,9 @@ jobs:
 
       - name: Install Dependencies in Tests Directory
         if: steps.check.outputs.skip != 'true'
-        run: cd tests && yarn install --frozen-lockfile
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        with:
+          directory: tests
 
       - name: Run Tests
         if: steps.check.outputs.skip != 'true'
