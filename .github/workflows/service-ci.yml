@@ -21,11 +21,6 @@ on:
         description: "ECR Docker repository name"
         required: true
         type: string
-      runner: 
-        description: "Runner"
-        required: false
-        type: string
-        default: "blacksmith-4vcpu-ubuntu-2204"
       service-name:
         description: "Service name"
         required: true
@@ -54,7 +49,7 @@ concurrency:
     
 jobs:
   build:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -90,7 +85,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   test-unit:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -113,7 +108,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   test-e2e:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     needs:
       - build
     steps:
@@ -172,7 +167,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-validate:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -205,7 +200,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -238,7 +233,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -273,7 +268,7 @@ jobs:
       - build
       - test-e2e
       - test-unit
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -303,7 +298,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs:
       - push
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -332,7 +327,7 @@ jobs:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
   serverless-decide-run:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     outputs:
       has_changes: ${{ steps.check.outputs.has_changes }}
     steps:
@@ -366,7 +361,7 @@ jobs:
     if: needs.serverless-decide-run.outputs.has_changes == 'true'
     needs:
       - serverless-decide-run
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -396,7 +391,7 @@ jobs:
     needs:
       - serverless-decide-run
       - serverless-lint
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -420,7 +415,7 @@ jobs:
     needs:
       - terraform-deploy-dev
       - serverless-decide-run
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:

@@ -17,11 +17,6 @@ on:
         required: false
         type: boolean
         default: false
-      runner: 
-        description: "Runner"
-        required: false
-        type: string
-        default: "blacksmith-4vcpu-ubuntu-2204"
       service-name:
         description: "Service name"
         required: true
@@ -43,8 +38,8 @@ permissions:
   packages: read
 
 jobs:
-  deploy:
-    runs-on: ${{ inputs.runner }}
+  terraform-deploy:
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -112,13 +107,13 @@ jobs:
         if: failure()
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
-          job-name: "deploy-prod"
+          job-name: "terraform-deploy-prod"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
   serverless-deploy:
     if: inputs.deploy-serverless
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
