@@ -42,7 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ github.sha }}
 
       - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
