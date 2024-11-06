@@ -8,6 +8,11 @@ inputs:
   commit-message:
     description: "Commit message of the build, last commit message by default."
     required: false
+  deploy-serverless:
+    description: "Deploy Lambda with Serverless"
+    required: false
+    type: boolean
+    default: false
   service-name:
     required: true
   trigger-url:
@@ -36,7 +41,8 @@ runs:
         --arg commit_hash "$commit_hash" \
         --arg commit_message "$commit_message" \
         --arg service_name "${{ inputs.service-name }}" \
-        '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github"}')
+        --arg deploy_serverless "${{ inputs.deploy-serverless }}" \
+        '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github", "deploy_serverless": $deploy_serverless}')
       
       echo "Sending notification to Buddy..."
       echo "  payload: $payload"
