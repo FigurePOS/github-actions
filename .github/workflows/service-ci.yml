@@ -340,13 +340,13 @@ jobs:
         id: check
         run: |
           if [ ! -f "lambda/serverless.yml" ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            git diff --quiet origin/${{ github.base_ref }} HEAD -- lambda/ || echo "has_changes=true" >> $GITHUB_OUTPUT
+            git diff --quiet origin/${{ github.base_ref }} HEAD -- lambda/ || echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
-            git diff --quiet HEAD^ HEAD -- lambda/ || echo "has_changes=true" >> $GITHUB_OUTPUT
+            git diff --quiet HEAD^ HEAD -- lambda/ || echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send Slack Notification About Failure
