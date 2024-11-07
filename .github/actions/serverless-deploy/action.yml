@@ -24,15 +24,16 @@ runs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: us-east-1
-        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.service-name }}__oidc
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
     
     - name: Assume AWS Role in Production Account
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: us-east-1
-        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/CIService
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/TerraformDeployer
         role-chaining: true
+        role-skip-session-tagging: true
     
     - name: Deploy
       working-directory: lambda

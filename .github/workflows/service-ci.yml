@@ -137,12 +137,6 @@ jobs:
         with:
           service-name: ${{ inputs.service-name }}
 
-      - name: Install Prod Dependencies
-        if: steps.check.outputs.skip != 'true'
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
-        with:
-          prod: true
-
       - name: Install Dependencies in Tests Directory
         if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1

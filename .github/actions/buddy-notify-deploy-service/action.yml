@@ -11,7 +11,6 @@ inputs:
   deploy-serverless:
     description: "Deploy Lambda with Serverless"
     required: false
-    type: boolean
     default: false
   service-name:
     required: true

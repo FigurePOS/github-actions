@@ -3,11 +3,9 @@ description: Install dependencies using yarn
 
 inputs:
   directory:
-    type: string
     required: false
     default: ""
   prod:
-    type: boolean
     required: false
     default: false
   
@@ -25,7 +23,7 @@ runs:
       uses: useblacksmith/cache@v5
       with:
         path: "${{ inputs.directory }}/node_modules"
-        key: yarn-${{ runner.os }}-${{ inputs.prod == true && 'prod' || 'dev' }}-${{ hashFiles(inputs.directory == '' && '**/package.json' || format('{0}/package.json', inputs.directory), inputs.directory == '' && '**/yarn.lock' || format('{0}/yarn.lock', inputs.directory)) }}
+        key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ hashFiles(inputs.directory == '' && 'yarn.lock' || format('{0}/yarn.lock', inputs.directory)) }}
 
     - name: Install Dependencies
       shell: bash
@@ -33,5 +31,5 @@ runs:
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
         fi
-        yarn install ${{ inputs.prod == true && '--prod' || '' }} --frozen-lockfile
+        yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --frozen-lockfile
       
