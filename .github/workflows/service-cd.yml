@@ -12,13 +12,17 @@ on:
         required: false
         type: string
         default: ""
-      runner: 
-        description: "Runner"
+      deploy-serverless:
+        description: "Deploy Lambda with Serverless"
         required: false
-        type: string
-        default: "blacksmith-4vcpu-ubuntu-2204"
+        type: boolean
+        default: false
       service-name:
         description: "Service name"
+        required: true
+        type: string
+      sha:
+        description: "Release commit SHA"
         required: true
         type: string
     secrets:
@@ -34,15 +38,15 @@ permissions:
   packages: read
 
 jobs:
-  deploy:
-    runs-on: ${{ inputs.runner }}
+  terraform-deploy:
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ inputs.sha }}
 
       - name: Terraform Init
         uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
@@ -69,7 +73,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/tags/release-${tag}`,
-              sha: context.sha
+              sha: ${{ inputs.sha }}
             })
             try {
               await github.rest.git.getRef({
@@ -82,7 +86,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: "refs/tags/production",
-                sha: context.sha,
+                sha: ${{ inputs.sha }},
                 force: true
               });
             } catch (error) {
@@ -92,7 +96,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: "refs/tags/production",
-                sha: context.sha
+                sha: ${{ inputs.sha }}
               });
               } else {
                 throw error;
@@ -103,5 +107,29 @@ jobs:
         if: failure()
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "terraform-deploy-prod"
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+
+  serverless-deploy:
+    if: inputs.deploy-serverless
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+
+      - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v1
+        with:
+          aws-account-id: '682919404744'
+          env: production
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure()
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          job-name: "serverless-deploy-prod"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}

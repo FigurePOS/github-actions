@@ -2,8 +2,10 @@ name: Install Dependencies
 description: Install dependencies using yarn
 
 inputs:
+  directory:
+    required: false
+    default: ""
   prod:
-    type: boolean
     required: false
     default: false
   
@@ -20,15 +22,14 @@ runs:
       id: node-cache
       uses: useblacksmith/cache@v5
       with:
-        path: "**/node_modules"
-        key: yarn-${{ runner.os }}-${{ inputs.prod == true && 'prod' || 'dev' }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('package.json') }}
-        restore-keys:
-          yarn-${{ runner.os }}-${{ inputs.prod == true && 'prod' || 'dev' }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('package.json') }}
-          yarn-${{ runner.os }}-${{ inputs.prod == true && 'prod' || 'dev' }}-${{ hashFiles('yarn.lock') }}-
-          yarn-${{ runner.os }}-${{ inputs.prod == true && 'prod' || 'dev' }}-
-          yarn-${{ runner.os }}-
+        path: "${{ inputs.directory }}/node_modules"
+        key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ hashFiles(inputs.directory == '' && 'yarn.lock' || format('{0}/yarn.lock', inputs.directory)) }}
 
     - name: Install Dependencies
       shell: bash
-      run: yarn install ${{ inputs.prod == true && '--prod' || '' }} --frozen-lockfile
+      run: |
+        if [ "${{ inputs.directory }}" != "" ]; then
+          cd "${{ inputs.directory }}"
+        fi
+        yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --frozen-lockfile
       

@@ -1,0 +1,41 @@
+name: Serverless Deploy
+description: Deploy Lambda with Serverless
+
+inputs:
+  aws-account-id:
+    required: true
+  env:
+    required: true
+  service-name:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set Up Node.js
+      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+
+    - name: Install Dependencies
+      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      with:
+        directory: lambda
+    
+    - name: Assume AWS Role in Root Account Using OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+    
+    - name: Assume AWS Role in Production Account
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/TerraformDeployer
+        role-chaining: true
+        role-skip-session-tagging: true
+    
+    - name: Deploy
+      working-directory: lambda
+      shell: bash
+      run: ./node_modules/.bin/serverless deploy --verbose --stage "${{ inputs.env }}"

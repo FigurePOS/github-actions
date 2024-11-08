@@ -21,11 +21,6 @@ on:
         description: "ECR Docker repository name"
         required: true
         type: string
-      runner: 
-        description: "Runner"
-        required: false
-        type: string
-        default: "blacksmith-4vcpu-ubuntu-2204"
       service-name:
         description: "Service name"
         required: true
@@ -54,7 +49,7 @@ concurrency:
     
 jobs:
   build:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -85,11 +80,12 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "build"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   test-unit:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -107,11 +103,12 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "test-unit"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   test-e2e:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     needs:
       - build
     steps:
@@ -140,15 +137,11 @@ jobs:
         with:
           service-name: ${{ inputs.service-name }}
 
-      - name: Install Prod Dependencies
+      - name: Install Dependencies in Tests Directory
         if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
         with:
-          prod: true
-
-      - name: Install Dependencies in Tests Directory
-        if: steps.check.outputs.skip != 'true'
-        run: cd tests && yarn install --frozen-lockfile
+          directory: tests
 
       - name: Run Tests
         if: steps.check.outputs.skip != 'true'
@@ -163,11 +156,12 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master' && steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "test-e2e"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-validate:
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -192,6 +186,7 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "terraform-validate"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
@@ -199,7 +194,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -224,6 +219,7 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "terraform-plan-dev"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
@@ -231,7 +227,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -256,6 +252,7 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "terraform-plan-prod"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
@@ -265,7 +262,7 @@ jobs:
       - build
       - test-e2e
       - test-unit
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -287,6 +284,7 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "push"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
   
@@ -294,7 +292,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs:
       - push
-    runs-on: ${{ inputs.runner }}
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -314,8 +312,112 @@ jobs:
           env: development
           service-name: ${{ inputs.service-name }}
 
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          job-name: "terraform-deploy-dev"
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+
+  serverless-decide-run:
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for Changes in lambda Directory
+        id: check
+        run: |
+          if [ ! -f "lambda/serverless.yml" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git diff --quiet origin/${{ github.base_ref }} HEAD -- lambda/ || echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            git diff --quiet HEAD^ HEAD -- lambda/ || echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          job-name: "serverless-decide-run"
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+  
+  serverless-lint:
+    if: needs.serverless-decide-run.outputs.has_changes == 'true'
+    needs:
+      - serverless-decide-run
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        with:
+          directory: lambda
+      
+      - name: Run Lint
+        working-directory: lambda
+        run: yarn test:ci
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          job-name: "serverless-lint"
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+
+  serverless-deploy-dev:
+    if: needs.serverless-decide-run.outputs.has_changes == 'true' && github.ref == 'refs/heads/master'
+    needs:
+      - serverless-decide-run
+      - serverless-lint
+    runs-on: "blacksmith-4vcpu-ubuntu-2204"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v1
+        with:
+          aws-account-id: '880892332156'
+          env: development
+          service-name: ${{ inputs.service-name }}
+
+      - name: Send Slack Notification About Failure
+        if: failure() && github.ref == 'refs/heads/master'
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+        with:
+          job-name: "serverless-deploy-dev"
+          service-name: ${{ inputs.service-name }}
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+
+  notify-buddy:
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - terraform-deploy-dev
+      - serverless-decide-run
+    runs-on: "blacksmith-2vcpu-ubuntu-2204"
+    env:
+      AWS_REGION: ${{ inputs.aws-region }}
+    steps:
+      - uses: actions/checkout@v4
+
       - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v1
         with:
+          deploy-serverless: ${{ needs.serverless-decide-run.outputs.has_changes == 'true' }}
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
@@ -323,5 +425,6 @@ jobs:
         if: failure() && github.ref == 'refs/heads/master'
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
+          job-name: "notify-buddy"
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
