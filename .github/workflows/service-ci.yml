@@ -28,6 +28,9 @@ on:
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
+      TEST_E2E_ENV:
+        description: "Environment variables for e2e tests"
+        required: false
 
 permissions:
   # Required to query workflow run status and trigger other workflows
@@ -95,7 +98,7 @@ jobs:
 
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
-        
+
       - name: Run Linters and Unit Tests
         run: yarn run test:ci 2>/dev/null || yarn run ci
 
@@ -111,6 +114,8 @@ jobs:
     runs-on: "blacksmith-4vcpu-ubuntu-2204"
     needs:
       - build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -122,6 +127,20 @@ jobs:
             echo "::warning title=Missing e2e tests::Tests directory not found, skipping e2e tests"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Set Environment Variables
+        run: |
+          if [ -n '${{ secrets.TEST_E2E_ENV }}' ]; then
+            echo '${{ secrets.TEST_E2E_ENV }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read -r line; do
+              #secret=${line#*=}
+              #echo "::add-mask::$secret"
+              echo "$line" >> "$GITHUB_ENV"
+            done
+          fi
+
+      - name: Debug Environment Variables
+        run: |
+          printenv
 
       - name: Set Up Node.js
         if: steps.check.outputs.skip != 'true'
