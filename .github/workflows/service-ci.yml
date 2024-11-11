@@ -138,10 +138,6 @@ jobs:
             done
           fi
 
-      - name: Debug Environment Variables
-        run: |
-          printenv
-
       - name: Set Up Node.js
         if: steps.check.outputs.skip != 'true'
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1

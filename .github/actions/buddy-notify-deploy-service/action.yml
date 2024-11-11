@@ -26,7 +26,7 @@ runs:
       if [ -n "${{ inputs.commit-hash }}" ]; then
         commit_hash="${{ inputs.commit-hash }}"
       else
-        commit_hash="$(git log --pretty=format:'%h' -n 1 | less -F)"
+        commit_hash="$(git log --pretty=format:'%H' -n 1 | less -F)"
       fi
 
       if [ -n "${{ inputs.commit-message }}" ]; then

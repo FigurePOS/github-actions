@@ -73,7 +73,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/tags/release-${tag}`,
-              sha: ${{ inputs.sha }}
+              sha: "${{ inputs.sha }}"
             })
             try {
               await github.rest.git.getRef({
@@ -85,18 +85,18 @@ jobs:
               await github.rest.git.updateRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: "refs/tags/production",
-                sha: ${{ inputs.sha }},
+                ref: "tags/production",
+                sha: "${{ inputs.sha }}",
                 force: true
               });
             } catch (error) {
-              if (error.status === 404) {
+              if (error.status === 422) {
               // If the tag does not exist, create it
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: "refs/tags/production",
-                sha: ${{ inputs.sha }}
+                sha: "${{ inputs.sha }}"
               });
               } else {
                 throw error;
