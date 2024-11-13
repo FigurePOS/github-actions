@@ -28,6 +28,9 @@ on:
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
+      GH_TOKEN_TERRAFORM:
+        description: "GitHub token to access other private repositories"
+        required: false
       TEST_E2E_ENV:
         description: "Environment variables for e2e tests"
         required: false
@@ -188,6 +191,7 @@ jobs:
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
+          github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
 
       - name: Terraform Validate
@@ -221,6 +225,7 @@ jobs:
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
+          github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
 
       - name: Terraform Plan
@@ -254,6 +259,7 @@ jobs:
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
+          github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
 
       - name: Terraform Plan
@@ -318,6 +324,7 @@ jobs:
         with:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
+          github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
 
       - name: Terraform Deploy

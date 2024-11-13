@@ -15,6 +15,8 @@ inputs:
     default: tf
   env:
     required: true
+  github-token-terraform:
+    required: false
   service-name:
     required: true
 
@@ -59,8 +61,7 @@ runs:
         aws-region: ${{ inputs.aws-region }}
         db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
     
-    - run: |-
-    
+    - run: |
         DATADOG_API_KEY=$(aws ssm get-parameters --names "/terraform/datadog/api_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
         echo "DATADOG_API_KEY=$DATADOG_API_KEY" >> "$GITHUB_ENV"
 
@@ -68,16 +69,19 @@ runs:
         echo "DATADOG_APP_KEY=$DATADOG_APP_KEY" >> "$GITHUB_ENV"
       shell: bash
     
-    - uses: philips-labs/terraform-private-modules-action@v1
-      with:
-        org: FigurePOS
-        token: ${{ github.token }}
-    
+    - run: |
+        if [ -n "${{ inputs.github-token-terraform }}" ]; then
+          echo "machine github.com login username password ${{ inputs.github-token-terraform }}" > ~/.netrc
+          git config --global url."https://github.com/".insteadOf "git://github.com/"
+          git config --global advice.detachedHead false
+        fi
+      shell: bash
+      
     - uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.7.5
+        terraform_version: 1.5.7
     
-    - run: |-
+    - run: |
         cd ${{ inputs.dir }}
         terraform init -reconfigure \
           -backend-config="bucket=fgr-terraform-state" \

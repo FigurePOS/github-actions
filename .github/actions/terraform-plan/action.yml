@@ -63,7 +63,9 @@ runs:
       command=$(cat tf.command.txt)
 
       # Parse the tf.console.txt file, truncated for character limit.
-      console=$(grep -v '\.\.\.$' tf.console.txt | head -c 42000 | sed '${/^  /d}')
+      # Fix: Use temp file to avoid broken pipe with head
+      grep -v '\.\.\.$' tf.console.txt > tf.temp.txt
+      console=$(head -c 42000 tf.temp.txt | sed '${/^  /d}')
       { echo 'result<<EOTFVIAPR'
         echo "$console"
         echo EOTFVIAPR
@@ -131,6 +133,5 @@ runs:
       fi
 
       # Clean up files.
-      rm -f tf.command.txt tf.console.txt tf.diff.txt "${{ format('{0}{1}tf.plan', inputs.arg-chdir || inputs.working-directory, (inputs.arg-chdir || inputs.working-directory) && '/' || '') }}"
-
+      rm -f tf.command.txt tf.console.txt tf.diff.txt tf.temp.txt "${{ format('{0}{1}tf.plan', inputs.arg-chdir || inputs.working-directory, (inputs.arg-chdir || inputs.working-directory) && '/' || '') }}"
 
