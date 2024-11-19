@@ -22,10 +22,12 @@ runs:
       id: get-git-message
       shell: bash
       run: |
-        commit_message="$(git log --pretty=format:'%s' -n ${{ inputs.commit-offset }} | less -F)"
-        echo "message=$(echo $commit_message)" >> $GITHUB_OUTPUT
+        commit_message="$(git log --pretty=format:'%s' -n 1 --skip $((${{ inputs.commit-offset }} - 1)) | less -F)"
+        echo "message<<EOF" >> "$GITHUB_OUTPUT"
+        echo "$commit_message" >> "$GITHUB_OUTPUT"
+        echo "EOF" >> "$GITHUB_OUTPUT"
 
-        commit_hash="$(git log --pretty=format:'%h' -n ${{ inputs.commit-offset }} | less -F)"
-        echo "hash=$commit_hash" >> $GITHUB_OUTPUT
+        commit_hash="$(git log --pretty=format:'%h' -n 1 --skip $((${{ inputs.commit-offset }} - 1)) | less -F)"
+        echo "hash=$commit_hash" >> "$GITHUB_OUTPUT"
 
         echo "Detected message: '$commit_message'"

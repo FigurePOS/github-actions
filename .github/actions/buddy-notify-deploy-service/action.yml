@@ -26,7 +26,7 @@ runs:
       if [ -n "${{ inputs.commit-hash }}" ]; then
         commit_hash="${{ inputs.commit-hash }}"
       else
-        commit_hash="$(git log --pretty=format:'%h' -n 1 | less -F)"
+        commit_hash="$(git log --pretty=format:'%H' -n 1 | less -F)"
       fi
 
       if [ -n "${{ inputs.commit-message }}" ]; then
@@ -40,7 +40,7 @@ runs:
         --arg commit_hash "$commit_hash" \
         --arg commit_message "$commit_message" \
         --arg service_name "${{ inputs.service-name }}" \
-        --arg deploy_serverless "${{ inputs.deploy-serverless }}" \
+        --argjson deploy_serverless "${{ inputs.deploy-serverless }}" \
         '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github", "deploy_serverless": $deploy_serverless}')
       
       echo "Sending notification to Buddy..."

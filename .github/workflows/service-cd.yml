@@ -28,6 +28,9 @@ on:
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
+      GH_TOKEN_TERRAFORM:
+        description: "GitHub token to access other private repositories"
+        required: false
 
 permissions:
   # Needed to checkout repository code, read repository contents and create tags
@@ -54,6 +57,7 @@ jobs:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           service-name: ${{ inputs.service-name }}
+          github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
 
       - name: Terraform Apply
         uses: FigurePOS/github-actions/.github/actions/terraform-apply@v1
@@ -73,7 +77,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/tags/release-${tag}`,
-              sha: ${{ inputs.sha }}
+              sha: "${{ inputs.sha }}"
             })
             try {
               await github.rest.git.getRef({
@@ -85,8 +89,8 @@ jobs:
               await github.rest.git.updateRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: "refs/tags/production",
-                sha: ${{ inputs.sha }},
+                ref: "tags/production",
+                sha: "${{ inputs.sha }}",
                 force: true
               });
             } catch (error) {
@@ -96,7 +100,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: "refs/tags/production",
-                sha: ${{ inputs.sha }}
+                sha: "${{ inputs.sha }}"
               });
               } else {
                 throw error;
