@@ -39,6 +39,7 @@ runs:
     - name: Terraform Init
       uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
       with:
+        aws-account-id: ${{ inputs.aws-account-id }}
         db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
         env: ${{ inputs.env }}
         github-token-terraform: ${{ inputs.github-token-terraform }}

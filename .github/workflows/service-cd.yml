@@ -2,34 +2,39 @@ name: Production Deployment
 on: 
   workflow_call:
     inputs:
-      aws-region:
-        description: "AWS region"
+      aws-account-id:
+        description: AWS account ID
         required: false
         type: string
-        default: "us-east-1"
+        default: "682919404744"
+      aws-region:
+        description: AWS region
+        required: false
+        type: string
+        default: us-east-1
       db-tunnel-mapping:
-        description: "DB tunnel mapping"
+        description: DB tunnel mapping
         required: false
         type: string
         default: ""
       deploy-serverless:
-        description: "Deploy Lambda with Serverless"
+        description: Deploy Lambda with Serverless
         required: false
         type: boolean
         default: false
       service-name:
-        description: "Service name"
+        description: Service name
         required: true
         type: string
       sha:
-        description: "Release commit SHA"
+        description: Release commit SHA
         required: true
         type: string
     secrets:
       BUDDY_TRIGGER_URL:
-        description: "Buddy trigger URL"
+        description: Buddy trigger URL
       GH_TOKEN_TERRAFORM:
-        description: "GitHub token to access other private repositories"
+        description: GitHub token to access other private repositories
         required: false
 
 permissions:
@@ -42,28 +47,18 @@ permissions:
 
 jobs:
   terraform-deploy:
-    runs-on: "blacksmith-4vcpu-ubuntu-2204"
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v1
         with:
-          ref: ${{ inputs.sha }}
-
-      - name: Terraform Init
-        uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
-        with:
+          aws-account-id: ${{ inputs.aws-account-id }}
+          aws-region: ${{ inputs.aws-region }}
+          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
-          service-name: ${{ inputs.service-name }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
-
-      - name: Terraform Apply
-        uses: FigurePOS/github-actions/.github/actions/terraform-apply@v1
-        with:
-          aws-account-id: '682919404744'
-          env: production
           service-name: ${{ inputs.service-name }}
 
       - name: Create a Release Tag and Update the Production Tag
@@ -111,13 +106,13 @@ jobs:
         if: failure()
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
-          job-name: "terraform-deploy-prod"
+          job-name: terraform-deploy-prod
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 
   serverless-deploy:
     if: inputs.deploy-serverless
-    runs-on: "blacksmith-4vcpu-ubuntu-2204"
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -126,7 +121,7 @@ jobs:
 
       - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v1
         with:
-          aws-account-id: '682919404744'
+          aws-account-id: ${{ inputs.aws-account-id }}
           env: production
           service-name: ${{ inputs.service-name }}
 
@@ -134,6 +129,6 @@ jobs:
         if: failure()
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
         with:
-          job-name: "serverless-deploy-prod"
+          job-name: serverless-deploy-prod
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
