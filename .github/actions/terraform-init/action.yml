@@ -104,6 +104,7 @@ runs:
           -backend-config="bucket=fgr-terraform-state" \
           -backend-config="dynamodb_table=fgr-terraform-state-locks" \
           -backend-config="key=app-${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate" \
-          -backend-config="region=${{ inputs.aws-region }}"
+          -backend-config="region=${{ inputs.aws-region }}" \
+          -lock-timeout=60s
       shell: bash
     

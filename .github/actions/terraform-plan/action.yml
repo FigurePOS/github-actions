@@ -26,7 +26,7 @@ runs:
     working-directory: ${{ inputs.dir }}
     run: |-
       trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
-      args=" -detailed-exitcode -out=tf.plan"
+      args=" -detailed-exitcode -out=tf.plan -lock-timeout=60s"
       echo "terraform plan${args}" | sed 's/ -/\n -/g' > tf.command.txt
       terraform plan${args} > >(tee -a tf.console.txt) 2> tf.console.txt
     env:
