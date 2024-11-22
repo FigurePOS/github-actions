@@ -5,6 +5,9 @@ inputs:
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
+  env:
+    description: Environment variables for the tests
+    required: false
   service-name:
     description: The service name
     required: true
@@ -20,6 +23,17 @@ runs:
 
     - name: Install Dependencies
       uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+    - name: Set Environment Variables
+      shell: bash
+      run: |
+        if [ -n '${{ inputs.env }}' ]; then
+          echo '${{ inputs.env }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read -r line; do
+            secret=${line#*=}
+            echo "::add-mask::$secret"
+            echo "$line" >> "$GITHUB_ENV"
+          done
+        fi
 
     - name: Run Linters and Unit Tests
       shell: bash
