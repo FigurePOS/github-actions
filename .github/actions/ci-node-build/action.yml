@@ -2,6 +2,10 @@ name: Node Build
 description: Builds the Node.js app and the docker image
 
 inputs:
+  additional-cache-path:
+    description: Additional path to cache
+    required: false
+    default: ""
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
@@ -23,6 +27,8 @@ runs:
     
     - name: Install Dev Dependencies
       uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      with:
+        additional-cache-path: ${{ inputs.additional-cache-path }}
 
     - name: Yarn Build
       shell: bash
@@ -31,6 +37,7 @@ runs:
     - name: Install Prod Dependencies
       uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
       with:
+        additional-cache-path: ${{ inputs.additional-cache-path }}
         prod: true
 
     - name: Build Image

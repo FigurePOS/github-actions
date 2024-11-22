@@ -39,8 +39,12 @@ runs:
   - if: failure()
     shell: bash
     run: |
-      echo "Contents of tf.console.txt:\n"
-      cat tf.console.txt
+      if [ -f tf.console.txt ]; then
+        echo "Contents of tf.console.txt:\n"
+        cat tf.console.txt
+      else
+        echo "tf.console.txt not created"
+      fi
 
   - id: show
     shell: bash
