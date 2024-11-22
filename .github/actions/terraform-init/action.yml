@@ -23,10 +23,21 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: aws-actions/configure-aws-credentials@v4
+    - name: Assume AWS Role in Root Account Using OIDC
+      if: inputs.db-tunnel-mapping != ''
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+
+    - name: Assume AWS Role in Production Account
+      if: inputs.aws-account-id != ''
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/TerraformDeployer
+        role-chaining: true
         role-skip-session-tagging: true
 
     - name: Set Up SSH tunnel
@@ -61,6 +72,13 @@ runs:
         aws-region: ${{ inputs.aws-region }}
         db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
     
+    - name: Assume AWS Role in Root Account Using OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+    
     - run: |
         DATADOG_API_KEY=$(aws ssm get-parameters --names "/terraform/datadog/api_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
         echo "DATADOG_API_KEY=$DATADOG_API_KEY" >> "$GITHUB_ENV"
@@ -68,7 +86,7 @@ runs:
         DATADOG_APP_KEY=$(aws ssm get-parameters --names "/terraform/datadog/app_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
         echo "DATADOG_APP_KEY=$DATADOG_APP_KEY" >> "$GITHUB_ENV"
       shell: bash
-    
+
     - run: |
         if [ -n "${{ inputs.github-token-terraform }}" ]; then
           echo "machine github.com login username password ${{ inputs.github-token-terraform }}" > ~/.netrc

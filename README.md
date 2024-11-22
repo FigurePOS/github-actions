@@ -22,6 +22,8 @@ jobs:
 Installs Node.js dependencies using yarn and authenticates Figure private Github package registry.
 
 Parameters:
+- `additional-cache-path`: Additional path to cache, default: `""`.
+- `directory`: Directory to install dependencies in, default: `"."`.
 - `prod`: Whether to install only prod dependencies, default: `false`.
 
 ```yml

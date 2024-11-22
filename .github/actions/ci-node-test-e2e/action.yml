@@ -1,0 +1,86 @@
+name: Node Test E2E
+description: Runs the e2e tests for the Node.js app
+
+inputs:
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  docker-command:
+    description: Command to start the service in Docker
+    required: false
+    type: string
+    default: build/index.js
+  ecr-repository-name:
+    description: The ECR repository name
+    required: true
+  env:
+    description: Environment variables for the tests
+    required: false
+  service-name:
+    description: The service name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check if Tests Directory Exists
+      id: check
+      shell: bash
+      run: |-
+        if [[ ! -d "./tests" ]]; then
+          echo "::warning title=Missing e2e tests::Tests directory not found, skipping e2e tests"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Set Environment Variables
+      shell: bash
+      run: |
+        if [ -n '${{ inputs.env }}' ]; then
+          echo '${{ inputs.env }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read -r line; do
+            secret=${line#*=}
+            echo "::add-mask::$secret"
+            echo "$line" >> "$GITHUB_ENV"
+          done
+        fi
+
+    - name: Set Up Node.js
+      if: steps.check.outputs.skip != 'true'
+      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+
+    - name: Install Dependencies
+      if: steps.check.outputs.skip != 'true'
+      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+    - name: Load Docker Image
+      if: steps.check.outputs.skip != 'true'
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
+      with:
+        service-name: ${{ inputs.service-name }}
+
+    - name: Install Dependencies in Tests Directory
+      if: steps.check.outputs.skip != 'true'
+      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      with:
+        directory: tests
+
+    - name: Run Tests
+      if: steps.check.outputs.skip != 'true'
+      shell: bash
+      run: |-
+        sha_short=$(git rev-parse --short ${{ github.sha }})
+        export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
+        TEST_CMD="yarn start" yarn test:integration:prepare
+      env:
+        SERVICE_DOCKER_COMMAND: node --enable-source-maps ${{ inputs.docker-command }}
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master' && steps.check.outputs.skip != 'true'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      with:
+        job-name: test-e2e
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+

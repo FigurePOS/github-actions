@@ -2,10 +2,16 @@ name: Install Dependencies
 description: Install dependencies using yarn
 
 inputs:
-  directory:
+  additional-cache-path:
+    description: Additional path to cache
     required: false
     default: ""
+  directory:
+    description: Directory to install dependencies in
+    required: false
+    default: "."
   prod:
+    description: Whether to install only prod dependencies
     required: false
     default: false
   
@@ -22,7 +28,9 @@ runs:
       id: node-cache
       uses: useblacksmith/cache@v5
       with:
-        path: "${{ inputs.directory }}/node_modules"
+        path: |
+          ${{ inputs.directory }}/node_modules
+          ${{ inputs.additional-cache-path }}
         key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'yarn.lock' || format('{0}/yarn.lock', inputs.directory)) }}
         restore-keys: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-
 
@@ -33,4 +41,3 @@ runs:
           cd "${{ inputs.directory }}"
         fi
         yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --frozen-lockfile
-      

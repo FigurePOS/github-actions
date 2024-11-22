@@ -1,0 +1,38 @@
+name: Serverless Test
+description: Runs the linters and unit tests for Serverless
+
+inputs:
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  service-name:
+    description: The service name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set Up Node.js
+      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+
+    - name: Install Dependencies
+      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      with:
+        directory: lambda
+    
+    - name: Run Tests
+      working-directory: lambda
+      shell: bash
+      run: yarn test:ci
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      with:
+        job-name: serverless-test
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+

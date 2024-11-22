@@ -1,0 +1,39 @@
+name: Docker Push
+description: Pushes the docker image to the ECR repository
+
+inputs:
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  ecr-repository-name:
+    description: The ECR repository name
+    required: true
+  service-name:
+    description: The service name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Load docker image
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
+      with:
+        service-name: ${{ inputs.service-name }}
+
+    - name: Push Docker Image
+      uses: FigurePOS/github-actions/.github/actions/docker-push-image@v1
+      with:
+        repository-name: ${{ inputs.ecr-repository-name }}
+        service-name: ${{ inputs.service-name }}
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      with:
+        job-name: push
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+

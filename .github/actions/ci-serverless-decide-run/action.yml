@@ -1,0 +1,46 @@
+name: Serverless Decide Run
+description: Decides whether to run the serverless deploy or not
+
+inputs:
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  service-name:
+    description: The service name
+    required: true
+
+outputs:
+  has-changes:
+    description: Whether there are changes in the lambda directory
+    value: ${{ steps.check.outputs.has-changes }}
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Check for Changes in lambda Directory
+      id: check
+      shell: bash
+      run: |
+        if [ ! -f "lambda/serverless.yml" ]; then
+          echo "has-changes=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          git diff --quiet origin/${{ github.base_ref }} HEAD -- lambda/ || echo "has-changes=true" >> "$GITHUB_OUTPUT"
+        else
+          git diff --quiet HEAD^ HEAD -- lambda/ || echo "has-changes=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      with:
+        job-name: serverless-decide-run
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+

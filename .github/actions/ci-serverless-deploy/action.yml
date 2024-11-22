@@ -1,0 +1,41 @@
+name: Serverless Deploy
+description: Deploys the Serverless code
+
+inputs:
+  aws-account-id:
+    description: The AWS account ID
+    required: true
+  aws-region:
+    description: The AWS region
+    required: true
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  env:
+    description: The environment
+    required: true
+  service-name:
+    description: The service name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v1
+      with:
+        aws-account-id: ${{ inputs.aws-account-id }}
+        aws-region: ${{ inputs.aws-region }}
+        env: ${{ inputs.env }}
+        service-name: ${{ inputs.service-name }}
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      with:
+        job-name: serverless-deploy-dev
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+

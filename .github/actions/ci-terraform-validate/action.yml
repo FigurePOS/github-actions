@@ -1,0 +1,58 @@
+name: Terraform Validate
+description: Validates the Terraform code
+
+inputs:
+  aws-region:
+    description: AWS region
+    required: false
+    type: string
+    default: us-east-1
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  db-tunnel-mapping:
+    description: DB tunnel mapping
+    required: false
+    type: string
+    default: ""
+  github-token-terraform:
+    description: GitHub token to access other private repositories
+    required: false
+  service-name:
+    description: The service name
+    required: true
+  
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Terraform Init
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+      with:
+        db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+        env: development
+        github-token-terraform: ${{ inputs.github-token-terraform }}
+        service-name: ${{ inputs.service-name }}
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+
+    - name: Terraform Validate
+      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v1
+      with:
+        aws-account-id: 880892332156
+        env: development
+        service-name: ${{ inputs.service-name }}
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      with:
+        job-name: terraform-validate
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+
