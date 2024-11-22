@@ -13,23 +13,26 @@ inputs:
     required: true
   service-name:
     required: true
+  sha:
+    required: false
+    type: string
 
 runs:
   using: composite
   steps:
-  - id: sha_short
-    run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
-    shell: bash
+    - id: sha_short
+      run: echo "sha_short=$(git rev-parse --short ${{ inputs.sha || github.sha }})" >> $GITHUB_OUTPUT
+      shell: bash
 
-  - run: |-
-      cd "${{ inputs.dir }}" || exit 
-      
-      terraform apply --auto-approve
-    env:
-      TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
-      TF_VAR_aws_region: "${{ inputs.aws-region }}"
-      TF_VAR_deployment_tag: "${{ steps.sha_short.outputs.sha_short }}"
-      TF_VAR_env: "${{ inputs.env }}"
-      TF_VAR_git_commit_hash: "${{ github.sha }}"
-      TF_VAR_service_name: "${{ inputs.service-name }}"
-    shell: bash
+    - run: |-
+        cd "${{ inputs.dir }}" || exit 
+        
+        terraform apply --auto-approve -lock-timeout=60s
+      env:
+        TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
+        TF_VAR_aws_region: "${{ inputs.aws-region }}"
+        TF_VAR_deployment_tag: "${{ steps.sha_short.outputs.sha_short }}"
+        TF_VAR_env: "${{ inputs.env }}"
+        TF_VAR_git_commit_hash: "${{ github.sha }}"
+        TF_VAR_service_name: "${{ inputs.service-name }}"
+      shell: bash

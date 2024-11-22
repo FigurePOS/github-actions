@@ -25,14 +25,21 @@ on:
         description: "Service name"
         required: true
         type: string
+      test-e2e-env-vars:
+        description: "Environment variables for e2e tests"
+        required: false
+        type: string
+        default: ""
+      test-unit-env-vars:
+        description: "Environment variables for unit tests"
+        required: false
+        type: string
+        default: ""
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
       GH_TOKEN_TERRAFORM:
         description: "GitHub token to access other private repositories"
-        required: false
-      TEST_E2E_ENV:
-        description: "Environment variables for e2e tests"
         required: false
 
 permissions:
@@ -69,6 +76,7 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v1
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          env-vars: ${{ inputs.test-unit-env-vars }}
           service-name: ${{ inputs.service-name }}
   
   test-e2e:
@@ -81,7 +89,7 @@ jobs:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
-          env: ${{ secrets.TEST_E2E_ENV }}
+          env-vars: ${{ inputs.test-e2e-env-vars }}
           service-name: ${{ inputs.service-name }}
   
   terraform-validate:
