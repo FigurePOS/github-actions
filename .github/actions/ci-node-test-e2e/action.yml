@@ -40,8 +40,8 @@ runs:
       run: |
         if [ -n '${{ inputs.env }}' ]; then
           echo '${{ inputs.env }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read -r line; do
-            #secret=${line#*=}
-            #echo "::add-mask::$secret"
+            secret=${line#*=}
+            echo "::add-mask::$secret"
             echo "$line" >> "$GITHUB_ENV"
           done
         fi
