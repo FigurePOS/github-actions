@@ -25,12 +25,12 @@ on:
         description: "Service name"
         required: true
         type: string
-      test-e2e-env:
+      test-e2e-env-vars:
         description: "Environment variables for e2e tests"
         required: false
         type: string
         default: ""
-      test-unit-env:
+      test-unit-env-vars:
         description: "Environment variables for unit tests"
         required: false
         type: string
@@ -76,7 +76,7 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v1
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          env: ${{ inputs.test-unit-env }}
+          env-vars: ${{ inputs.test-unit-env-vars }}
           service-name: ${{ inputs.service-name }}
   
   test-e2e:
@@ -89,7 +89,7 @@ jobs:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
-          env: ${{ inputs.test-e2e-env }}
+          env-vars: ${{ inputs.test-e2e-env-vars }}
           service-name: ${{ inputs.service-name }}
   
   terraform-validate:
