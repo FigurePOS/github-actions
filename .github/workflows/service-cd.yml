@@ -60,6 +60,7 @@ jobs:
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
+          sha: ${{ inputs.sha }}
 
       - name: Create a Release Tag and Update the Production Tag
         uses: actions/github-script@v7
