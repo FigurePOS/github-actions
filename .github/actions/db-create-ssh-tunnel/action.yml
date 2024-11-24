@@ -1,0 +1,69 @@
+name: Create SSH tunnel
+
+inputs:
+  aws-account-id:
+    required: true
+  aws-region:
+    required: false
+    default: us-east-1
+  db-tunnel-mapping:
+    required: true
+  service-name:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Assume AWS Role in Root Account Using OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+
+    - name: Assume AWS Role in App Account
+      uses: aws-actions/configure-aws-credentials@v4
+      id: assume-role
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        output-credentials: true
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/TerraformDeployer
+        role-chaining: true
+        role-skip-session-tagging: true
+
+    - name: Get DB URL
+      id: get-db-url
+      run: |
+        URL=$(aws ssm get-parameters --names "$DB_TUNNEL_MAPPING" --region=$AWS_REGION --query 'Parameters[].Value' --output text)
+        if [ $? -ne 0 ]; then
+          echo "Error getting parameter $DB_TUNNEL_MAPPING"
+          exit 1 
+        fi
+        echo "url=$URL" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+        DB_TUNNEL_MAPPING: ${{ inputs.db-tunnel-mapping }}
+
+    - name: Get Bastion ID
+      id: get-bastion-id
+      run: |
+        BASTION_ID=$(aws ec2 describe-instances --region=$AWS_REGION --filter "Name=tag:Connection,Values=Bastion" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[] | [0]" --output text)
+        echo "id=$BASTION_ID" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+
+    - name: Port forward
+      uses: enkhjile/aws-ssm-remote-port-forwarding-action@v1.0.0
+      with:
+        target: ${{ steps.get-bastion-id.outputs.id }}
+        host: ${{ steps.get-db-url.outputs.url }}
+        port: 5432
+        local-port: 5432
+      env:
+        AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
+        AWS_ACCESS_KEY_ID: ${{ steps.assume-role.outputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ steps.assume-role.outputs.aws-secret-access-key }}
+        AWS_SESSION_TOKEN: ${{ steps.assume-role.outputs.aws-session-token }}
+

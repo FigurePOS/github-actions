@@ -6,9 +6,6 @@ inputs:
   aws-region:
     required: false
     default: us-east-1
-  db-tunnel-mapping:
-    required: false
-    default: ''
   dir:
     required: false
     default: tf
@@ -22,55 +19,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Assume AWS Role in Root Account Using OIDC
-      if: inputs.db-tunnel-mapping != ''
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-region: ${{ inputs.aws-region }}
-        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
-        role-skip-session-tagging: true
-
-    - name: Assume AWS Role in App Account
-      if: inputs.db-tunnel-mapping != ''
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-region: us-east-1
-        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/TerraformDeployer
-        role-chaining: true
-        role-skip-session-tagging: true
-
-    - name: Set Up SSH tunnel
-      if: inputs.db-tunnel-mapping != ''
-      run: |
-        SSH_CMD="ssh -v -4 -N -o StrictHostKeyChecking=no"
-
-        # $DB_TUNNEL_MAPPING has form of "port1:param1:port2:param2"
-        IFS=',' read -ra MAPPING <<< "$DB_TUNNEL_MAPPING"
-        for i in "${MAPPING[@]}"; do
-          IFS=':' read -ra PARTS <<< "$i"
-          PORT=${PARTS[0]}
-          PARAM=${i#"$PORT":}
-
-          URL=$(aws ssm get-parameters --names "$PARAM" --region=$AWS_REGION --query 'Parameters[].Value' --output text)
-          if [ $? -ne 0 ]; then
-                echo "Error getting parameter $PARAM"
-                exit 1
-          fi
-
-          SSH_CMD="$SSH_CMD -L $PORT:$URL:5432"
-        done
-
-        INSTANCE_ID=$(aws ec2 describe-instances --filter "Name=tag:Connection,Values=Bastion" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[] | [0]" --output text)
-
-        echo "Running: $SSH_CMD -o ProxyCommand=\"aws ssm start-session --target $INSTANCE_ID --document-name AWS-StartSSHSession --parameters portNumber=22\" ec2-user@bastion"
-
-        $SSH_CMD -o ProxyCommand="aws ssm start-session --target $INSTANCE_ID --document-name AWS-StartSSHSession --parameters portNumber=22" ec2-user@bastion &
-        sleep 1
-      shell: bash
-      env:
-        AWS_REGION: ${{ inputs.aws-region }}
-        DB_TUNNEL_MAPPING: ${{ inputs.db-tunnel-mapping }}
-    
     - name: Assume AWS Role in Root Account Using OIDC
       uses: aws-actions/configure-aws-credentials@v4
       with:
