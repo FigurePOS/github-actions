@@ -26,9 +26,7 @@ runs:
     working-directory: ${{ inputs.dir }}
     run: |-
       trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
-      args=" -detailed-exitcode -out=tf.plan -lock-timeout=60s"
-      echo "terraform plan${args}" | sed 's/ -/\n -/g' > tf.command.txt
-      terraform plan${args} > >(tee -a tf.console.txt) 2> tf.console.txt
+      terraform plan -detailed-exitcode -out=tf.plan -lock-timeout=60s > >(tee -a tf.console.txt) 2> tf.console.txt
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
@@ -62,10 +60,6 @@ runs:
     env:
       GH_TOKEN: ${{ github.token }}
     run: |
-      # Post output.
-      # Parse the tf.command.txt file.
-      command=$(cat tf.command.txt)
-
       # Parse the tf.console.txt file, truncated for character limit.
       # Fix: Use temp file to avoid broken pipe with head
       grep -v '\.\.\.$' tf.console.txt > tf.temp.txt
@@ -137,5 +131,5 @@ runs:
       fi
 
       # Clean up files.
-      rm -f tf.command.txt tf.console.txt tf.diff.txt tf.temp.txt "${{ format('{0}{1}tf.plan', inputs.arg-chdir || inputs.working-directory, (inputs.arg-chdir || inputs.working-directory) && '/' || '') }}"
+      rm -f tf.console.txt tf.diff.txt tf.temp.txt "${{ format('{0}{1}tf.plan', inputs.arg-chdir || inputs.working-directory, (inputs.arg-chdir || inputs.working-directory) && '/' || '') }}"
 
