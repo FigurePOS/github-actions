@@ -36,5 +36,12 @@ runs:
         
         MANIFEST=$(aws ecr batch-get-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'images[].imageManifest' --output text)
         
-        aws ecr put-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-tag "latest" --image-manifest "$MANIFEST"
+        # Check if the image with the 'latest' tag already exists
+        IMAGE_EXISTS=$(aws ecr describe-images --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="latest" imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'imageDetails' --output text)
+
+        if [ -z "$IMAGE_EXISTS" ]; then
+          aws ecr put-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-tag "latest" --image-manifest "$MANIFEST"
+        else
+          echo "Image with tags 'latest' and '${{ steps.sha_short.outputs.sha_short }}' already exists. Skipping put-image."
+        fi
       shell: bash
