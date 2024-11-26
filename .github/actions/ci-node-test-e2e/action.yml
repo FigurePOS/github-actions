@@ -39,10 +39,12 @@ runs:
       if: inputs.env-vars != ''
       shell: bash
       run: |
+        echo "Setting environment variables"
         echo '${{ inputs.env-vars }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read -r line; do
           secret=${line#*=}
           echo "::add-mask::$secret"
           echo "$line" >> "$GITHUB_ENV"
+          echo "- $line"
         done
 
     - name: Set Up Node.js

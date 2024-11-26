@@ -34,11 +34,20 @@ runs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Create SSH tunnel
+      if: inputs.db-tunnel-mapping != ''
+      id: create-ssh-tunnel
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v1
+      with:
+        aws-account-id: ${{ inputs.aws-account-id }}
+        aws-region: ${{ inputs.aws-region }}
+        db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+        service-name: ${{ inputs.service-name }}
+
     - name: Terraform Init
       uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
-        db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
         env: development
         github-token-terraform: ${{ inputs.github-token-terraform }}
         service-name: ${{ inputs.service-name }}

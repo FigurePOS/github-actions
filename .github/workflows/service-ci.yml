@@ -41,6 +41,12 @@ on:
       GH_TOKEN_TERRAFORM:
         description: "GitHub token to access other private repositories"
         required: false
+      TEST_E2E_ENV_VARS:
+        description: "Environment variables for e2e tests"
+        required: false
+      TEST_UNIT_ENV_VARS:
+        description: "Environment variables for unit tests"
+        required: false
 
 permissions:
   # Required to query workflow run status and trigger other workflows
@@ -76,7 +82,7 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v1
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          env-vars: ${{ inputs.test-unit-env-vars }}
+          env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           service-name: ${{ inputs.service-name }}
   
   test-e2e:
@@ -89,7 +95,7 @@ jobs:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
-          env-vars: ${{ inputs.test-e2e-env-vars }}
+          env-vars: ${{ inputs.test-e2e-env-vars || secrets.TEST_E2E_ENV_VARS }}
           service-name: ${{ inputs.service-name }}
   
   terraform-validate:
