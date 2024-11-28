@@ -32,7 +32,6 @@ runs:
           ${{ inputs.directory }}/node_modules
           ${{ inputs.additional-cache-path }}
         key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'yarn.lock' || format('{0}/yarn.lock', inputs.directory)) }}
-        restore-keys: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-
 
     - name: Install Dependencies
       shell: bash
