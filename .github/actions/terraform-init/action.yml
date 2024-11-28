@@ -36,6 +36,7 @@ runs:
 
     - run: |
         if [ -n "${{ inputs.github-token-terraform }}" ]; then
+          echo "Configuring GitHub token for Terraform"
           echo "machine github.com login username password ${{ inputs.github-token-terraform }}" > ~/.netrc
           git config --global url."https://github.com/".insteadOf "git://github.com/"
           git config --global advice.detachedHead false
