@@ -11,6 +11,10 @@ inputs:
     required: false
     type: string
     default: us-east-1
+  backend-s3-key:
+    description: The S3 key for the backend
+    required: false
+    type: string
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
@@ -50,6 +54,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
+        backend-s3-key: ${{ inputs.backend-s3-key }}
         env: ${{ inputs.env }}
         github-token-terraform: ${{ inputs.github-token-terraform }}
         service-name: ${{ inputs.service-name }}
