@@ -81,19 +81,23 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
         diff="
-        ## terraform infrastructure for ${{ inputs.env }} 
-        
         ${summary}
-      
+        
       \`\`\`diff
       $(head -c 24000 tf.diff.txt)
       \`\`\`
       "
       else
-        diff=""
+        diff="
+        \`\`\`diff
+        No changes.
+        \`\`\`
+        "
       fi
 
       body=$(cat <<EOTFVIAPR
+      ## terraform plan for \`${{ inputs.env }}\`
+      
       ${diff}
       <!-- placeholder-3 -->
       <details><summary>Detailed Plan</br>

@@ -1,5 +1,22 @@
 # Github Action for Figure Development
 
+## Bash
+
+### Set Env Vars From SSM Parameters
+
+Parameters:
+- `aws-region`: The AWS region to use.
+- `parameters`: The parameters in format "env_var_name1=ssm_path1;env_var_name2=ssm_path2".
+- `service-name`: The service name.
+
+```yml
+- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v1
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    parameters: "DATADOG_API_KEY=terraform/datadog/api_key;DATADOG_APP_KEY=terraform/datadog/app_key"
+    service-name: ${{ inputs.service-name }}
+```
+
 ## Node.js
 
 ### Set Up Node.js
