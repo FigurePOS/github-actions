@@ -37,12 +37,22 @@ inputs:
     description: Release commit SHA
     required: false
     type: string
+  ssm-parameters:
+    description: The SSM parameters to set as environment variables in format "env_var_name1=ssm_path1,env_var_name2=ssm_path2"
+    required: false
 
 runs:
   using: composite
   steps:
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Set Env Vars From SSM Parameters
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v1
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        parameters: ${{ inputs.ssm-parameters }}
+        service-name: ${{ inputs.service-name }}
 
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''

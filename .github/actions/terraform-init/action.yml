@@ -28,16 +28,6 @@ runs:
         aws-region: us-east-1
         role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
-    
-    - run: |
-        DATADOG_API_KEY=$(aws ssm get-parameters --names "/terraform/datadog/api_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
-        echo "::add-mask::$DATADOG_API_KEY"
-        echo "DATADOG_API_KEY=$DATADOG_API_KEY" >> "$GITHUB_ENV"
-
-        DATADOG_APP_KEY=$(aws ssm get-parameters --names "/terraform/datadog/app_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
-        echo "::add-mask::$DATADOG_APP_KEY"
-        echo "DATADOG_APP_KEY=$DATADOG_APP_KEY" >> "$GITHUB_ENV"
-      shell: bash
 
     - run: |
         if [ -n "${{ inputs.github-token-terraform }}" ]; then

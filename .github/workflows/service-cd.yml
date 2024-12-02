@@ -61,6 +61,7 @@ jobs:
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
           sha: ${{ inputs.sha }}
+          ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
 
       - name: Create a Release Tag and Update the Production Tag
         uses: actions/github-script@v7
