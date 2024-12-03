@@ -96,7 +96,7 @@ runs:
       fi
 
       body=$(cat <<EOTFVIAPR
-      ## terraform plan for \`${{ inputs.env }}\`
+      ### terraform plan for \`${{ inputs.env }}\`
       
       ${diff}
       <!-- placeholder-3 -->
