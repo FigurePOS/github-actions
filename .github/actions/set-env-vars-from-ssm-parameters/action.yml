@@ -1,0 +1,41 @@
+name: Set Env Vars From SSM Parameters
+description: "Set environment variables from SSM parameters"
+
+inputs:
+  aws-region:
+    description: The AWS region to use
+    required: false
+    default: us-east-1
+  parameters:
+    description: The parameters in format "env_var_name1=ssm_path1,env_var_name2=ssm_path2"
+    required: true
+  service-name:
+    description: The service name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Assume AWS Role in Root Account Using OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+    - run: |
+        IFS=',' read -ra PARAM_ARRAY <<< "${{ inputs.parameters }}"
+        for parameter in "${PARAM_ARRAY[@]}"; do
+          name=$(echo $parameter | cut -d= -f1)
+          path=$(echo $parameter | cut -d= -f2)
+          value=$(aws ssm get-parameters --names $path --query 'Parameters[].Value' --output text --with-decryption --region="${{ inputs.aws-region }}")
+          
+          if [ -z "$value" ]; then
+            echo "Error: Parameter $path does not exist in SSM or is empty."
+            exit 1
+          fi
+          
+          echo "Parameter $name set."
+          echo "::add-mask::$value"
+          echo "$name=$value" >> "$GITHUB_ENV"
+        done
+      shell: bash

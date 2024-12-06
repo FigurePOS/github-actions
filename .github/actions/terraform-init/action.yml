@@ -6,6 +6,9 @@ inputs:
   aws-region:
     required: false
     default: us-east-1
+  backend-s3-key:
+    required: false
+    default: ""
   dir:
     required: false
     default: tf
@@ -25,14 +28,6 @@ runs:
         aws-region: us-east-1
         role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
-    
-    - run: |
-        DATADOG_API_KEY=$(aws ssm get-parameters --names "/terraform/datadog/api_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
-        echo "DATADOG_API_KEY=$DATADOG_API_KEY" >> "$GITHUB_ENV"
-
-        DATADOG_APP_KEY=$(aws ssm get-parameters --names "/terraform/datadog/app_key" --region="${{ inputs.aws-region }}" --query 'Parameters[].Value' --output text --with-decryption)
-        echo "DATADOG_APP_KEY=$DATADOG_APP_KEY" >> "$GITHUB_ENV"
-      shell: bash
 
     - run: |
         if [ -n "${{ inputs.github-token-terraform }}" ]; then
@@ -49,10 +44,14 @@ runs:
     
     - run: |
         cd ${{ inputs.dir }}
+        backend_key=${{ inputs.backend-s3-key }}
+        if [ -z "$backend_key" ]; then
+          backend_key="aws/app/${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate"
+        fi
         terraform init -reconfigure \
           -backend-config="bucket=fgr-terraform-state" \
           -backend-config="dynamodb_table=fgr-terraform-state-locks" \
-          -backend-config="key=aws/app/${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate" \
+          -backend-config="key=$backend_key" \
           -backend-config="region=${{ inputs.aws-region }}" \
           -lock-timeout=60s
       shell: bash

@@ -25,8 +25,8 @@ runs:
     shell: bash
     working-directory: ${{ inputs.dir }}
     run: |-
-      trap 'exit_code="$?"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
-      terraform plan -detailed-exitcode -out=tf.plan -lock-timeout=60s > >(tee -a tf.console.txt) 2> tf.console.txt
+      trap 'exit_code="$?"; echo "exit_code=$exit_code"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
+      terraform plan -detailed-exitcode -out=tf.plan -lock=false > >(tee -a tf.console.txt) 2> tf.console.txt
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
@@ -81,19 +81,23 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
         diff="
-        ## terraform infrastructure for ${{ inputs.env }} 
-        
         ${summary}
-      
+        
       \`\`\`diff
       $(head -c 24000 tf.diff.txt)
       \`\`\`
       "
       else
-        diff=""
+        diff="
+        \`\`\`diff
+        No changes.
+        \`\`\`
+        "
       fi
 
       body=$(cat <<EOTFVIAPR
+      ### terraform plan for \`${{ inputs.env }}\`
+      
       ${diff}
       <!-- placeholder-3 -->
       <details><summary>Detailed Plan</br>
