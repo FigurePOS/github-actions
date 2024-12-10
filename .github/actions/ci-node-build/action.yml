@@ -32,7 +32,12 @@ runs:
 
     - name: Yarn Build
       shell: bash
-      run: yarn build:ci 2>/dev/null || yarn build
+      run: |
+        if yarn run | grep "build:ci"; then
+          yarn build:ci
+        else
+          yarn build
+        fi
 
     - name: Install Prod Dependencies
       uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
