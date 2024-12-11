@@ -6,6 +6,10 @@ runs:
   steps:
     - name: Dependency Check
       run: |
-        npx depcheck
+        if ! [ -f "./node_modules/.bin/depcheck" ]; then
+          echo "Installing depcheck..."
+          yarn add -D depcheck
+        fi
+        ./node_modules/.bin/depcheck
       shell: bash
       
