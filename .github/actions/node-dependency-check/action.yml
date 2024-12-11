@@ -1,8 +1,6 @@
 name: Node Dependency Check
 description: Checks the dependencies of Node.js
 
-inputs:
-
 runs:
   using: 'composite'
   steps:
