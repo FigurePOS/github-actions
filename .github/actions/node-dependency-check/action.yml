@@ -9,4 +9,5 @@ runs:
     - name: Dependency Check
       run: |
         npx depcheck
+      shell: bash
       

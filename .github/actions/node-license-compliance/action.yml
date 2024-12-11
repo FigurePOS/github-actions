@@ -17,4 +17,4 @@ runs:
     - name: License Compliance Check
       run: |
         npx license-compliance --allow-licenses ${{ inputs.allow-licenses }} --exclude-pattern ${{ inputs.exclude-pattern }}
-      
+      shell: bash
