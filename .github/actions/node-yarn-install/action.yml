@@ -39,4 +39,4 @@ runs:
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
         fi
-        yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --frozen-lockfile
+        yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --immutable
