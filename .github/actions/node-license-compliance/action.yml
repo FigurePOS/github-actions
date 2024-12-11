@@ -1,11 +1,20 @@
 name: Node License Compliance
 description: Checks the license compliance of Node.js dependencies
 
+inputs:
+  allow-licenses:
+    description: The licenses to allow
+    required: false
+    default: 0BSD;Apache-2.0;BSD-1-Clause;BSD-2-Clause;BSD-3-Clause;ISC;MIT;MPL-1.0;MPL-1.1;MPL-2.0;Unlicense
+  exclude-pattern:
+    description: The pattern to exclude
+    required: false
+    default: /^@figure/
+
 runs:
   using: 'composite'
   steps:
-    - name: License compliance check
-      uses: mikaelvesavuori/license-compliance-action@v1
-      with:
-        allow_licenses: 0BSD;Apache-2.0;BSD-1-Clause;BSD-2-Clause;BSD-3-Clause;ISC;MIT;MPL-1.0;MPL-1.1;MPL-2.0;Unlicense
-        exclude_pattern: /^@figure/
+    - name: License Compliance Check
+      run: |
+        npx license-compliance --allow-licenses ${{ inputs.allow-licenses }} --exclude-pattern ${{ inputs.exclude-pattern }}
+      

@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v2
 ```
 
 ### Install Node.js Dependencies
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
         with:
           prod: false
 ```

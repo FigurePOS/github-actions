@@ -49,11 +49,11 @@ runs:
 
     - name: Set Up Node.js
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
 
     - name: Install Dependencies
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
 
     - name: Load Docker Image
       if: steps.check.outputs.skip != 'true'
@@ -63,7 +63,7 @@ runs:
 
     - name: Install Dependencies in Tests Directory
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
       with:
         directory: tests
 

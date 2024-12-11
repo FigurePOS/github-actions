@@ -23,24 +23,25 @@ runs:
       uses: actions/checkout@v4
     
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
     
     - name: Install Dev Dependencies
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
 
+    - name: License Compliance
+      uses: FigurePOS/github-actions/.github/actions/node-license-compliance@v2
+
+    - name: Dependency Check
+      uses: FigurePOS/github-actions/.github/actions/node-dependency-check@v2
+
     - name: Yarn Build
       shell: bash
-      run: |
-        if yarn run | grep "build:ci"; then
-          yarn build:ci
-        else
-          yarn build
-        fi
+      run: yarn ci:build
 
     - name: Install Prod Dependencies
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         prod: true
