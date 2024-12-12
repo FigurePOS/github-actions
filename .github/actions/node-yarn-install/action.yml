@@ -21,8 +21,7 @@ runs:
     - name: Set GitHub Packages Token
       shell: bash
       run: |
-        npm config set @figurepos:registry https://npm.pkg.github.com/
-        npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+        yarn config set npmRegistries --json '{"https://npm.pkg.github.com":{"npmAlwaysAuth":true,"npmAuthToken": "${{ github.token }}"}}'
 
     - name: Setup Node Cache
       id: node-cache
@@ -39,4 +38,4 @@ runs:
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
         fi
-        yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --immutable
+        yarn workspaces focus ${{ inputs.prod == 'true' && '--production' || '' }}
