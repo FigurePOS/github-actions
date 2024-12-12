@@ -5,7 +5,7 @@ inputs:
   allow:
     description: The licenses to allow
     required: false
-    default: 0BSD;Apache-2.0;BSD-1-Clause;BSD-2-Clause;BSD-3-Clause;ISC;MIT;MPL-1.0;MPL-1.1;MPL-2.0;Unlicense
+    default: 0BSD;Apache-2.0;BSD-1-Clause;BSD-2-Clause;BSD-3-Clause;ISC;MIT;MIT-0;MPL-1.0;MPL-1.1;MPL-2.0;Python-2.0;Unlicense
   exclude:
     description: The pattern to exclude
     required: false
