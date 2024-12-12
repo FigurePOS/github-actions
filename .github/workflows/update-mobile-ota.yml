@@ -72,7 +72,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
 
       - name: Set Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v1
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v2
         with:
           env-json: ${{ secrets.ENV_JSON }}
 
@@ -84,12 +84,12 @@ jobs:
 
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v1
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v2
         with:
           commit-offset: 2
 
       - name: Get App Info
-        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v1
+        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v2
         id: get-app-info
         with:
           environment: ${{ inputs.environment }}
@@ -107,7 +107,7 @@ jobs:
           eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
 
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v1
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v2
         with:
             api-key: ${{ secrets.BUGSNAG_API_KEY }}
             version: ${{ inputs.version }}
@@ -115,7 +115,7 @@ jobs:
             environment: ${{ inputs.environment }}
 
       - name: Send Slack Notification
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v1
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v2
         if: ${{ inputs.should-notify }}
         with:
             trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}

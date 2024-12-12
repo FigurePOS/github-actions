@@ -42,7 +42,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Env Vars From SSM Parameters
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v1
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v2
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
@@ -51,7 +51,7 @@ runs:
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''
       id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v1
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v2
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -59,7 +59,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v1
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@v2
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -70,7 +70,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Validate
-      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v1
+      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v2
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         env: development
@@ -89,7 +89,7 @@ runs:
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: terraform-validate
         service-name: ${{ inputs.service-name }}

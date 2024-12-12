@@ -57,7 +57,7 @@ runs:
 
     - name: Load Docker Image
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v2
       with:
         service-name: ${{ inputs.service-name }}
 
@@ -79,7 +79,7 @@ runs:
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master' && steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: test-e2e
         service-name: ${{ inputs.service-name }}

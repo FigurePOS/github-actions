@@ -24,7 +24,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v1
+    - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v2
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -33,7 +33,7 @@ runs:
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: serverless-deploy-dev
         service-name: ${{ inputs.service-name }}
