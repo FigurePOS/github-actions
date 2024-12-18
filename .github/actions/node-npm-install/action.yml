@@ -1,0 +1,41 @@
+name: Install Dependencies
+description: Install dependencies using npm
+
+inputs:
+  additional-cache-path:
+    description: Additional path to cache
+    required: false
+    default: ""
+  directory:
+    description: Directory to install dependencies in
+    required: false
+    default: "."
+  prod:
+    description: Whether to install only prod dependencies
+    required: false
+    default: false
+  
+runs:
+  using: composite
+  steps:
+    - name: Set GitHub Packages Token
+      shell: bash
+      run: |
+        npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+
+    - name: Setup Node Cache
+      id: node-cache
+      uses: useblacksmith/cache@v5
+      with:
+        path: |
+          ${{ inputs.directory }}/node_modules
+          ${{ inputs.additional-cache-path }}
+        key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'package-lock.json' || format('{0}/package-lock.json', inputs.directory)) }}
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        if [ "${{ inputs.directory }}" != "" ]; then
+          cd "${{ inputs.directory }}"
+        fi
+        npm install ${{ inputs.prod == 'true' && '--production' || '' }}
