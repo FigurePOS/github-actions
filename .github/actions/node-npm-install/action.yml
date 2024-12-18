@@ -38,4 +38,4 @@ runs:
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
         fi
-        npm install ${{ inputs.prod == 'true' && '--production' || '' }}
+        npm install ${{ inputs.prod == 'true' && '--production' || '' }} --no-fund
