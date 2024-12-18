@@ -18,7 +18,7 @@ runs:
       run: |
         if ! [ -f "./node_modules/.bin/license-compliance" ]; then
           echo "Installing license-compliance..."
-          yarn add -D license-compliance
+          npm install -D license-compliance
         fi
         ./node_modules/.bin/license-compliance --production --allow="${{ inputs.allow }}" --exclude="${{ inputs.exclude }}" --report=detailed
       shell: bash

@@ -30,7 +30,7 @@ runs:
         path: |
           ${{ inputs.directory }}/node_modules
           ${{ inputs.additional-cache-path }}
-        key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'package-lock.json' || format('{0}/package-lock.json', inputs.directory)) }}
+        key: npm-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'package-lock.json' || format('{0}/package-lock.json', inputs.directory)) }}
 
     - name: Install Dependencies
       shell: bash

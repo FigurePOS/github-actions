@@ -8,7 +8,7 @@ runs:
       run: |
         if ! [ -f "./node_modules/.bin/depcheck" ]; then
           echo "Installing depcheck..."
-          yarn add -D depcheck
+          npm install -D depcheck
         fi
         ./node_modules/.bin/depcheck
       shell: bash

@@ -36,7 +36,7 @@ jobs:
 
 ### Install Node.js Dependencies
 
-Installs Node.js dependencies using yarn and authenticates Figure private Github package registry.
+Installs Node.js dependencies using npm and authenticates Figure private Github package registry.
 
 Parameters:
 - `additional-cache-path`: Additional path to cache, default: `""`.
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
+        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
         with:
           prod: false
 ```

@@ -26,7 +26,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/node-setup@v2
     
     - name: Install Dev Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
 
@@ -36,12 +36,12 @@ runs:
     - name: Dependency Check
       uses: FigurePOS/github-actions/.github/actions/node-dependency-check@v2
 
-    - name: Yarn Build
+    - name: Build
       shell: bash
-      run: yarn ci:build
+      run: npm run ci:build
 
     - name: Install Prod Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         prod: true

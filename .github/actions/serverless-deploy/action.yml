@@ -16,7 +16,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/node-setup@v2
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-yarn-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         directory: lambda
     
