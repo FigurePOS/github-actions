@@ -58,14 +58,6 @@ jobs:
           prod: false
 ```
 
-### Check Node.js License Compliance
-
-Checks the license compliance of Node.js dependencies.
-
-```yml
-- uses: FigurePOS/github-actions/.github/actions/node-license-compliance@v2
-```
-
 ## Git
 
 ### Configure Git user

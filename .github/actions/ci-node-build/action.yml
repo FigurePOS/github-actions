@@ -31,10 +31,12 @@ runs:
         additional-cache-path: ${{ inputs.additional-cache-path }}
 
     - name: License Compliance
-      uses: FigurePOS/github-actions/.github/actions/node-license-compliance@v2
+      shell: bash
+      run: npm run check:licenses
 
     - name: Dependency Check
-      uses: FigurePOS/github-actions/.github/actions/node-dependency-check@v2
+      shell: bash
+      run: npm run check:deps
 
     - name: Build
       shell: bash
