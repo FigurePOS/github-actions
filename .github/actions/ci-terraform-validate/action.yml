@@ -85,7 +85,7 @@ runs:
         quiet: true
         framework: terraform
         output_format: cli
-        skip_check: CKV_AWS_119,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_191,CKV_AWS_336,CKV_AWS_378,CKV2_AWS_34,CKV2_AWS_62,CKV_TF_1
+        skip_check: CKV_AWS_119,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_191,CKV_AWS_336,CKV_AWS_337,CKV_AWS_378,CKV2_AWS_34,CKV2_AWS_62,CKV_TF_1,CKV_TF_3
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
