@@ -37,7 +37,7 @@ runs:
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       shell: bash
       run: |
-        yarn bugsnag-source-maps upload-react-native \
+        npm run bugsnag-source-maps upload-react-native \
           --api-key ${{ inputs.api-key }} \
           --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
           --platform ios \
@@ -61,7 +61,7 @@ runs:
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash
       run: |
-          yarn bugsnag-source-maps upload-react-native \
+          npm run bugsnag-source-maps upload-react-native \
           --api-key ${{ inputs.api-key }} \
           --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
           --platform android \

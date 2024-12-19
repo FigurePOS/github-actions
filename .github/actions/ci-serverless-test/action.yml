@@ -16,21 +16,21 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         directory: lambda
     
     - name: Run Tests
       working-directory: lambda
       shell: bash
-      run: yarn test:ci
+      run: npm run ci:test
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: serverless-test
         service-name: ${{ inputs.service-name }}

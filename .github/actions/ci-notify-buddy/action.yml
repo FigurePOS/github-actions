@@ -17,7 +17,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
 
-    - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v1
+    - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v2
       with:
         deploy-serverless: ${{ inputs.deploy-serverless }}
         service-name: ${{ inputs.service-name }}
@@ -25,7 +25,7 @@ runs:
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: notify-buddy
         service-name: ${{ inputs.service-name }}

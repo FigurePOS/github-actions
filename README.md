@@ -10,7 +10,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v1
+- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v2
   with:
     aws-region: ${{ inputs.aws-region }}
     parameters: "DATADOG_API_KEY=terraform/datadog/api_key;DATADOG_APP_KEY=terraform/datadog/app_key"
@@ -31,12 +31,12 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v2
 ```
 
 ### Install Node.js Dependencies
 
-Installs Node.js dependencies using yarn and authenticates Figure private Github package registry.
+Installs Node.js dependencies using npm and authenticates Figure private Github package registry.
 
 Parameters:
 - `additional-cache-path`: Additional path to cache, default: `""`.
@@ -53,17 +53,9 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
         with:
           prod: false
-```
-
-### Check Node.js License Compliance
-
-Checks the license compliance of Node.js dependencies.
-
-```yml
-- uses: FigurePOS/github-actions/.github/actions/node-license-compliance@v1
 ```
 
 ## Git
@@ -84,7 +76,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Configure Git user
-        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v1
+        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v2
 ```
 
 ### Get Git commit message from history
@@ -107,7 +99,7 @@ jobs:
       
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v1
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v2
 
       - name: Trigger DEV Build on EAS
         run: |
@@ -149,7 +141,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build image
-        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v1
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v2
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -159,12 +151,12 @@ jobs:
       - build
     steps:
       - name: Load image
-        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v1
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v2
         with:
           service-name: make-it-butter-api
       
       - name: Push image
-        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v1
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v2
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -197,14 +189,14 @@ jobs:
         token: ${{ secrets.EXPO_TOKEN }}
 
     - name: Get App Info
-      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v1
+      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v2
       id: get-app-info
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
 
     - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v2
       if: ${{ inputs.should-notify }}
       with:
           app-name: ${{ steps.get-app-info.outputs.app-name }}
@@ -231,7 +223,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Upload Source Maps to Bugsnag
-      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v1
+      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v2
       with:
         api-key: ${{ secrets.BUGSNAG_API_KEY }}
         version: ${{ inputs.version }}
@@ -251,7 +243,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v2"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -267,7 +259,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v2"
     with:
       aws-region: ${{ inputs.aws-region }}
       db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
@@ -285,7 +277,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v2"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -302,7 +294,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v2"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -327,7 +319,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v2"
     with:
       app-name: Figure POS
       app-version: 1.0.0
@@ -347,7 +339,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v2"
     with:
       commit-hash: 1e17438
       commit-message: "fix: typo"
@@ -362,7 +354,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2"
     if: failure() && github.ref == 'refs/heads/master'
     with:
       service-name: fgr-service-account
@@ -379,7 +371,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/serverless-deploy@v1"
+  - uses: "FigurePOS/github-actions/.github/actions/serverless-deploy@v2"
     with:
       aws-account-id: ${{ inputs.aws-account-id }}
       env: ${{ inputs.env }}
