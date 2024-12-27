@@ -12,6 +12,10 @@ inputs:
   ecr-repository-name:
     description: The ECR repository name
     required: true
+  npm-legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: true
   service-name:
     description: The service name
     required: true
@@ -29,6 +33,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: License Compliance
       shell: bash
@@ -46,6 +51,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
         prod: true
 
     - name: Build Image

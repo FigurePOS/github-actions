@@ -10,6 +10,10 @@ inputs:
     description: Directory to install dependencies in
     required: false
     default: "."
+  legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: false
   prod:
     description: Whether to install only prod dependencies
     required: false
@@ -38,4 +42,4 @@ runs:
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
         fi
-        npm install ${{ inputs.prod == 'true' && '--production' || '' }} --no-fund
+        npm install ${{ inputs.prod == 'true' && '--production' || '' }} ${{ inputs.legacy-peer-deps == 'true' && '--legacy-peer-deps' || '' }} --no-fund
