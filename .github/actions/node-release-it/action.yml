@@ -21,9 +21,9 @@ runs:
     - name: Bump Version With Release It
       run: |
         if [[ -n "${{ inputs.config-file }}" ]]; then
-          yarn release-it patch --config "${{ inputs.config-file }}"
+          npm run release-it patch --config "${{ inputs.config-file }}"
         else
-          yarn release-it patch
+          npm run release-it patch
         fi
       shell: bash
       env:

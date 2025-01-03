@@ -8,6 +8,10 @@ inputs:
   env-vars:
     description: Environment variables for the tests
     required: false
+  npm-legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: true
   service-name:
     description: The service name
     required: true
@@ -19,10 +23,12 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+      with:
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: Set Environment Variables
       if: inputs.env-vars != ''
@@ -36,16 +42,11 @@ runs:
 
     - name: Run Linters and Unit Tests
       shell: bash
-      run: |
-        if yarn run | grep "test:ci"; then
-          yarn test:ci
-        else
-          yarn ci
-        fi
+      run: npm run ci:test
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: test-unit
         service-name: ${{ inputs.service-name }}

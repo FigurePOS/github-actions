@@ -12,6 +12,10 @@ inputs:
   ecr-repository-name:
     description: The ECR repository name
     required: true
+  npm-legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: true
   service-name:
     description: The service name
     required: true
@@ -23,37 +27,42 @@ runs:
       uses: actions/checkout@v4
     
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
     
     - name: Install Dev Dependencies
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
-    - name: Yarn Build
+    - name: License Compliance
       shell: bash
-      run: |
-        if yarn run | grep "build:ci"; then
-          yarn build:ci
-        else
-          yarn build
-        fi
+      run: npm run check:licenses
+
+    - name: Dependency Check
+      shell: bash
+      run: npm run check:deps
+
+    - name: Build
+      shell: bash
+      run: npm run ci:build
 
     - name: Install Prod Dependencies
-      uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
         prod: true
 
     - name: Build Image
-      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v1
+      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v2
       with:
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v1
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
       with:
         job-name: build
         service-name: ${{ inputs.service-name }}

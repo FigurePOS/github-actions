@@ -1,5 +1,5 @@
 name: Install Dependencies
-description: Install dependencies using yarn
+description: Install dependencies using npm
 
 inputs:
   additional-cache-path:
@@ -10,6 +10,10 @@ inputs:
     description: Directory to install dependencies in
     required: false
     default: "."
+  legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: false
   prod:
     description: Whether to install only prod dependencies
     required: false
@@ -21,7 +25,6 @@ runs:
     - name: Set GitHub Packages Token
       shell: bash
       run: |
-        npm config set @figurepos:registry https://npm.pkg.github.com/
         npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
 
     - name: Setup Node Cache
@@ -31,7 +34,7 @@ runs:
         path: |
           ${{ inputs.directory }}/node_modules
           ${{ inputs.additional-cache-path }}
-        key: yarn-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'yarn.lock' || format('{0}/yarn.lock', inputs.directory)) }}
+        key: npm-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'package-lock.json' || format('{0}/package-lock.json', inputs.directory)) }}
 
     - name: Install Dependencies
       shell: bash
@@ -39,4 +42,4 @@ runs:
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
         fi
-        yarn install ${{ inputs.prod == 'true' && '--prod' || '' }} --frozen-lockfile
+        npm install ${{ inputs.prod == 'true' && '--production' || '' }} ${{ inputs.legacy-peer-deps == 'true' && '--legacy-peer-deps' || '' }} --no-fund
