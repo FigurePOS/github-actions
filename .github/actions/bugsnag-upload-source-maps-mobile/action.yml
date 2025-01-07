@@ -16,6 +16,11 @@ inputs:
   version:
     description: "Version of the app"
     required: true
+  code-bundle-suffix:
+    description: "Allows to add custom suffix to bundle id for source maps upload"
+    required: false
+    type: string
+    default: ""
 
 runs:
   using: composite
@@ -39,7 +44,7 @@ runs:
       run: |
         npx bugsnag-source-maps upload-react-native \
           --api-key ${{ inputs.api-key }} \
-          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
+          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }}${{ inputs.code-bundle-suffix != '' && format('-{0}', inputs.code-bundle-suffix) }} \
           --platform ios \
           --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
           --bundle ${{ steps.find-source-maps-ios.outputs.bundle }}
@@ -61,9 +66,9 @@ runs:
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash
       run: |
-          npx bugsnag-source-maps upload-react-native \
+        npx bugsnag-source-maps upload-react-native \
           --api-key ${{ inputs.api-key }} \
-          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }} \
+          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }}${{ inputs.code-bundle-suffix != '' && format('-{0}', inputs.code-bundle-suffix) }} \
           --platform android \
           --source-map ${{ steps.find-source-maps-android.outputs.map }} \
           --bundle ${{ steps.find-source-maps-android.outputs.bundle }}
