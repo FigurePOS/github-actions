@@ -39,7 +39,19 @@ runs:
     - name: Install Dependencies
       shell: bash
       run: |
+        echo "Running npm install"
         if [ "${{ inputs.directory }}" != "" ]; then
           cd "${{ inputs.directory }}"
+          echo "Changing directory to ${PWD}"
         fi
-        npm install ${{ inputs.prod == 'true' && '--production' || '' }} ${{ inputs.legacy-peer-deps == 'true' && '--legacy-peer-deps' || '' }} --no-fund
+        LEGACY_PEER_DEPS=""
+        if [ "${{ inputs.legacy-peer-deps }}" = "true" ]; then
+          echo "Using --legacy-peer-deps"
+          LEGACY_PEER_DEPS="--legacy-peer-deps"
+        fi
+        PROD_FLAG=""
+        if [ "${{ inputs.prod }}" = "true" ]; then
+          echo "Using --production"
+          PROD_FLAG="--production"
+        fi
+        npm install $PROD_FLAG $LEGACY_PEER_DEPS --no-fund
