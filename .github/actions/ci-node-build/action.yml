@@ -15,7 +15,7 @@ inputs:
   npm-legacy-peer-deps:
     description: Whether to use legacy peer dependencies
     required: false
-    default: true
+    default: false
   service-name:
     description: The service name
     required: true
