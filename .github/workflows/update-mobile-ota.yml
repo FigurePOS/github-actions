@@ -71,10 +71,10 @@ jobs:
           fetch-depth: 2
 
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/node-setup@v2
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
 
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Set Environment
         uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v2
