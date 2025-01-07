@@ -32,6 +32,11 @@ on:
         required: false
         type: boolean
         default: true
+      code-bundle-suffix:
+        description: "Allows to add custom suffix to bundle id for source maps upload"
+        required: false
+        type: string
+        default: ""
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
@@ -109,22 +114,22 @@ jobs:
       - name: Upload Source Maps to Bugsnag
         uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v2
         with:
-            api-key: ${{ secrets.BUGSNAG_API_KEY }}
-            version: ${{ inputs.version }}
-            platform: ${{ inputs.platform }}
-            environment: ${{ inputs.environment }}
+          api-key: ${{ secrets.BUGSNAG_API_KEY }}
+          version: ${{ inputs.version }}
+          platform: ${{ inputs.platform }}
+          environment: ${{ inputs.environment }}
+          code-bundle-suffix: ${{ inputs.code-bundle-suffix }}
 
       - name: Send Slack Notification
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v2
         if: ${{ inputs.should-notify }}
         with:
-            trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-            app-name: ${{ steps.get-app-info.outputs.app-name }}
-            app-version: ${{ inputs.version }}
-            environment: ${{ inputs.environment }}
-            platform: ${{ inputs.platform }}
-            commit-hash: ${{ steps.get-git-message.outputs.hash }}
-            commit-message: ${{ steps.get-git-message.outputs.message }}
-            author: ${{ inputs.author }}
-            build-type: "over-the-air"
-
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          app-name: ${{ steps.get-app-info.outputs.app-name }}
+          app-version: ${{ inputs.version }}
+          environment: ${{ inputs.environment }}
+          platform: ${{ inputs.platform }}
+          commit-hash: ${{ steps.get-git-message.outputs.hash }}
+          commit-message: ${{ steps.get-git-message.outputs.message }}
+          author: ${{ inputs.author }}
+          build-type: "over-the-air"
