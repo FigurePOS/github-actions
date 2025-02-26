@@ -133,3 +133,11 @@ jobs:
           commit-message: ${{ steps.get-git-message.outputs.message }}
           author: ${{ inputs.author }}
           build-type: "over-the-air"
+
+      - name: Send Slack Notification About Failure
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
+        if: failure()
+        with:
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          job-name: "update-mobile-ota (${{ inputs.environment }})"
+          service-name: ${{ steps.get-app-info.outputs.app-name }}
