@@ -66,9 +66,14 @@ runs:
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash
       run: |
+        code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
+        if [ -n "$inputs.code-bundle-suffix" && "$inputs.code-bundle-suffix" != "false" ]; then
+          code_bundle_id="${code_bundle_id}-${{ inputs.code-bundle-suffix }}"
+        fi
+        echo "Code bundle id: $code_bundle_id"
         npx bugsnag-source-maps upload-react-native \
           --api-key ${{ inputs.api-key }} \
-          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }}${{ inputs.code-bundle-suffix != '' && format('-{0}', inputs.code-bundle-suffix) }} \
+          --code-bundle-id $code_bundle_id \
           --platform android \
           --source-map ${{ steps.find-source-maps-android.outputs.map }} \
           --bundle ${{ steps.find-source-maps-android.outputs.bundle }}
