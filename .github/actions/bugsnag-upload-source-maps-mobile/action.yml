@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: |
         code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
-        if [ -n "$inputs.code-bundle-suffix" ]; then
+        if [ -n "${{ inputs.code-bundle-suffix }}" ]; then
           code_bundle_id="${code_bundle_id}-${{ inputs.code-bundle-suffix }}"
         fi
         npx bugsnag-source-maps upload-react-native \
@@ -70,7 +70,7 @@ runs:
       shell: bash
       run: |
         code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
-        if [ -n "$inputs.code-bundle-suffix" ]; then
+        if [ -n "${{ inputs.code-bundle-suffix }}" ]; then
           code_bundle_id="${code_bundle_id}-${{ inputs.code-bundle-suffix }}"
         fi
         echo "Code bundle id: $code_bundle_id"
