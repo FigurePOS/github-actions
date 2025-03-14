@@ -19,7 +19,6 @@ inputs:
   code-bundle-suffix:
     description: "Allows to add custom suffix to bundle id for source maps upload"
     required: false
-    type: string
     default: ""
 
 runs:
@@ -42,9 +41,13 @@ runs:
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       shell: bash
       run: |
+        code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
+        if [ -n "$inputs.code-bundle-suffix" ]; then
+          code_bundle_id="${code_bundle_id}-${{ inputs.code-bundle-suffix }}"
+        fi
         npx bugsnag-source-maps upload-react-native \
           --api-key ${{ inputs.api-key }} \
-          --code-bundle-id ${{ inputs.version }}-${{ inputs.environment }}${{ inputs.code-bundle-suffix != '' && format('-{0}', inputs.code-bundle-suffix) }} \
+          --code-bundle-id $code_bundle_id \
           --platform ios \
           --source-map ${{ steps.find-source-maps-ios.outputs.map }} \
           --bundle ${{ steps.find-source-maps-ios.outputs.bundle }}
@@ -67,7 +70,7 @@ runs:
       shell: bash
       run: |
         code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
-        if [ -n "$inputs.code-bundle-suffix" && "$inputs.code-bundle-suffix" != "false" ]; then
+        if [ -n "$inputs.code-bundle-suffix" ]; then
           code_bundle_id="${code_bundle_id}-${{ inputs.code-bundle-suffix }}"
         fi
         echo "Code bundle id: $code_bundle_id"
