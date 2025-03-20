@@ -103,7 +103,7 @@ jobs:
 
       - name: Update OTA with Expo Updates
         run: |
-          message="v${{ inputs.version }}: ${{ steps.get-git-message.outputs.message }}"
+          message=${{ format('v{0}: {1}', inputs.version, steps.get-git-message.outputs.message) }}
           echo "Running deployment for:"
           echo "  environment: '${{ inputs.environment }}'"
           echo "  platform: '${{ inputs.platform }}'"
