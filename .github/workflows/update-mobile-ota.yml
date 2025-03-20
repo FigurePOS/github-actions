@@ -105,7 +105,7 @@ jobs:
         env:
           GIT_MESSAGE: ${{ steps.get-git-message.outputs.message }}
         run: |
-          git_message=$(echo "$GIT_MESSAGE" | sed 's/"/\\"/g')
+          git_message=${GIT_MESSAGE//\"/\\\"}
           message=$(printf "v%s: %s" "${{ inputs.version }}" "$git_message")
           echo "Running deployment for:"
           echo "  environment: '${{ inputs.environment }}'"
