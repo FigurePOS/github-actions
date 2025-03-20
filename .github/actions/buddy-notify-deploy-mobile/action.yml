@@ -41,27 +41,43 @@ runs:
   steps:
     - name: Send Notification
       shell: bash
+      env:
+        APP_NAME: ${{ inputs.app-name }}
+        APP_VERSION: ${{ inputs.app-version }}
+        AUTHOR: ${{ inputs.author }}
+        BUILD_TYPE: ${{ inputs.build-type }}
+        BUILD_URL: ${{ inputs.build-url }}
+        COMMIT_HASH: ${{ inputs.commit-hash }}
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        PLATFORM: ${{ inputs.platform }}
+        TRIGGER_URL: ${{ inputs.trigger-url }}
       run: |
-        payload=$(jq -n \
-          --arg app_name "${{ inputs.app-name }}" \
-          --arg app_version "${{ inputs.app-version }}" \
-          --arg author "${{ inputs.author }}" \
-          --arg build_type "${{ inputs.build-type }}" \
-          --arg build_url "${{ inputs.build-url }}" \
-          --arg commit_hash "${{ inputs.commit-hash }}" \
-          --arg commit_message "${{ inputs.commit-message }}" \
-          --arg environment "${{ inputs.environment }}" \
-          --arg platform "${{ inputs.platform }}" \
-          '{"type": "dev-deployed", "mobile": true, "app_name": $app_name, "app_version": $app_version, "env": $environment, "platform": $platform, "commit_message": $commit_message, "build_type": $build_type, "build_url": $build_url, "commit_hash": $commit_hash, "author": $author}')
+        # Access environment variables directly in jq to avoid shell interpolation issues
+        payload=$(jq -n '
+          {
+            "type": "dev-deployed",
+            "mobile": true,
+            "app_name": env.APP_NAME,
+            "app_version": env.APP_VERSION,
+            "env": env.ENVIRONMENT,
+            "platform": env.PLATFORM,
+            "commit_message": env.COMMIT_MESSAGE,
+            "build_type": env.BUILD_TYPE,
+            "build_url": env.BUILD_URL,
+            "commit_hash": env.COMMIT_HASH,
+            "author": env.AUTHOR
+          }
+        ')
         
         echo "Sending notification to Buddy..."
         echo "  payload: $payload"
-        echo "  trigger-url: ${{ inputs.trigger-url }}"
+        echo "  trigger-url: $TRIGGER_URL"
         
         curl \
           --retry 3 --retry-connrefused \
           -X POST \
           -H "Content-type: application/json" \
           --data "$payload" \
-          ${{ inputs.trigger-url }}
+          "$TRIGGER_URL"
         echo "Notification was sent."
