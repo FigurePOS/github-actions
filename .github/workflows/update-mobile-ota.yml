@@ -102,8 +102,11 @@ jobs:
           whitelabel: ${{ inputs.whitelabel }}
 
       - name: Update OTA with Expo Updates
+        env:
+          GIT_MESSAGE: ${{ steps.get-git-message.outputs.message }}
         run: |
-          message=${{ format('v{0}: {1}', inputs.version, steps.get-git-message.outputs.message) }}
+          git_message=$(echo "$GIT_MESSAGE" | sed 's/"/\\"/g')
+          message=$(printf "v%s: %s" "${{ inputs.version }}" "$git_message")
           echo "Running deployment for:"
           echo "  environment: '${{ inputs.environment }}'"
           echo "  platform: '${{ inputs.platform }}'"
