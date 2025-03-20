@@ -22,6 +22,11 @@ runs:
   steps:
   - name: Send Notification
     shell: bash
+    env:
+      AUTHOR: ${{ github.triggering_actor }}
+      SERVICE_NAME: ${{ inputs.service-name }}
+      TRIGGER_URL: ${{ inputs.trigger-url }}
+      DEPLOY_SERVERLESS: ${{ inputs.deploy-serverless }}
     run: |-
       if [ -n "${{ inputs.commit-hash }}" ]; then
         commit_hash="${{ inputs.commit-hash }}"
@@ -35,22 +40,31 @@ runs:
         commit_message="$(git log --pretty=format:'%s' -n 1 | less -F)"
       fi
       
-      payload=$(jq -n \
-        --arg author "${{ github.triggering_actor }}" \
-        --arg commit_hash "$commit_hash" \
-        --arg commit_message "$commit_message" \
-        --arg service_name "${{ inputs.service-name }}" \
-        --argjson deploy_serverless "${{ inputs.deploy-serverless }}" \
-        '{"type": "dev-deployed", "service_name": $service_name, "author": $author, "commit_hash": $commit_hash, "commit_message": $commit_message, "ci": "github", "deploy_serverless": $deploy_serverless}')
+      # Store computed values in environment variables
+      export COMMIT_HASH="$commit_hash"
+      export COMMIT_MESSAGE="$commit_message"
+      
+      # Access environment variables directly in jq to avoid shell interpolation issues
+      payload=$(jq -n '
+        {
+          "type": "dev-deployed", 
+          "service_name": env.SERVICE_NAME, 
+          "author": env.AUTHOR, 
+          "commit_hash": env.COMMIT_HASH, 
+          "commit_message": env.COMMIT_MESSAGE, 
+          "ci": "github", 
+          "deploy_serverless": (env.DEPLOY_SERVERLESS | test("true"))
+        }
+      ')
       
       echo "Sending notification to Buddy..."
       echo "  payload: $payload"
-      echo "  trigger-url: ${{ inputs.trigger-url }}"
+      echo "  trigger-url: $TRIGGER_URL"
       
       curl \
           --retry 3 --retry-connrefused \
           -X POST \
           -H "Content-type: application/json" \
           --data "$payload" \
-          ${{ inputs.trigger-url }}
+          "$TRIGGER_URL"
       echo "Notification was sent."
