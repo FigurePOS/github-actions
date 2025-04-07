@@ -33,6 +33,6 @@ runs:
         TF_VAR_aws_region: "${{ inputs.aws-region }}"
         TF_VAR_deployment_tag: "${{ steps.sha_short.outputs.sha_short }}"
         TF_VAR_env: "${{ inputs.env }}"
-        TF_VAR_git_commit_hash: "${{ github.sha }}"
+        TF_VAR_git_commit_hash: "${{ inputs.sha || github.sha }}"
         TF_VAR_service_name: "${{ inputs.service-name }}"
       shell: bash
