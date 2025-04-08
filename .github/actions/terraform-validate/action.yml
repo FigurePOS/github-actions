@@ -25,7 +25,7 @@ runs:
 
   - run: |-
       cd ${{ inputs.dir }}
-      terraform validate
+      tofu validate
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"

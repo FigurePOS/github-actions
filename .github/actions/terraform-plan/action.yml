@@ -26,7 +26,7 @@ runs:
     working-directory: ${{ inputs.dir }}
     run: |-
       trap 'exit_code="$?"; echo "exit_code=$exit_code"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
-      terraform plan -detailed-exitcode -out=tf.plan -lock=false > >(tee -a tf.console.txt) 2> tf.console.txt
+      tofu plan -detailed-exitcode -out=tf.plan -lock=false > >(tee -a tf.console.txt) 2> tf.console.txt
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
@@ -48,7 +48,7 @@ runs:
     shell: bash
     working-directory: ${{ inputs.dir }}
     run: |
-      terraform show tf.plan -no-color > tf.console.txt
+      tofu show tf.plan -no-color > tf.console.txt
 
       # Diff of changes.
       # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
