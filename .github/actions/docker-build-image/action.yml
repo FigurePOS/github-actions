@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: echo "file_name=${{ inputs.service-name }}-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
 
-    - uses: docker/build-push-action@v5
+    - uses: docker/build-push-action@v6
       with:
         context: .
         load: true
