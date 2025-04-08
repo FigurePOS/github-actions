@@ -89,7 +89,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v4
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@tofu
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -100,8 +100,8 @@ runs:
       env:
         AWS_REGION: ${{ inputs.aws-region }}
 
-    - name: Terraform Apply
-      uses: FigurePOS/github-actions/.github/actions/terraform-apply@v4
+    - name: Terraform Deploy
+      uses: FigurePOS/github-actions/.github/actions/terraform-apply@tofu
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
