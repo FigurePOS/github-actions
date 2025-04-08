@@ -101,7 +101,7 @@ jobs:
   terraform-validate:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@tofu
         with:
           aws-region: ${{ inputs.aws-region }}
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
@@ -116,7 +116,7 @@ jobs:
       - terraform-validate
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@tofu
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -133,7 +133,7 @@ jobs:
       - terraform-validate
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@tofu
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
@@ -164,7 +164,7 @@ jobs:
       - push
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@tofu
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}

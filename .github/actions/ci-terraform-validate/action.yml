@@ -59,7 +59,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v2
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@tofu
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -70,7 +70,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Validate
-      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v2
+      uses: FigurePOS/github-actions/.github/actions/terraform-validate@tofu
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         env: development
