@@ -2,6 +2,10 @@ name: Terraform Plan
 description: Plans the Terraform code
 
 inputs:
+  artifact-path:
+    description: Path to download artifact from
+    required: false
+    type: string
   aws-account-id:
     description: AWS account ID
     required: true
@@ -42,6 +46,12 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Download Artifact
+      if: inputs.artifact-path != ''
+      uses: actions/download-artifact@v4
+      with:
+        path: ${{ inputs.artifact-path }}
 
     - name: Set Env Vars From SSM Parameters
       uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v2
