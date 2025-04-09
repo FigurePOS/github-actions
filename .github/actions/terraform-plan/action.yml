@@ -25,8 +25,25 @@ runs:
     shell: bash
     working-directory: ${{ inputs.dir }}
     run: |-
-      trap 'exit_code="$?"; echo "exit_code=$exit_code"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
-      terraform plan -detailed-exitcode -out=tf.plan -lock=false > >(tee -a tf.console.txt) 2> tf.console.txt
+      echo "Running terraform plan..."
+      
+      # Capture both stdout and stderr, and always return the real exit code
+      {
+        terraform plan -detailed-exitcode -out=tf.plan 2>&1 | tee tf.console.txt
+        exit_code=${PIPESTATUS[0]}
+        echo "Terraform plan exit code: $exit_code"
+        
+        # Store the exit code for later use
+        echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+        
+        # Exit with 0 if the exit code is 2 (changes present)
+        if [[ "$exit_code" == "2" ]]; then
+          exit 0
+        fi
+        
+        # Exit with the original exit code for other cases
+        exit $exit_code
+      }
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
