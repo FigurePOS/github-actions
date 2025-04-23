@@ -46,7 +46,7 @@ jobs:
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v3
         with:
           aws-account-id: ${{ inputs.aws-account-id }}
           aws-region: ${{ inputs.aws-region }}
@@ -101,7 +101,7 @@ jobs:
 
       - name: Send Slack Notification About Failure
         if: failure()
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
         with:
           job-name: terraform-deploy-prod
           service-name: ${{ inputs.service-name }}

@@ -19,19 +19,19 @@ runs:
       uses: actions/checkout@v4
 
     - name: Load docker image
-      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v2
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v3
       with:
         service-name: ${{ inputs.service-name }}
 
     - name: Push Docker Image
-      uses: FigurePOS/github-actions/.github/actions/docker-push-image@v2
+      uses: FigurePOS/github-actions/.github/actions/docker-push-image@v3
       with:
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
       with:
         job-name: push
         service-name: ${{ inputs.service-name }}

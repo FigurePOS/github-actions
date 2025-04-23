@@ -27,10 +27,10 @@ runs:
       uses: actions/checkout@v4
     
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v3
     
     - name: Install Dev Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -48,21 +48,21 @@ runs:
       run: npm run ci:build
 
     - name: Install Prod Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
         prod: true
 
     - name: Build Image
-      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v2
+      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v3
       with:
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
       with:
         job-name: build
         service-name: ${{ inputs.service-name }}
