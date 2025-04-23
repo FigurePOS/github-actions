@@ -83,17 +83,22 @@ runs:
         for dir in */; do
           if [ -f "${dir}package.json" ]; then
             echo "Processing Lambda function in ${dir}"
-            cd "${dir}"
-            echo "Installing dependencies for ${dir}"
-            npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }}
-            if grep -q "\"ci:test\":" package.json; then
-              echo "Running tests for ${dir}"
-              npm run ci:test
-            else
-              echo "::warning::Lambda function in ${dir} does not have a ci:test script defined in package.json"
-              echo "No ci:test script found in ${dir}"
+            (
+              cd "${dir}" || exit 1
+              echo "Installing dependencies for ${dir}"
+              npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }} || exit 1
+              if grep -q "\"ci:test\":" package.json; then
+                echo "Running tests for ${dir}"
+                npm run ci:test || exit 1
+              else
+                echo "::warning::Lambda function in ${dir} does not have a ci:test script defined in package.json"
+                echo "No ci:test script found in ${dir}"
+              fi
+            )
+            if [ $? -ne 0 ]; then
+              echo "::error::Failed to process Lambda function in ${dir}"
+              exit 1
             fi
-            cd ..
           fi
         done
         cd ..
