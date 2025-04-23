@@ -5,9 +5,6 @@ inputs:
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
-  deploy-serverless:
-    description: Whether to deploy the serverless function
-    required: true
   service-name:
     description: The service name
     required: true
@@ -19,7 +16,6 @@ runs:
 
     - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v2
       with:
-        deploy-serverless: ${{ inputs.deploy-serverless }}
         service-name: ${{ inputs.service-name }}
         trigger-url: ${{ inputs.buddy-trigger-url }}
 

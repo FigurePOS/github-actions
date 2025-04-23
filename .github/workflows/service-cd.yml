@@ -17,11 +17,6 @@ on:
         required: false
         type: string
         default: ""
-      deploy-serverless:
-        description: Deploy Lambda with Serverless
-        required: false
-        type: boolean
-        default: false
       service-name:
         description: Service name
         required: true
@@ -109,28 +104,5 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
         with:
           job-name: terraform-deploy-prod
-          service-name: ${{ inputs.service-name }}
-          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-
-  serverless-deploy:
-    if: inputs.deploy-serverless
-    runs-on: blacksmith-4vcpu-ubuntu-2204
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.sha }}
-
-      - uses: FigurePOS/github-actions/.github/actions/serverless-deploy@v2
-        with:
-          aws-account-id: ${{ inputs.aws-account-id }}
-          env: production
-          service-name: ${{ inputs.service-name }}
-
-      - name: Send Slack Notification About Failure
-        if: failure()
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
-        with:
-          job-name: serverless-deploy-prod
           service-name: ${{ inputs.service-name }}
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}

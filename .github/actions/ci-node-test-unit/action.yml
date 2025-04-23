@@ -63,6 +63,41 @@ runs:
       shell: bash
       run: npm run ci:test
 
+    - name: Check for Lambda Directory
+      id: check-lambda
+      shell: bash
+      run: |
+        if [ -d "./lambda" ]; then
+          echo "lambda-exists=true" >> $GITHUB_OUTPUT
+          echo "Lambda directory found. Will process subfolders."
+        else
+          echo "lambda-exists=false" >> $GITHUB_OUTPUT
+          echo "No Lambda directory found. Skipping Lambda processing."
+        fi
+
+    - name: Process Linters and Tests for Lambda Functions
+      if: steps.check-lambda.outputs.lambda-exists == 'true'
+      shell: bash
+      run: |
+        cd lambda
+        for dir in */; do
+          if [ -f "${dir}package.json" ]; then
+            echo "Processing Lambda function in ${dir}"
+            cd "${dir}"
+            echo "Installing dependencies for ${dir}"
+            npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }}
+            if grep -q "\"ci:test\":" package.json; then
+              echo "Running tests for ${dir}"
+              npm run ci:test
+            else
+              echo "::warning::Lambda function in ${dir} does not have a ci:test script defined in package.json"
+              echo "No ci:test script found in ${dir}"
+            fi
+            cd ..
+          fi
+        done
+        cd ..
+
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
       uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2

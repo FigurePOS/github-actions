@@ -8,10 +8,6 @@ inputs:
   commit-message:
     description: "Commit message of the build, last commit message by default."
     required: false
-  deploy-serverless:
-    description: "Deploy Lambda with Serverless"
-    required: false
-    default: false
   service-name:
     required: true
   trigger-url:
@@ -26,7 +22,6 @@ runs:
       AUTHOR: ${{ github.triggering_actor }}
       SERVICE_NAME: ${{ inputs.service-name }}
       TRIGGER_URL: ${{ inputs.trigger-url }}
-      DEPLOY_SERVERLESS: ${{ inputs.deploy-serverless }}
     run: |-
       if [ -n "${{ inputs.commit-hash }}" ]; then
         commit_hash="${{ inputs.commit-hash }}"
@@ -52,8 +47,7 @@ runs:
           "author": env.AUTHOR, 
           "commit_hash": env.COMMIT_HASH, 
           "commit_message": env.COMMIT_MESSAGE, 
-          "ci": "github", 
-          "deploy_serverless": (env.DEPLOY_SERVERLESS | test("true"))
+          "ci": "github"
         }
       ')
       
