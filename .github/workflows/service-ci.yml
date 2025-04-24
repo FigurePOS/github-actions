@@ -70,7 +70,7 @@ jobs:
   build:
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v3
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -79,7 +79,7 @@ jobs:
   test-unit:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v3
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
@@ -90,7 +90,7 @@ jobs:
       - build
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v3
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           docker-command: ${{ inputs.docker-command }}
@@ -101,7 +101,7 @@ jobs:
   terraform-validate:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v3
         with:
           aws-region: ${{ inputs.aws-region }}
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
@@ -116,7 +116,7 @@ jobs:
       - terraform-validate
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v3
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -133,7 +133,7 @@ jobs:
       - terraform-validate
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v3
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
@@ -152,7 +152,7 @@ jobs:
       - test-unit
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v3
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -164,7 +164,7 @@ jobs:
       - push
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v3
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -174,54 +174,3 @@ jobs:
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
           ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
-
-  serverless-decide-run:
-    runs-on: blacksmith-2vcpu-ubuntu-2204
-    outputs:
-      has-changes: ${{ steps.decide.outputs.has-changes }}
-    steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-serverless-decide-run@v2
-        with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          service-name: ${{ inputs.service-name }}
-        id: decide
-          
-  serverless-test:
-    if: needs.serverless-decide-run.outputs.has-changes == 'true'
-    needs:
-      - serverless-decide-run
-    runs-on: blacksmith-2vcpu-ubuntu-2204
-    steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-serverless-test@v2
-        with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          service-name: ${{ inputs.service-name }}
-  
-  serverless-deploy-dev:
-    if: needs.serverless-decide-run.outputs.has-changes == 'true' && github.ref == 'refs/heads/master'
-    needs:
-      - serverless-decide-run
-      - serverless-test
-    runs-on: blacksmith-4vcpu-ubuntu-2204
-    steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-serverless-deploy@v2
-        with:
-          aws-account-id: 880892332156
-          aws-region: ${{ inputs.aws-region }}
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          env: development
-          service-name: ${{ inputs.service-name }}
-
-  notify-buddy:
-    if: github.ref == 'refs/heads/master'
-    needs:
-      - terraform-deploy-dev
-      - serverless-decide-run
-    runs-on: blacksmith-2vcpu-ubuntu-2204
-    steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v2
-        with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          deploy-serverless: ${{ needs.serverless-decide-run.outputs.has-changes == 'true' }}
-          service-name: ${{ inputs.service-name }}
-

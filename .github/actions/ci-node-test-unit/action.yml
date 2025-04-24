@@ -23,10 +23,10 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v2
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v3
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
       with:
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
@@ -44,7 +44,7 @@ runs:
 
     - name: Install SDK Dependencies
       if: steps.check-sdk.outputs.sdk-exists == 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
       with:
         directory: ./sdk
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -63,9 +63,49 @@ runs:
       shell: bash
       run: npm run ci:test
 
+    - name: Check for Lambda Directory
+      id: check-lambda
+      shell: bash
+      run: |
+        if [ -d "./lambda" ]; then
+          echo "lambda-exists=true" >> $GITHUB_OUTPUT
+          echo "Lambda directory found. Will process subfolders."
+        else
+          echo "lambda-exists=false" >> $GITHUB_OUTPUT
+          echo "No Lambda directory found. Skipping Lambda processing."
+        fi
+
+    - name: Process Linters and Tests for Lambda Functions
+      if: steps.check-lambda.outputs.lambda-exists == 'true'
+      shell: bash
+      run: |
+        cd lambda
+        for dir in */; do
+          if [ -f "${dir}package.json" ]; then
+            echo "Processing Lambda function in ${dir}"
+            (
+              cd "${dir}" || exit 1
+              echo "Installing dependencies for ${dir}"
+              npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }} || exit 1
+              if grep -q "\"ci:test\":" package.json; then
+                echo "Running tests for ${dir}"
+                npm run ci:test || exit 1
+              else
+                echo "::warning::Lambda function in ${dir} does not have a ci:test script defined in package.json"
+                echo "No ci:test script found in ${dir}"
+              fi
+            )
+            if [ $? -ne 0 ]; then
+              echo "::error::Failed to process Lambda function in ${dir}"
+              exit 1
+            fi
+          fi
+        done
+        cd ..
+
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
       with:
         job-name: test-unit
         service-name: ${{ inputs.service-name }}

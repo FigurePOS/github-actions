@@ -10,7 +10,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v2
+- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v3
   with:
     aws-region: ${{ inputs.aws-region }}
     parameters: "DATADOG_API_KEY=terraform/datadog/api_key;DATADOG_APP_KEY=terraform/datadog/app_key"
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/node-setup@v2
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v3
 ```
 
 ### Install Node.js Dependencies
@@ -53,9 +53,31 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v2
+        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
         with:
           prod: false
+```
+
+### Release It
+
+Parameters:
+- `github-token`: GitHub token for creating releases.
+- `npm-token`: NPM token for publishing packages.
+
+```yml
+on: push
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Release
+        uses: FigurePOS/github-actions/.github/actions/node-release-it@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 ```
 
 ## Git
@@ -76,7 +98,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Configure Git user
-        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v2
+        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v3
 ```
 
 ### Get Git commit message from history
@@ -99,7 +121,7 @@ jobs:
       
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v2
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v3
 
       - name: Trigger DEV Build on EAS
         run: |
@@ -108,7 +130,9 @@ jobs:
 
 ## Docker
 
-## Build Image
+Docker actions for building, loading, and pushing Docker images to ECR. These actions are designed to work together in a pipeline where you first build the image, then load it in subsequent jobs, and finally push it to ECR.
+
+### Build Image
 
 Builds docker image and uploads it to artifacts. Use `docker-load-image` in subsequent job to work with the image.
 
@@ -141,7 +165,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build image
-        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v2
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v3
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -151,12 +175,12 @@ jobs:
       - build
     steps:
       - name: Load image
-        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v2
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v3
         with:
           service-name: make-it-butter-api
       
       - name: Push image
-        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v2
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v3
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -189,14 +213,14 @@ jobs:
         token: ${{ secrets.EXPO_TOKEN }}
 
     - name: Get App Info
-      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v2
+      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v3
       id: get-app-info
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
 
     - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v2
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v3
       if: ${{ inputs.should-notify }}
       with:
           app-name: ${{ steps.get-app-info.outputs.app-name }}
@@ -223,7 +247,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Upload Source Maps to Bugsnag
-      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v2
+      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v3
       with:
         api-key: ${{ secrets.BUGSNAG_API_KEY }}
         version: ${{ inputs.version }}
@@ -235,7 +259,7 @@ jobs:
 
 ### Apply
 
-Youu need to run `terraform-init` job beforehand.
+You need to run `terraform-init` job beforehand.
 
 Parameters:
 - `aws-account-id`
@@ -243,7 +267,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v3"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -259,7 +283,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v3"
     with:
       aws-region: ${{ inputs.aws-region }}
       db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
@@ -269,7 +293,7 @@ Parameters:
 
 ### Plan
 
-Youu need to run `terraform-init` job beforehand.
+You need to run `terraform-init` job beforehand.
 
 Parameters:
 - `aws-account-id`
@@ -277,7 +301,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v3"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -286,7 +310,7 @@ Parameters:
 
 ### Validate
 
-Youu need to run `terraform-init` job beforehand.
+You need to run `terraform-init` job beforehand.
 
 Parameters:
 - `aws-account-id`
@@ -294,13 +318,12 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v3"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
       service-name: ${{ inputs.service-name }}
 ```
-
 
 ## Buddy
 
@@ -319,7 +342,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v3"
     with:
       app-name: Figure POS
       app-version: 1.0.0
@@ -339,7 +362,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v3"
     with:
       commit-hash: 1e17438
       commit-message: "fix: typo"
@@ -354,28 +377,243 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v2"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3"
     if: failure() && github.ref == 'refs/heads/master'
     with:
       service-name: fgr-service-account
       trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
 
-## Serverless
+## CI Actions
 
-### Deploy
+### Node.js Unit Tests
 
 Parameters:
-- `aws-account-id`
-- `env`
-- `service-name`
+- `directory`: Directory to run tests in, default: `"."`.
+- `test-command`: Command to run tests, default: `"npm test"`.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/serverless-deploy@v2"
-    with:
-      aws-account-id: ${{ inputs.aws-account-id }}
-      env: ${{ inputs.env }}
-      service-name: ${{ inputs.service-name }}
+on: push
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Unit Tests
+        uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v3
+        with:
+          directory: "."
+          test-command: "npm test"
+```
+
+### Node.js E2E Tests
+
+Parameters:
+- `directory`: Directory to run tests in, default: `"."`.
+- `test-command`: Command to run tests, default: `"npm run test:e2e"`.
+
+```yml
+on: push
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run E2E Tests
+        uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v3
+        with:
+          directory: "."
+          test-command: "npm run test:e2e"
+```
+
+### Node.js Build
+
+Parameters:
+- `directory`: Directory to build in, default: `"."`.
+- `build-command`: Command to build, default: `"npm run build"`.
+
+```yml
+on: push
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build
+        uses: FigurePOS/github-actions/.github/actions/ci-node-build@v3
+        with:
+          directory: "."
+          build-command: "npm run build"
+```
+
+### CI Terraform Plan
+
+Parameters:
+- `aws-region`: AWS region to use.
+- `env`: Environment to deploy to.
+- `service-name`: Service name.
+
+```yml
+on: push
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Terraform Plan
+        uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v3
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          env: ${{ inputs.env }}
+          service-name: ${{ inputs.service-name }}
+```
+
+### CI Terraform Deploy
+
+Parameters:
+- `aws-region`: AWS region to use.
+- `env`: Environment to deploy to.
+- `service-name`: Service name.
+
+```yml
+on: push
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Terraform Deploy
+        uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v3
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          env: ${{ inputs.env }}
+          service-name: ${{ inputs.service-name }}
+```
+
+### CI Terraform Validate
+
+Parameters:
+- `aws-region`: AWS region to use.
+- `env`: Environment to validate for.
+- `service-name`: Service name.
+
+```yml
+on: push
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Terraform Validate
+        uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v3
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          env: ${{ inputs.env }}
+          service-name: ${{ inputs.service-name }}
+```
+
+### CI Docker Push
+
+Parameters:
+- `repository-name`: Name of the ECR repository.
+- `service-name`: Service name.
+
+```yml
+on: push
+jobs:
+  push:
+    name: Push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Push Docker Image
+        uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v3
+        with:
+          repository-name: figure/my-service
+          service-name: my-service
+```
+
+### CI Notify Buddy
+
+Parameters:
+- `service-name`: Service name.
+- `trigger-url`: Buddy URL endpoint.
+
+```yml
+on: push
+jobs:
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Notify Buddy
+        uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v3
+        with:
+          service-name: my-service
+          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+```
+
+### DB Create SSH Tunnel
+
+Parameters:
+- `host`: Host to connect to.
+- `port`: Port to connect to.
+- `username`: Username to use.
+- `private-key`: Private key to use.
+
+```yml
+on: push
+jobs:
+  tunnel:
+    name: Tunnel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create SSH Tunnel
+        uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v3
+        with:
+          host: ${{ secrets.DB_HOST }}
+          port: ${{ secrets.DB_PORT }}
+          username: ${{ secrets.DB_USERNAME }}
+          private-key: ${{ secrets.DB_PRIVATE_KEY }}
+```
+
+### Mobile Set Environment
+
+Parameters:
+- `environment`: Environment to set.
+- `platform`: Platform to set environment for.
+
+```yml
+on: push
+jobs:
+  set-env:
+    name: Set Environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set Mobile Environment
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
+        with:
+          environment: production
+          platform: ios
 ```
 
 ---
@@ -386,3 +624,8 @@ We use GitHub releases to install specific versions of the actions. Note that Gi
 
 If you want to allow it, you need to manually retag the major/minor version after each release. For example, when you release version `v1.3.2`, 
 you need to retag the release with `v1.3` and `v1` tags manually.
+
+## Breaking Changes
+
+- `v2` - Uses npm instead of yarn.
+- `v3` - Removes Serverless support.
