@@ -80,6 +80,30 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 ```
 
+### Test Lambda Functions
+
+Tests Lambda functions in a directory. Each Lambda function should have its own package.json with a `ci:test` script.
+
+Parameters:
+- `directory`: Directory containing Lambda functions.
+- `npm-legacy-peer-deps`: Whether to use legacy peer dependencies, default: `false`.
+
+```yml
+on: push
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test Lambda Functions
+        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v3
+        with:
+          directory: ./lambda
+          npm-legacy-peer-deps: false
+```
+
 ## Git
 
 ### Configure Git user
@@ -566,6 +590,34 @@ jobs:
         with:
           service-name: my-service
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+```
+
+### CI Node Test Lambda
+
+Runs linters and tests for Node.js Lambda functions. This action sets up Node.js, installs dependencies, and runs tests for each Lambda function in the specified directory.
+
+Parameters:
+- `buddy-trigger-url`: The Buddy trigger URL for notifications.
+- `directory`: Directory containing Lambda functions, default: `./lambda`.
+- `npm-legacy-peer-deps`: Whether to use legacy peer dependencies, default: `false`.
+- `service-name`: The service name.
+
+```yml
+on: push
+jobs:
+  test:
+    name: Test Lambda Functions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test Lambda Functions
+        uses: FigurePOS/github-actions/.github/actions/ci-node-test-lambda@v3
+        with:
+          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          directory: ./lambda
+          npm-legacy-peer-deps: false
+          service-name: my-service
 ```
 
 ### DB Create SSH Tunnel

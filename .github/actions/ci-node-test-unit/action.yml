@@ -77,31 +77,10 @@ runs:
 
     - name: Process Linters and Tests for Lambda Functions
       if: steps.check-lambda.outputs.lambda-exists == 'true'
-      shell: bash
-      run: |
-        cd lambda
-        for dir in */; do
-          if [ -f "${dir}package.json" ]; then
-            echo "Processing Lambda function in ${dir}"
-            (
-              cd "${dir}" || exit 1
-              echo "Installing dependencies for ${dir}"
-              npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }} || exit 1
-              if grep -q "\"ci:test\":" package.json; then
-                echo "Running tests for ${dir}"
-                npm run ci:test || exit 1
-              else
-                echo "::warning::Lambda function in ${dir} does not have a ci:test script defined in package.json"
-                echo "No ci:test script found in ${dir}"
-              fi
-            )
-            if [ $? -ne 0 ]; then
-              echo "::error::Failed to process Lambda function in ${dir}"
-              exit 1
-            fi
-          fi
-        done
-        cd ..
+      uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v3
+      with:
+        directory: ./lambda
+        npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'

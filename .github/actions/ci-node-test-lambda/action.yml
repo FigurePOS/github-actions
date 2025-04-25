@@ -1,0 +1,43 @@
+name: Node Test Lambda Functions
+description: Runs the linters and tests for the Node.js lambda functions
+
+inputs:
+  buddy-trigger-url:
+    description: The Buddy trigger URL
+    required: true
+  directory:
+    description: The directory containing the lambda functions
+    required: false
+    default: ./lambda
+  npm-legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: false
+  service-name:
+    description: The service name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set Up Node.js
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v3
+
+    - name: Process Linters and Tests for Lambda Functions
+      if: steps.check-lambda.outputs.lambda-exists == 'true'
+      uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v3
+      with:
+        directory: ${{ inputs.directory }}
+        npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+
+    - name: Send Slack Notification About Failure
+      if: failure() && github.ref == 'refs/heads/master'
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
+      with:
+        job-name: test-unit
+        service-name: ${{ inputs.service-name }}
+        trigger-url: ${{ inputs.buddy-trigger-url }}
+
