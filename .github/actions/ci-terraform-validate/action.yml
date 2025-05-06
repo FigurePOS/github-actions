@@ -24,6 +24,9 @@ inputs:
     required: false
     type: string
     default: ""
+  dir:
+    required: false
+    default: tf
   github-token-terraform:
     description: GitHub token to access other private repositories
     required: false
@@ -63,6 +66,7 @@ runs:
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
+        dir: ${{ inputs.dir }}
         env: development
         github-token-terraform: ${{ inputs.github-token-terraform }}
         service-name: ${{ inputs.service-name }}
@@ -73,6 +77,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/terraform-validate@v3
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
+        dir: ${{ inputs.dir }}
         env: development
         service-name: ${{ inputs.service-name }}
       env:
@@ -81,7 +86,7 @@ runs:
     - name: Misconfigurations Check
       uses: bridgecrewio/checkov-action@v12
       with:
-        directory: tf
+        directory: ${{ inputs.dir }}
         quiet: true
         framework: terraform
         output_format: cli

@@ -27,6 +27,9 @@ inputs:
     required: false
     type: string
     default: ""
+  dir:
+    required: false
+    default: tf
   env:
     description: The environment
     required: true
@@ -75,6 +78,7 @@ runs:
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
+        dir: ${{ inputs.dir }}
         env: ${{ inputs.env }}
         github-token-terraform: ${{ inputs.github-token-terraform }}
         service-name: ${{ inputs.service-name }}
@@ -85,6 +89,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/terraform-plan@v3
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
+        dir: ${{ inputs.dir }}
         env: ${{ inputs.env }}
         service-name: ${{ inputs.service-name }}
       env:
