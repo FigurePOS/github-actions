@@ -86,7 +86,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Set Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v4
         with:
           env-json: ${{ secrets.ENV_JSON }}
           destination: ${{ inputs.working-directory }}/env.json
@@ -99,12 +99,12 @@ jobs:
 
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v3
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v4
         with:
           commit-offset: 2
 
       - name: Get App Info
-        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v3
+        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v4
         id: get-app-info
         with:
           environment: ${{ inputs.environment }}
@@ -127,7 +127,7 @@ jobs:
           eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
 
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v3
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v4
         with:
           api-key: ${{ secrets.BUGSNAG_API_KEY }}
           version: ${{ inputs.version }}
@@ -137,7 +137,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
 
       - name: Send Slack Notification
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v3
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v4
         if: ${{ inputs.should-notify }}
         with:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
@@ -151,7 +151,7 @@ jobs:
           build-type: "over-the-air"
 
       - name: Send Slack Notification About Failure
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
         if: failure()
         with:
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}

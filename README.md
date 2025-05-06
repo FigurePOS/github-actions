@@ -10,7 +10,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v3
+- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v4
   with:
     aws-region: ${{ inputs.aws-region }}
     parameters: "DATADOG_API_KEY=terraform/datadog/api_key;DATADOG_APP_KEY=terraform/datadog/app_key"
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/node-setup@v3
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v4
 ```
 
 ### Install Node.js Dependencies
@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
+        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
         with:
           prod: false
 ```
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Release
-        uses: FigurePOS/github-actions/.github/actions/node-release-it@v3
+        uses: FigurePOS/github-actions/.github/actions/node-release-it@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Test Lambda Functions
-        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v3
+        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v4
         with:
           directory: ./lambda
           npm-legacy-peer-deps: false
@@ -122,7 +122,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Configure Git user
-        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v3
+        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v4
 ```
 
 ### Get Git commit message from history
@@ -145,7 +145,7 @@ jobs:
       
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v3
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v4
 
       - name: Trigger DEV Build on EAS
         run: |
@@ -189,7 +189,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build image
-        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v3
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v4
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -199,12 +199,12 @@ jobs:
       - build
     steps:
       - name: Load image
-        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v3
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v4
         with:
           service-name: make-it-butter-api
       
       - name: Push image
-        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v3
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v4
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -237,14 +237,14 @@ jobs:
         token: ${{ secrets.EXPO_TOKEN }}
 
     - name: Get App Info
-      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v3
+      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v4
       id: get-app-info
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
 
     - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v3
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v4
       if: ${{ inputs.should-notify }}
       with:
           app-name: ${{ steps.get-app-info.outputs.app-name }}
@@ -271,7 +271,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Upload Source Maps to Bugsnag
-      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v3
+      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v4
       with:
         api-key: ${{ secrets.BUGSNAG_API_KEY }}
         version: ${{ inputs.version }}
@@ -291,7 +291,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v4"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -307,7 +307,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v4"
     with:
       aws-region: ${{ inputs.aws-region }}
       db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
@@ -325,7 +325,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v4"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -342,7 +342,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v4"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -366,7 +366,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v4"
     with:
       app-name: Figure POS
       app-version: 1.0.0
@@ -386,7 +386,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v4"
     with:
       commit-hash: 1e17438
       commit-message: "fix: typo"
@@ -401,7 +401,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4"
     if: failure() && github.ref == 'refs/heads/master'
     with:
       service-name: fgr-service-account
@@ -426,7 +426,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run Unit Tests
-        uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
         with:
           directory: "."
           test-command: "npm test"
@@ -448,7 +448,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run E2E Tests
-        uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
         with:
           directory: "."
           test-command: "npm run test:e2e"
@@ -470,7 +470,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build
-        uses: FigurePOS/github-actions/.github/actions/ci-node-build@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
         with:
           directory: "."
           build-command: "npm run build"
@@ -493,7 +493,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Terraform Plan
-        uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
           aws-region: ${{ inputs.aws-region }}
           env: ${{ inputs.env }}
@@ -517,7 +517,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Terraform Deploy
-        uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v4
         with:
           aws-region: ${{ inputs.aws-region }}
           env: ${{ inputs.env }}
@@ -541,7 +541,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Terraform Validate
-        uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
         with:
           aws-region: ${{ inputs.aws-region }}
           env: ${{ inputs.env }}
@@ -564,7 +564,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Push Docker Image
-        uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
         with:
           repository-name: figure/my-service
           service-name: my-service
@@ -586,7 +586,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Notify Buddy
-        uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v4
         with:
           service-name: my-service
           trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
@@ -612,7 +612,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Test Lambda Functions
-        uses: FigurePOS/github-actions/.github/actions/ci-node-test-lambda@v3
+        uses: FigurePOS/github-actions/.github/actions/ci-node-test-lambda@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           directory: ./lambda
@@ -638,7 +638,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Create SSH Tunnel
-        uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v3
+        uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v4
         with:
           host: ${{ secrets.DB_HOST }}
           port: ${{ secrets.DB_PORT }}
@@ -662,7 +662,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set Mobile Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v4
         with:
           environment: production
           platform: ios
@@ -681,3 +681,4 @@ you need to retag the release with `v1.3` and `v1` tags manually.
 
 - `v2` - Uses npm instead of yarn.
 - `v3` - Removes Serverless support.
+- `v4` - Pass all ssm parameters from prefix to terraform.
