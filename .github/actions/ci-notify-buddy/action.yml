@@ -14,14 +14,14 @@ runs:
   steps:
     - uses: actions/checkout@v4
 
-    - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v3
+    - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v4
       with:
         service-name: ${{ inputs.service-name }}
         trigger-url: ${{ inputs.buddy-trigger-url }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
       with:
         job-name: notify-buddy
         service-name: ${{ inputs.service-name }}
