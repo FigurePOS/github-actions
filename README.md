@@ -281,6 +281,42 @@ jobs:
 
 ## Terraform
 
+### Authenticate Terraform Providers
+
+Authenticates Terraform providers. This action should be run before any Terraform operations that require provider authentication. It gets all parameters from SSM with `/terraform` prefix and sets them to the corresponding Terraform variables. Optionally, you can specify a list of providers to authenticate.
+
+Parameters:
+- `aws-region`: AWS region to use, default: `us-east-1`.
+- `providers`: Comma separated list of providers to authenticate.
+  - `grafana`: Creates service token for Grafana provider and sets it to Terraform variable.
+- `service-name`: The service name.
+
+```yml
+- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v4
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    providers: grafana
+    service-name: ${{ inputs.service-name }}
+```
+
+### Cleanup Authenticated Terraform Providers
+
+Cleans up authenticated Terraform providers after Terraform operations are complete. This action should be run after Terraform operations to clean up any temporary credentials or tokens.
+
+Parameters:
+- `aws-region`: AWS region to use, default: `us-east-1`.
+- `providers`: Comma separated list of providers to clean up.
+  - `grafana`: Deletes service token for Grafana provider.
+- `service-name`: The service name.
+
+```yml
+- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v4
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    providers: grafana
+    service-name: ${{ inputs.service-name }}
+```
+
 ### Apply
 
 You need to run `terraform-init` job beforehand.
@@ -407,278 +443,3 @@ Parameters:
       service-name: fgr-service-account
       trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
-
-## CI Actions
-
-### Node.js Unit Tests
-
-Parameters:
-- `directory`: Directory to run tests in, default: `"."`.
-- `test-command`: Command to run tests, default: `"npm test"`.
-
-```yml
-on: push
-jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run Unit Tests
-        uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
-        with:
-          directory: "."
-          test-command: "npm test"
-```
-
-### Node.js E2E Tests
-
-Parameters:
-- `directory`: Directory to run tests in, default: `"."`.
-- `test-command`: Command to run tests, default: `"npm run test:e2e"`.
-
-```yml
-on: push
-jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run E2E Tests
-        uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
-        with:
-          directory: "."
-          test-command: "npm run test:e2e"
-```
-
-### Node.js Build
-
-Parameters:
-- `directory`: Directory to build in, default: `"."`.
-- `build-command`: Command to build, default: `"npm run build"`.
-
-```yml
-on: push
-jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Build
-        uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
-        with:
-          directory: "."
-          build-command: "npm run build"
-```
-
-### CI Terraform Plan
-
-Parameters:
-- `aws-region`: AWS region to use.
-- `env`: Environment to deploy to.
-- `service-name`: Service name.
-
-```yml
-on: push
-jobs:
-  plan:
-    name: Plan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Terraform Plan
-        uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
-        with:
-          aws-region: ${{ inputs.aws-region }}
-          env: ${{ inputs.env }}
-          service-name: ${{ inputs.service-name }}
-```
-
-### CI Terraform Deploy
-
-Parameters:
-- `aws-region`: AWS region to use.
-- `env`: Environment to deploy to.
-- `service-name`: Service name.
-
-```yml
-on: push
-jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Terraform Deploy
-        uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v4
-        with:
-          aws-region: ${{ inputs.aws-region }}
-          env: ${{ inputs.env }}
-          service-name: ${{ inputs.service-name }}
-```
-
-### CI Terraform Validate
-
-Parameters:
-- `aws-region`: AWS region to use.
-- `env`: Environment to validate for.
-- `service-name`: Service name.
-
-```yml
-on: push
-jobs:
-  validate:
-    name: Validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Terraform Validate
-        uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
-        with:
-          aws-region: ${{ inputs.aws-region }}
-          env: ${{ inputs.env }}
-          service-name: ${{ inputs.service-name }}
-```
-
-### CI Docker Push
-
-Parameters:
-- `repository-name`: Name of the ECR repository.
-- `service-name`: Service name.
-
-```yml
-on: push
-jobs:
-  push:
-    name: Push
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Push Docker Image
-        uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
-        with:
-          repository-name: figure/my-service
-          service-name: my-service
-```
-
-### CI Notify Buddy
-
-Parameters:
-- `service-name`: Service name.
-- `trigger-url`: Buddy URL endpoint.
-
-```yml
-on: push
-jobs:
-  notify:
-    name: Notify
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Notify Buddy
-        uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v4
-        with:
-          service-name: my-service
-          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-```
-
-### CI Node Test Lambda
-
-Runs linters and tests for Node.js Lambda functions. This action sets up Node.js, installs dependencies, and runs tests for each Lambda function in the specified directory.
-
-Parameters:
-- `buddy-trigger-url`: The Buddy trigger URL for notifications.
-- `directory`: Directory containing Lambda functions, default: `./lambda`.
-- `npm-legacy-peer-deps`: Whether to use legacy peer dependencies, default: `false`.
-- `service-name`: The service name.
-
-```yml
-on: push
-jobs:
-  test:
-    name: Test Lambda Functions
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Test Lambda Functions
-        uses: FigurePOS/github-actions/.github/actions/ci-node-test-lambda@v4
-        with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          directory: ./lambda
-          npm-legacy-peer-deps: false
-          service-name: my-service
-```
-
-### DB Create SSH Tunnel
-
-Parameters:
-- `host`: Host to connect to.
-- `port`: Port to connect to.
-- `username`: Username to use.
-- `private-key`: Private key to use.
-
-```yml
-on: push
-jobs:
-  tunnel:
-    name: Tunnel
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Create SSH Tunnel
-        uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v4
-        with:
-          host: ${{ secrets.DB_HOST }}
-          port: ${{ secrets.DB_PORT }}
-          username: ${{ secrets.DB_USERNAME }}
-          private-key: ${{ secrets.DB_PRIVATE_KEY }}
-```
-
-### Mobile Set Environment
-
-Parameters:
-- `environment`: Environment to set.
-- `platform`: Platform to set environment for.
-
-```yml
-on: push
-jobs:
-  set-env:
-    name: Set Environment
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set Mobile Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v4
-        with:
-          environment: production
-          platform: ios
-```
-
----
-
-## Development
-
-We use GitHub releases to install specific versions of the actions. Note that GitHub Actions do not support semantic versioning by default. 
-
-If you want to allow it, you need to manually retag the major/minor version after each release. For example, when you release version `v1.3.2`, 
-you need to retag the release with `v1.3` and `v1` tags manually.
-
-## Breaking Changes
-
-- `v2` - Uses npm instead of yarn.
-- `v3` - Removes Serverless support.
-- `v4` - Pass all ssm parameters from prefix to terraform.
