@@ -65,9 +65,9 @@ runs:
           backend_key="aws/app/${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate"
         fi
         # Get the lock ID from DynamoDB
-        LOCK_ID=$(aws dynamodb scan \
+        LOCK_ID=$(aws dynamodb query \
           --table-name fgr-terraform-state-locks \
-          --filter-expression "LockID = :lockid" \
+          --key-condition-expression "LockID = :lockid" \
           --expression-attribute-values "{\":lockid\":{\"S\":\"fgr-terraform-state/$backend_key\"}}" \
           --query "Items[0].LockID.S" \
           --output text)
