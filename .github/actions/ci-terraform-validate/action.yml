@@ -19,11 +19,6 @@ inputs:
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
-  db-tunnel-mapping:
-    description: DB tunnel mapping
-    required: false
-    type: string
-    default: ""
   dir:
     required: false
     default: tf
@@ -33,9 +28,6 @@ inputs:
   service-name:
     description: The service name
     required: true
-  ssm-parameters:
-    description: The SSM parameters to set as environment variables in format "env_var_name1=ssm_path1,env_var_name2=ssm_path2"
-    required: false
   
 
 runs:
@@ -43,23 +35,6 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Set Env Vars From SSM Parameters
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v4
-      with:
-        aws-region: ${{ inputs.aws-region }}
-        parameters: ${{ inputs.ssm-parameters }}
-        service-name: ${{ inputs.service-name }}
-
-    - name: Create SSH tunnel
-      if: inputs.db-tunnel-mapping != ''
-      id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v4
-      with:
-        aws-account-id: ${{ inputs.aws-account-id }}
-        aws-region: ${{ inputs.aws-region }}
-        db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
-        service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
       uses: FigurePOS/github-actions/.github/actions/terraform-init@v4

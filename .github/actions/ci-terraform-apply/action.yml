@@ -6,6 +6,10 @@ inputs:
     description: Path to download artifact from
     required: false
     type: string
+  auth-providers:
+    description: Providers to authenticate
+    required: false
+    type: string
   aws-account-id:
     description: AWS account ID
     required: true
@@ -61,10 +65,17 @@ runs:
         path: ${{ inputs.artifact-path }}
 
     - name: Set Env Vars From SSM Parameters
+      if: inputs.ssm-parameters != ''
       uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v4
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
+        service-name: ${{ inputs.service-name }}
+
+    - name: Authenticate Terraform Providers
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v4
+      with:
+        providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
 
     - name: Create SSH tunnel
@@ -89,7 +100,7 @@ runs:
       env:
         AWS_REGION: ${{ inputs.aws-region }}
 
-    - name: Terraform Deploy
+    - name: Terraform Apply
       uses: FigurePOS/github-actions/.github/actions/terraform-apply@v4
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
@@ -99,6 +110,13 @@ runs:
         sha: ${{ inputs.sha }}
       env:
         AWS_REGION: ${{ inputs.aws-region }}
+
+    - name: Cleanup Authenticated Terraform Providers
+      if: always()
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v4
+      with:
+        providers: ${{ inputs.auth-providers }}
+        service-name: ${{ inputs.service-name }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
