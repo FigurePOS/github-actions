@@ -46,7 +46,7 @@ jobs:
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
         with:
           aws-account-id: ${{ inputs.aws-account-id }}
           aws-region: ${{ inputs.aws-region }}
@@ -56,7 +56,6 @@ jobs:
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
           sha: ${{ inputs.sha }}
-          ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
 
       - name: Create a Release Tag and Update the Production Tag
         uses: actions/github-script@v7
@@ -101,7 +100,7 @@ jobs:
 
       - name: Send Slack Notification About Failure
         if: failure()
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
+        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
         with:
           job-name: terraform-deploy-prod
           service-name: ${{ inputs.service-name }}
