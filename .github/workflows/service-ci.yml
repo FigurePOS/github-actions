@@ -174,3 +174,14 @@ jobs:
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
           ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
+
+  notify-buddy:
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - terraform-deploy-dev
+    runs-on: blacksmith-2vcpu-ubuntu-2204
+    steps:
+      - uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v3
+        with:
+          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          service-name: ${{ inputs.service-name }}
