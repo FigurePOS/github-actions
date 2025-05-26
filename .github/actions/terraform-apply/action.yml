@@ -20,6 +20,11 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set GitHub Packages Token for Lambda Deployment
+      shell: bash
+      run: |
+        npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+    
     - id: sha_short
       run: echo "sha_short=$(git rev-parse --short ${{ inputs.sha || github.sha }})" >> $GITHUB_OUTPUT
       shell: bash
