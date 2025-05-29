@@ -14,41 +14,33 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Process Lambda Functions
+    - name: Process Lambda Function
       shell: bash
       run: |
-        cd ${{ inputs.directory }}
-        for dir in */; do
-          if [ -f "${dir}package.json" ]; then
-            echo "Processing Lambda function in ${dir}"
-            (
-              cd "${dir}" || exit 1
-              echo "Installing dependencies for ${dir}"
-              npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }} || exit 1
-              if grep -q "\"ci:test\":" package.json; then
-                echo "Running tests for ${dir}"
-                if npm run ci:test 2>&1 | tee test-output.log; then
-                  # Test command succeeded
-                  if grep -q "No tests found" test-output.log; then
-                    echo "::warning::No tests found in Lambda function ${dir}"
-                  fi
-                else
-                  # Test command failed
-                  if grep -q "No tests found" test-output.log; then
-                    echo "::warning::No tests found in Lambda function ${dir}"
-                  else
-                    echo "::error::Tests failed in Lambda function ${dir}"
-                    exit 1
-                  fi
-                fi
-              else
-                echo "::warning::Lambda function in ${dir} does not have a ci:test script defined in package.json"
-                echo "No ci:test script found in ${dir}"
+        if [ -f "${{ inputs.directory }}/package.json" ]; then
+          cd "${{ inputs.directory }}"
+          echo "Installing dependencies for ${{ inputs.directory }}"
+          npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }} || exit 1
+          if grep -q "\"ci:test\":" package.json; then
+            echo "Running tests for ${{ inputs.directory }}"
+            if npm run ci:test 2>&1 | tee test-output.log; then
+              # Test command succeeded
+              if grep -q "No tests found" test-output.log; then
+                echo "::warning::No tests found in Lambda function ${{ inputs.directory }}"
               fi
-            )
-            if [ $? -ne 0 ]; then
-              echo "::error::Failed to process Lambda function in ${dir}"
-              exit 1
+            else
+              # Test command failed
+              if grep -q "No tests found" test-output.log; then
+                echo "::warning::No tests found in Lambda function ${{ inputs.directory }}"
+              else
+                echo "::error::Tests failed in Lambda function ${{ inputs.directory }}"
+                exit 1
+              fi
             fi
+          else
+            echo "::warning::Lambda function in ${{ inputs.directory }} does not have a ci:test script defined in package.json"
+            echo "No ci:test script found in ${{ inputs.directory }}"
           fi
-        done 
+        else
+          echo "::warning::No package.json found in ${{ inputs.directory }}"
+        fi

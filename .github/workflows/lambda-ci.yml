@@ -1,0 +1,119 @@
+name: Lambda CI
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+    secrets:
+      BUDDY_TRIGGER_URL:
+        required: true
+
+jobs:
+  lambda-check-dir:
+    runs-on: ubuntu-latest
+    outputs:
+      lambda_exists: ${{ steps.check.outputs.lambda_exists }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -d "./lambda" ]; then
+            echo "lambda_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "lambda_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  lambda-list:
+    if: needs.lambda-check-dir.outputs.lambda_exists == 'true'
+    needs: [lambda-check-dir]
+    runs-on: blacksmith-2vcpu-ubuntu-2204
+    outputs:
+      dirs: ${{ steps.set-matrix.outputs.dirs }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          dirs="["
+          first=true
+          for dir in ./lambda/*/; do
+            if [ -f "${dir}package.json" ]; then
+              if [ "$first" = true ]; then
+                first=false
+              else
+                dirs="${dirs},"
+              fi
+              clean_dir="${dir%/}"
+              dirs="${dirs}\"${clean_dir}\""
+            fi
+          done
+          dirs="${dirs}]"
+          echo "dirs=${dirs}" >> "$GITHUB_OUTPUT"
+      - run: echo "${{ steps.set-matrix.outputs.dirs }}"
+
+  lambda-test-unit-or-skip:
+    needs: [lambda-check-dir, lambda-list]
+    runs-on: ubuntu-latest
+    outputs:
+      will_run: ${{ steps.check.outputs.will_run }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ needs.lambda-check-dir.outputs.lambda_exists }}" = "false" ]; then
+            echo "will_run=false" >> "$GITHUB_OUTPUT"
+          else
+            dirs="${{ needs.lambda-list.outputs.dirs }}"
+            if [ "$dirs" = "[]" ]; then
+              echo "will_run=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "will_run=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+  lambda-test-unit:
+    if: needs.lambda-test-unit-or-skip.outputs.will_run == 'true'
+    needs: [lambda-check-dir, lambda-list, lambda-test-unit-or-skip]
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+    strategy:
+      matrix:
+        directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
+    steps:
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v3
+        with:
+          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          directory: ${{ matrix.directory }}
+          service-name: ${{ inputs.service-name }}
+
+  lambda-test-e2e-or-skip:
+    needs: [lambda-check-dir, lambda-list, lambda-test-unit-or-skip, lambda-test-unit]
+    runs-on: ubuntu-latest
+    outputs:
+      will_run: ${{ steps.check.outputs.will_run }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ needs.lambda-check-dir.outputs.lambda_exists }}" = "false" ]; then
+            echo "will_run=false" >> "$GITHUB_OUTPUT"
+          else
+            dirs="${{ needs.lambda-list.outputs.dirs }}"
+            if [ "$dirs" = "[]" ]; then
+              echo "will_run=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "will_run=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+  lambda-test-e2e:
+    if: needs.lambda-test-e2e-or-skip.outputs.will_run == 'true'
+    needs: [lambda-check-dir, lambda-list, lambda-test-e2e-or-skip]
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+    strategy:
+      matrix:
+        directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
+    steps:
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v3
+        with:
+          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+          directory: ${{ matrix.directory }}
+          service-name: ${{ inputs.service-name }}

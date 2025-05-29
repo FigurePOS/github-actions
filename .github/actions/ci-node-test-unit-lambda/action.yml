@@ -26,11 +26,17 @@ runs:
     - name: Set Up Node.js
       uses: FigurePOS/github-actions/.github/actions/node-setup@v3
 
-    - name: Process Linters and Tests for Lambda Functions
-      uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v3
+    - name: Install Dependencies
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
       with:
         directory: ${{ inputs.directory }}
-        npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+
+    - name: Process Linters and Tests for Lambda Functions
+      shell: bash
+      run: |
+        cd ${{ inputs.directory }}
+        npm run ci:test
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'

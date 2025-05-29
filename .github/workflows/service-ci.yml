@@ -97,6 +97,14 @@ jobs:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           env-vars: ${{ inputs.test-e2e-env-vars || secrets.TEST_E2E_ENV_VARS }}
           service-name: ${{ inputs.service-name }}
+
+  test-lambda:
+    uses: ./.github/workflows/lambda-ci.yml
+    
+    with:
+      service-name: ${{ inputs.service-name }}
+    secrets:
+      BUDDY_TRIGGER_URL: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-validate:
     runs-on: blacksmith-2vcpu-ubuntu-2204
@@ -150,6 +158,7 @@ jobs:
       - build
       - test-e2e
       - test-unit
+      - test-lambda
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v3
