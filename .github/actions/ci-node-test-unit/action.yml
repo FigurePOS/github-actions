@@ -63,25 +63,6 @@ runs:
       shell: bash
       run: npm run ci:test
 
-    - name: Check for Lambda Directory
-      id: check-lambda
-      shell: bash
-      run: |
-        if [ -d "./lambda" ]; then
-          echo "lambda-exists=true" >> $GITHUB_OUTPUT
-          echo "Lambda directory found. Will process subfolders."
-        else
-          echo "lambda-exists=false" >> $GITHUB_OUTPUT
-          echo "No Lambda directory found. Skipping Lambda processing."
-        fi
-
-    - name: Process Linters and Tests for Lambda Functions
-      if: steps.check-lambda.outputs.lambda-exists == 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v3
-      with:
-        directory: ./lambda
-        npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
-
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
       uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
