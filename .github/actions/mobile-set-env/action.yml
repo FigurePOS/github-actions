@@ -3,17 +3,20 @@ description: Creates the env.json file for the app from the input JSON
 
 inputs:
   env-json:
-    description: 'The JSON'
+    description: "The JSON"
     required: false
+  destination:
+    description: "The destination path for the env.json file"
+    required: false
+    default: "./env.json"
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: Run White Label Config Checks
+    - name: Create ENV file
       if: ${{ inputs.env-json }}
       shell: bash
       # We have to pass the input as environment variable to the script because it's a secret and GHA masks it
-      run: 'echo "$ENV_JSON" > env.json'
+      run: 'echo "$ENV_JSON" > ${{ inputs.destination }}'
       env:
         ENV_JSON: ${{ inputs.env-json }}
-
