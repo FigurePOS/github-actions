@@ -35,6 +35,25 @@ runs:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
+    - name: Check for SDK Directory
+      id: check-sdk
+      shell: bash
+      run: |
+        if [ -d "./sdk" ] && [ -f "./sdk/package.json" ]; then
+          echo "sdk-exists=true" >> $GITHUB_OUTPUT
+          echo "SDK directory with package.json found. Will install dependencies."
+        else
+          echo "sdk-exists=false" >> $GITHUB_OUTPUT
+          echo "No SDK directory with package.json found. Skipping SDK dependency installation."
+        fi
+
+    - name: Install SDK Dependencies
+      if: steps.check-sdk.outputs.sdk-exists == 'true'
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
+      with:
+        directory: ./sdk
+        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+
     - name: License Compliance
       shell: bash
       run: npm run check:licenses
