@@ -50,8 +50,8 @@ runs:
         load: true
         tags: ${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}
         builder: fgrbuilder
-        cache-from: type=gha,ref=${{ inputs.repository-url }}/${{ inputs.repository-name }}:cache
-        cache-to: type=gha,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ inputs.repository-url }}/${{ inputs.repository-name }}:cache,compression=zstd
+        cache-from: type=registry,ref=${{ inputs.repository-url }}/${{ inputs.repository-name }}:cache
+        cache-to: type=registry,ref=${{ inputs.repository-url }}/${{ inputs.repository-name }}:cache,mode=max,compression=zstd,oci-mediatypes=true
         outputs: type=docker,dest=/tmp/${{ steps.docker_file.outputs.file_name }}
     
     - uses: actions/upload-artifact@v4.1.0

@@ -2,6 +2,10 @@ name: Node Test Lambda Functions
 description: Runs the linters and tests for the Node.js lambda functions
 
 inputs:
+  aws-region:
+    description: The AWS region
+    required: false
+    default: us-east-1
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
@@ -26,6 +30,16 @@ runs:
     - name: Set Up Node.js
       uses: FigurePOS/github-actions/.github/actions/node-setup@v3
 
+    - name: Assume AWS Role in Root Account Using OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+
+    - name: Login to ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
     - name: Install Dependencies
       uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
       with:
@@ -44,37 +58,21 @@ runs:
         fi
         
         # Check if "ti" script exists
-        has_ti_script=false
-        if grep -q "\"ti\":" package.json; then
-          has_ti_script=true
+        if ! grep -q "\"ti\":" package.json; then
+          echo "::warning::No ti script found in ${{ inputs.directory }}"
+          exit 0
         fi
         
         # Check if "tip" script exists  
-        has_tip_script=false
-        if grep -q "\"tip\":" package.json; then
-          has_tip_script=true
+        if ! grep -q "\"tip\":" package.json; then
+          echo "::warning::No tip script found in ${{ inputs.directory }}"
+          exit 0
         fi
         
-        # Run ti script if it exists
-        if [ "$has_ti_script" = true ]; then
-          echo "Running 'npm run ti' for ${{ inputs.directory }}"
-          if ! npm run ti; then
-            echo "::error::npm run ti failed in ${{ inputs.directory }}"
-            exit 1
-          fi
-        else
-          echo "::warning::Lambda function in ${{ inputs.directory }} does not have a 'ti' script defined in package.json"
-        fi
-        
-        # Run tip script if it exists
-        if [ "$has_tip_script" = true ]; then
-          echo "Running 'npm run tip' for ${{ inputs.directory }}"
-          if ! TEST_CMD="npm run ti" npm run tip; then
-            echo "::error::npm run tip failed in ${{ inputs.directory }}"
-            exit 1
-          fi
-        else
-          echo "::warning::Lambda function in ${{ inputs.directory }} does not have a 'tip' script defined in package.json"
+        # Run tests
+        if ! TEST_CMD="npm run ti" npm run tip; then
+          echo "::error::npm run tip failed in ${{ inputs.directory }}"
+          exit 1
         fi
 
     - name: Send Slack Notification About Failure
