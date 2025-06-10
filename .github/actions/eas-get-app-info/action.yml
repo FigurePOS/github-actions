@@ -15,6 +15,9 @@ inputs:
     description: "Whitelabel (used for mobile ordering)"
     required: false
     default: ""
+  working-directory:
+    description: "Working directory"
+    required: false
 
 outputs:
   app-name:
@@ -26,6 +29,7 @@ runs:
   steps:
     - name: Get EAS Config
       id: get-config
+      working-directory: ${{ inputs.working-directory }}
       env:
         APP_VARIANT: ${{ inputs.environment }}
         WHITELABEL: ${{ inputs.whitelabel }}
