@@ -27,6 +27,10 @@ on:
         description: "Version"
         required: true
         type: string
+      git-ref:
+        description: "Git ref"
+        required: false
+        type: string
       should-notify:
         description: "Should send a notification to Buddy"
         required: false
@@ -37,6 +41,11 @@ on:
         required: false
         type: string
         default: ""
+      working-directory:
+        description: "Working directory"
+        required: false
+        type: string
+        default: "./"
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
@@ -66,7 +75,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: "v${{ inputs.version }}"
+          ref: ${{ inputs.git-ref || format('v{0}', inputs.version) }}
           # This makes sure there are two commits in the git history, needed for getting the previous commit message.
           fetch-depth: 2
 
@@ -80,6 +89,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
         with:
           env-json: ${{ secrets.ENV_JSON }}
+          destination: ${{ inputs.working-directory }}/env.json
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -100,10 +110,12 @@ jobs:
           environment: ${{ inputs.environment }}
           platform: ${{ inputs.platform }}
           whitelabel: ${{ inputs.whitelabel }}
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Update OTA with Expo Updates
         env:
           GIT_MESSAGE: ${{ steps.get-git-message.outputs.message }}
+        working-directory: ${{ inputs.working-directory }}
         run: |
           message_git=${GIT_MESSAGE//\"/\\\"}
           message=$(printf "v%s: %s" "${{ inputs.version }}" "$message_git")
@@ -122,6 +134,7 @@ jobs:
           platform: ${{ inputs.platform }}
           environment: ${{ inputs.environment }}
           code-bundle-suffix: ${{ inputs.code-bundle-suffix }}
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Send Slack Notification
         uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v3

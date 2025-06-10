@@ -20,6 +20,9 @@ inputs:
     description: "Allows to add custom suffix to bundle id for source maps upload"
     required: false
     default: ""
+  working-directory:
+    description: "Working directory"
+    required: false
 
 runs:
   using: composite
@@ -28,6 +31,7 @@ runs:
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       id: find-source-maps-ios
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         echo "Finding source maps for iOS..."
         bundle=$(find "dist/_expo/static/js/ios" -type f -iname "*.hbc")
@@ -40,6 +44,7 @@ runs:
     - name: Upload Source Maps For iOS to Bugsnag
       if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
         if [ -n "${{ inputs.code-bundle-suffix }}" ]; then
@@ -56,6 +61,7 @@ runs:
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       id: find-source-maps-android
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         echo "Finding source maps for Android..."
         bundle=$(find "dist/_expo/static/js/android" -type f -iname "*.hbc")
@@ -68,6 +74,7 @@ runs:
     - name: Upload Source Maps For Android to Bugsnag
       if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         code_bundle_id=${{ inputs.version }}-${{ inputs.environment }}
         if [ -n "${{ inputs.code-bundle-suffix }}" ]; then
