@@ -43,7 +43,7 @@ on:
         default: ""
       working-directory:
         description: "Working directory"
-        required: true
+        required: false
         type: string
         default: "./"
     secrets:
