@@ -46,7 +46,7 @@ jobs:
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@tofu
         with:
           aws-account-id: ${{ inputs.aws-account-id }}
           aws-region: ${{ inputs.aws-region }}
