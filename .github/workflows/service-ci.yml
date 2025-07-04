@@ -70,7 +70,7 @@ jobs:
   build:
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -79,7 +79,7 @@ jobs:
   test-unit:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
@@ -90,7 +90,7 @@ jobs:
       - build
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           docker-command: ${{ inputs.docker-command }}
@@ -109,14 +109,12 @@ jobs:
   terraform-validate:
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
         with:
           aws-region: ${{ inputs.aws-region }}
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-          db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-          ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
 
   terraform-plan-dev:
     if: github.event_name == 'pull_request'
@@ -124,7 +122,7 @@ jobs:
       - terraform-validate
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -133,7 +131,6 @@ jobs:
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-          ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
   
   terraform-plan-prod:
     if: github.event_name == 'pull_request'
@@ -141,7 +138,7 @@ jobs:
       - terraform-validate
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
@@ -150,7 +147,6 @@ jobs:
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-          ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
 
   push:
     if: github.ref == 'refs/heads/master'
@@ -161,7 +157,7 @@ jobs:
       - test-lambda
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -173,7 +169,7 @@ jobs:
       - push
     runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-deploy@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -182,7 +178,6 @@ jobs:
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-          ssm-parameters: "DATADOG_API_KEY=/terraform/datadog/api_key,DATADOG_APP_KEY=/terraform/datadog/app_key"
 
   notify-buddy:
     if: github.ref == 'refs/heads/master'
@@ -190,7 +185,7 @@ jobs:
       - terraform-deploy-dev
     runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v3
+      - uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           service-name: ${{ inputs.service-name }}

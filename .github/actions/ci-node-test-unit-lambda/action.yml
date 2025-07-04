@@ -24,10 +24,10 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v3
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v4
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v3
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
       with:
         directory: ${{ inputs.directory }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -40,7 +40,7 @@ runs:
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
       with:
         job-name: test-unit
         service-name: ${{ inputs.service-name }}

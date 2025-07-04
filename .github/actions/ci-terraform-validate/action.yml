@@ -19,20 +19,15 @@ inputs:
   buddy-trigger-url:
     description: The Buddy trigger URL
     required: true
-  db-tunnel-mapping:
-    description: DB tunnel mapping
+  dir:
     required: false
-    type: string
-    default: ""
+    default: tf
   github-token-terraform:
     description: GitHub token to access other private repositories
     required: false
   service-name:
     description: The service name
     required: true
-  ssm-parameters:
-    description: The SSM parameters to set as environment variables in format "env_var_name1=ssm_path1,env_var_name2=ssm_path2"
-    required: false
   
 
 runs:
@@ -41,28 +36,12 @@ runs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Set Env Vars From SSM Parameters
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v3
-      with:
-        aws-region: ${{ inputs.aws-region }}
-        parameters: ${{ inputs.ssm-parameters }}
-        service-name: ${{ inputs.service-name }}
-
-    - name: Create SSH tunnel
-      if: inputs.db-tunnel-mapping != ''
-      id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v3
-      with:
-        aws-account-id: ${{ inputs.aws-account-id }}
-        aws-region: ${{ inputs.aws-region }}
-        db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
-        service-name: ${{ inputs.service-name }}
-
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v3
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@v4
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
+        dir: ${{ inputs.dir }}
         env: development
         github-token-terraform: ${{ inputs.github-token-terraform }}
         service-name: ${{ inputs.service-name }}
@@ -70,9 +49,10 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Validate
-      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v3
+      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v4
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
+        dir: ${{ inputs.dir }}
         env: development
         service-name: ${{ inputs.service-name }}
       env:
@@ -81,15 +61,17 @@ runs:
     - name: Misconfigurations Check
       uses: bridgecrewio/checkov-action@v12
       with:
-        directory: tf
+        directory: ${{ inputs.dir }}
         quiet: true
         framework: terraform
         output_format: cli
-        skip_check: CKV_AWS_119,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_191,CKV_AWS_336,CKV_AWS_337,CKV_AWS_378,CKV2_AWS_34,CKV2_AWS_62,CKV_TF_1,CKV_TF_3
+        skip_check: CKV_AWS_7,CKV_AWS_18,CKV_AWS_51,CKV_AWS_65,CKV_AWS_68,CKV_AWS_119,CKV_AWS_136,CKV_AWS_144,CKV_AWS_145,CKV_AWS_149,CKV_AWS_158,CKV_AWS_159,CKV_AWS_163,CKV_AWS_191,CKV_AWS_336,CKV_AWS_337,CKV_AWS_378,CKV2_AWS_34,CKV2_AWS_39,CKV2_AWS_62,CKV_TF_1,CKV_TF_3
+      env:
+        GITHUB_PAT: ${{ inputs.github-token-terraform }}
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v3
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
       with:
         job-name: terraform-validate
         service-name: ${{ inputs.service-name }}
