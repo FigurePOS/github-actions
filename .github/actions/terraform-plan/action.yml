@@ -25,25 +25,9 @@ runs:
     shell: bash
     working-directory: ${{ inputs.dir }}
     run: |-
-      echo "Running terraform plan..."
-      
-      # Capture both stdout and stderr, and always return the real exit code
-      {
-        terraform plan -detailed-exitcode -out=tf.plan 2>&1 | tee tf.console.txt
-        exit_code=${PIPESTATUS[0]}
-        echo "Terraform plan exit code: $exit_code"
-        
-        # Store the exit code for later use
-        echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
-        
-        # Exit with 0 if the exit code is 2 (changes present)
-        if [[ "$exit_code" == "2" ]]; then
-          exit 0
-        fi
-        
-        # Exit with the original exit code for other cases
-        exit $exit_code
-      }
+      trap 'exit_code="$?"; echo "exit_code=$exit_code"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
+      # Capture both stdout and stderr to tf.console.txt, ensuring errors are visible
+      tofu plan -detailed-exitcode -out=tf.plan -lock=false 2>&1 | tee tf.console.txt
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
@@ -53,63 +37,106 @@ runs:
       TF_VAR_service_name: "${{ inputs.service-name }}"
   - if: failure()
     shell: bash
+    working-directory: ${{ inputs.dir }}
     run: |
+      echo "::error::OpenTofu plan failed"
       if [ -f tf.console.txt ]; then
-        echo "Contents of tf.console.txt:\n"
+        echo "::group::OpenTofu Plan Output"
         cat tf.console.txt
+        echo "::endgroup::"
+        # Also output the last 50 lines to make errors more visible
+        echo "::group::Last 50 lines of output"
+        tail -n 50 tf.console.txt
+        echo "::endgroup::"
       else
-        echo "tf.console.txt not created"
+        echo "::error::tf.console.txt was not created - this indicates a severe error"
       fi
 
   - id: show
+    if: steps.plan.outputs.exit_code != '1'
     shell: bash
     working-directory: ${{ inputs.dir }}
     run: |
-      terraform show tf.plan -no-color > tf.console.txt
+      if [ -f tf.plan ]; then
+        tofu show tf.plan -no-color > tf.console.txt
 
-      # Diff of changes.
-      # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
-      grep -E '^  # ' tf.console.txt | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be updated\|.* be replaced\)/! \1/' -e 's/^  # \(.* be read\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
+        # Diff of changes.
+        # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
+        grep -E '^  # ' tf.console.txt | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be updated\|.* be replaced\)/! \1/' -e 's/^  # \(.* be read\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
+      else
+        echo "::warning::tf.plan file not found, skipping show step"
+      fi
 
   - id: post
+    if: always()
     shell: bash
     working-directory: ${{ inputs.dir }}
     env:
       GH_TOKEN: ${{ github.token }}
     run: |
-      # Parse the tf.console.txt file, truncated for character limit.
-      # Fix: Use temp file to avoid broken pipe with head
-      grep -v '\.\.\.$' tf.console.txt > tf.temp.txt
-      console=$(head -c 42000 tf.temp.txt | sed '${/^  /d}')
+      # Check if plan was successful or failed
+      if [[ "${{ steps.plan.outputs.exit_code }}" == "1" ]]; then
+        # Plan failed - use the error output from tf.console.txt
+        if [[ -f tf.console.txt ]]; then
+          console=$(head -c 42000 tf.console.txt | sed '${/^  /d}')
+          summary="Error: OpenTofu plan failed"
+        else
+          console="Error: OpenTofu plan failed but no output was captured"
+          summary="Error: OpenTofu plan failed"
+        fi
+        
+        diff="
+        ${summary}
+        
+      \`\`\`
+      ${console}
+      \`\`\`
+      "
+        
+      else
+        # Plan was successful or had changes - use normal processing
+        if [[ -f tf.console.txt ]]; then
+          # Parse the tf.console.txt file, truncated for character limit.
+          # Fix: Use temp file to avoid broken pipe with head
+          grep -v '\.\.\.$' tf.console.txt > tf.temp.txt
+          console=$(head -c 42000 tf.temp.txt | sed '${/^  /d}')
+        else
+          console="No plan output available"
+        fi
+
+        # Parse the tf.console.txt file for the summary.
+        summary=$(cat tf.console.txt | tac | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac || echo "View output.")
+
+        # If tf.diff.txt exists, display it within a diff block, truncated for character limit.
+        if [[ -s tf.diff.txt ]]; then
+          diff="
+          ${summary}
+          
+        \`\`\`diff
+        $(head -c 24000 tf.diff.txt)
+        \`\`\`
+        "
+        else
+          diff="
+          \`\`\`diff
+          No changes.
+          \`\`\`
+          "
+        fi
+      fi
+
+      # Set outputs for both success and failure cases
       { echo 'result<<EOTFVIAPR'
         echo "$console"
         echo EOTFVIAPR
       } >> "$GITHUB_OUTPUT"
-
-      # Parse the tf.console.txt file for the summary.
-      summary=$(cat tf.console.txt | tac | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac || echo "View output.")
       echo "summary=$summary" >> "$GITHUB_OUTPUT"
 
-      # If tf.diff.txt exists, display it within a diff block, truncated for character limit.
       if [[ -s tf.diff.txt ]]; then
         { echo 'diff<<EOTFVIAPR'
           head -c 24000 tf.diff.txt
           echo EOTFVIAPR
         } >> "$GITHUB_OUTPUT"
-
-        diff="
-        ${summary}
-        
-      \`\`\`diff
-      $(head -c 24000 tf.diff.txt)
-      \`\`\`
-      "
-      else
-        diff="
-        \`\`\`diff
-        No changes.
-        \`\`\`
-        "
       fi
 
       body=$(cat <<EOTFVIAPR
@@ -138,19 +165,21 @@ runs:
       
       # Post PR comment per update and if the PR number is not 0.
       # Check if the PR contains a bot comment with the same identifier.
-      list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method GET --field per_page=100)
-      bot_comment=$(echo "$list_comments" | jq -r --arg identifier "pr-${{ github.event.pull_request.number }}-${{ inputs.env }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
-      
-      if [[ -n "$bot_comment" ]]; then
-        # Update existing comment.
-        pr_comment=$(gh api /repos/${{ github.repository }}/issues/comments/${bot_comment} --method PATCH --field "body=${body}")
-        echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
-      else
-        # Post new comment.
-        pr_comment=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method POST --field "body=${body}")
-        echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+      if [[ "${{ github.event.pull_request.number }}" != "" && "${{ github.event.pull_request.number }}" != "0" ]]; then
+        list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method GET --field per_page=100)
+        bot_comment=$(echo "$list_comments" | jq -r --arg identifier "pr-${{ github.event.pull_request.number }}-${{ inputs.env }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
+        
+        if [[ -n "$bot_comment" ]]; then
+          # Update existing comment.
+          pr_comment=$(gh api /repos/${{ github.repository }}/issues/comments/${bot_comment} --method PATCH --field "body=${body}")
+          echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+        else
+          # Post new comment.
+          pr_comment=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method POST --field "body=${body}")
+          echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+        fi
       fi
 
       # Clean up files.
-      rm -f tf.console.txt tf.diff.txt tf.temp.txt "${{ format('{0}{1}tf.plan', inputs.arg-chdir || inputs.working-directory, (inputs.arg-chdir || inputs.working-directory) && '/' || '') }}"
+      rm -f tf.console.txt tf.diff.txt tf.temp.txt tf.plan
 
