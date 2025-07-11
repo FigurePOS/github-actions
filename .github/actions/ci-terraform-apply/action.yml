@@ -59,7 +59,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v3
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v4
 
     - name: Download Artifact
       if: inputs.artifact-path != ''
