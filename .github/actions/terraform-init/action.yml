@@ -50,9 +50,9 @@ runs:
         fi
         tofu init -reconfigure \
           -backend-config="bucket=fgr-terraform-state" \
+          -backend-config="dynamodb_table=fgr-terraform-state-locks" \
           -backend-config="key=$backend_key" \
           -backend-config="region=${{ inputs.aws-region }}" \
-          -backend-config=use_lockfile=true \
           -lock-timeout=60s
       shell: bash
 
