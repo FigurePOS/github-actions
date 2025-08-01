@@ -443,3 +443,9 @@ Parameters:
       service-name: fgr-service-account
       trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
+
+## How to release a new tag
+- create new tag from Github: Releases -> `Draft a new release` -> fill the necessary info
+- if you want to move tag to a different commit (e.g. adding v4.0.2 and moving tag v4 to same commit):  
+  - run `git tag -f <tag-name> <commit-sha>` and the push tags with `git push -f --tags` (first pull latest tags)
+
