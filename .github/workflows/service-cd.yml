@@ -97,11 +97,3 @@ jobs:
                 throw error;
               }
             }
-
-      - name: Send Slack Notification About Failure
-        if: failure()
-        uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
-        with:
-          job-name: terraform-deploy-prod
-          service-name: ${{ inputs.service-name }}
-          trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
