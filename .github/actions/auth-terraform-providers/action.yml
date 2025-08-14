@@ -55,7 +55,7 @@ runs:
       env:
         AWS_REGION: ${{ inputs.aws-region }}
       run: |
-        TIMESTAMP=$(date +%s)
+        TOKEN_UNIQUE_ID="${GITHUB_RUN_ID}-$(date +%s)"
 
         # Assume the TerraformDeployer role for Grafana operations
         echo "Assuming TerraformDeployer role..."
@@ -91,7 +91,7 @@ runs:
         aws grafana create-workspace-service-account-token \
           --workspace-id "$TF_VAR_grafana_workspace_id" \
           --service-account-id "$TF_VAR_grafana_service_account_id" \
-          --name "terraform-token-${TIMESTAMP}" \
+          --name "terraform-token-${TOKEN_UNIQUE_ID}" \
           --seconds-to-live 3600 \
           --region "$AWS_REGION")
         if [ $? -ne 0 ]; then
