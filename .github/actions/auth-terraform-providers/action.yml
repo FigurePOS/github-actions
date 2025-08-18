@@ -55,7 +55,7 @@ runs:
       env:
         AWS_REGION: ${{ inputs.aws-region }}
       run: |
-        TOKEN_UNIQUE_ID="${GITHUB_RUN_ID}-$(date +%s)"
+        TOKEN_UNIQUE_ID="${GITHUB_JOB}-$(date +%s%N | cut -c1-13)-${RANDOM}-$$"
 
         # Assume the TerraformDeployer role for Grafana operations
         echo "Assuming TerraformDeployer role..."
