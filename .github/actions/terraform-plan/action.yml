@@ -143,20 +143,15 @@ runs:
       ### terraform plan for \`${{ inputs.env }}\`
       
       ${diff}
-      <!-- placeholder-3 -->
       <details><summary>Detailed Plan</br>
 
-      <!-- placeholder-4 -->
-      ###### By @${GITHUB_TRIGGERING_ACTOR} at ${{ github.event.pull_request.updated_at || github.event.head_commit.timestamp || github.event.merge_group.head_commit.timestamp }} [(view log)](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
       </summary>
 
       \`\`\`hcl
       ${console}
       \`\`\`
       </details>
-      <!-- placeholder-5 -->
       <!-- pr-${{ github.event.pull_request.number }}-${{ inputs.env }} -->
-      <!-- placeholder-6 -->
       EOTFVIAPR
       )
 
