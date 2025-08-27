@@ -27,7 +27,7 @@ runs:
     run: |-
       trap 'exit_code="$?"; echo "exit_code=$exit_code"; echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"; if [[ "$exit_code" == "2" ]]; then exit 0; fi' EXIT
       # Capture both stdout and stderr to tf.console.txt, ensuring errors are visible
-      tofu plan -detailed-exitcode -out=tf.plan -lock=false 2>&1 | tee tf.console.txt
+      tofu plan -detailed-exitcode -out=tf.plan -lock=false -no-color 2>&1 | tee tf.console.txt
     env:
       TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
       TF_VAR_aws_region: "${{ inputs.aws-region }}"
@@ -76,23 +76,37 @@ runs:
     run: |
       # Check if plan was successful or failed
       if [[ "${{ steps.plan.outputs.exit_code }}" == "1" ]]; then
-        # Plan failed - use the error output from tf.console.txt
+        # Plan failed
+        summary="Error: OpenTofu plan failed"
         if [[ -f tf.console.txt ]]; then
+          # Full log for the details section
           console=$(head -c 42000 tf.console.txt | sed '${/^  /d}')
-          summary="Error: OpenTofu plan failed"
+          
+          # Extract errors for the main comment
+          errors=$(sed -n '/Error:/,$p' tf.console.txt)
+          if [[ -n "$errors" ]]; then
+            error_details=$(echo "$errors" | head -c 24000)
+          else
+            error_details="Could not parse errors from the plan output."
+          fi
+          
+          diff="
+          ${summary}
+          
+        \`\`\`
+        ${error_details}
+        \`\`\`
+        "
         else
           console="Error: OpenTofu plan failed but no output was captured"
-          summary="Error: OpenTofu plan failed"
+          diff="
+          ${summary}
+          
+        \`\`\`
+        No output was captured.
+        \`\`\`
+        "
         fi
-        
-        diff="
-        ${summary}
-        
-      \`\`\`
-      ${console}
-      \`\`\`
-      "
-        
       else
         # Plan was successful or had changes - use normal processing
         if [[ -f tf.console.txt ]]; then
