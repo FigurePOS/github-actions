@@ -449,3 +449,55 @@ Parameters:
 - if you want to move tag to a different commit (e.g. adding v4.0.2 and moving tag v4 to same commit):  
   - run `git tag -f <tag-name> <commit-sha>` and the push tags with `git push -f --tags` (first pull latest tags)
 
+## GitHub Deployments
+
+### Create Deployment (GitHub)
+
+Parameters:
+- `environment`: Environment name (e.g., development, production)
+- `ref`: Commit SHA or ref to deploy (optional; defaults to current SHA)
+- `description`: Deployment description (optional)
+
+Outputs:
+- `deployment-id`: ID of the created deployment
+
+```yml
+- name: Create Deployment
+  id: create_deployment
+  uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
+  with:
+    environment: development
+    ref: ${{ github.sha }}
+    description: Deploy
+```
+
+### Update Deployment Status (GitHub)
+
+Parameters:
+- `deployment-id`: Deployment ID
+- `state`: One of `success`, `failure`, `inactive`, `error`, `queued`, `in_progress`, `pending`
+- `description`: Status description (optional)
+
+```yml
+- name: Mark Deployment Success
+  uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
+  with:
+    deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
+    state: success
+    description: Terraform deployment completed successfully
+```
+
+### Update Release and Production Tags (GitHub)
+
+Parameters:
+- `sha`: Commit SHA to tag
+
+```yml
+- name: Create Release + Update Production Tag
+  uses: FigurePOS/github-actions/.github/actions/github-tag-release@v4
+  with:
+    sha: ${{ inputs.sha }}
+```
+
+Note: Ensure workflow permissions include `deployments: write` to create/update deployment objects.
+

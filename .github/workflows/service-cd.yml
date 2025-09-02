@@ -39,6 +39,8 @@ permissions:
   id-token: write
   # Allows reading from GitHub container registry (ghcr.io)
   packages: read
+  # Allows creating and updating Deployments
+  deployments: write
 
 jobs:
   terraform-deploy:
@@ -46,6 +48,13 @@ jobs:
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
+      - name: Create Deployment
+        id: create_deployment
+        uses: ./.github/actions/github-deployment-create
+        with:
+          environment: production
+          ref: ${{ inputs.sha }}
+          description: Deploy
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
         with:
           aws-account-id: ${{ inputs.aws-account-id }}
@@ -58,42 +67,22 @@ jobs:
           sha: ${{ inputs.sha }}
 
       - name: Create a Release Tag and Update the Production Tag
-        uses: actions/github-script@v7
+        uses: ./.github/actions/github-tag-release
         with:
-          retries: 3
-          script: |
-            const date = new Date();
-            const tag = date.toISOString().replace(/[-:Z]/g, "").replace(/[T\.]/g, "-");
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/release-${tag}`,
-              sha: "${{ inputs.sha }}"
-            })
-            try {
-              await github.rest.git.getRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: "tags/production"
-              });
-              // If the tag exists, update it
-              await github.rest.git.updateRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: "tags/production",
-                sha: "${{ inputs.sha }}",
-                force: true
-              });
-            } catch (error) {
-              if (error.status === 404) {
-              // If the tag does not exist, create it
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: "refs/tags/production",
-                sha: "${{ inputs.sha }}"
-              });
-              } else {
-                throw error;
-              }
-            }
+          sha: ${{ inputs.sha }}
+
+      - name: Update Deployment Status - Success
+        if: success()
+        uses: ./.github/actions/github-deployment-status
+        with:
+          deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
+          state: success
+          description: Production deployment completed successfully
+
+      - name: Update Deployment Status - Failure
+        if: failure()
+        uses: ./.github/actions/github-deployment-status
+        with:
+          deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
+          state: failure
+          description: Production deployment failed
