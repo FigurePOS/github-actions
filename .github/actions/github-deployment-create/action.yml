@@ -40,7 +40,7 @@ runs:
           await github.rest.repos.createDeploymentStatus({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            deployment_id: ${{ steps.create.outputs.deployment-id }},
+            deployment_id: Number(`${{ steps.create.outputs.deployment-id }}`),
             state: 'in_progress',
             description: 'Deployment started'
           });
