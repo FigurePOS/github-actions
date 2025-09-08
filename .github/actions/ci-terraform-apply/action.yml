@@ -57,6 +57,8 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.sha != '' && inputs.sha || github.sha }}
 
     - name: Set Up Node.js
       uses: FigurePOS/github-actions/.github/actions/node-setup@v4
