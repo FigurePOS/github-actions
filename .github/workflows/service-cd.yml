@@ -42,7 +42,7 @@ permissions:
 
 jobs:
   terraform-deploy:
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
