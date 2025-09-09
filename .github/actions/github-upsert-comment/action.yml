@@ -12,7 +12,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Delete Comment
+    - name: Upsert Comment
       shell: bash
       env:
         COMMENT_BODY: ${{ inputs.body }}
