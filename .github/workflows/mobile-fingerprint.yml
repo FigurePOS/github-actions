@@ -30,14 +30,6 @@ on:
         description: "Environment JSON"
         required: false
 
-permissions:
-  contents: read
-  packages: read
-  # REQUIRED: Allow comments of PRs
-  pull-requests: write
-  # REQUIRED: Allow updating fingerprint in action caches
-  actions: write
-
 jobs:
   fingerprint:
     name: "Check Expo Fingerprint"
