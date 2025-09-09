@@ -88,7 +88,7 @@ jobs:
           echo "$FINGERPRINT_DIFF" | jq '.'
 
       - name: Remove Comment
-        uses: FigurePOS/github-actions/.github/actions/github-delete-comment@tmp-david
+        uses: FigurePOS/github-actions/.github/actions/github-delete-comment@v4
         if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff == '[]' }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -96,7 +96,7 @@ jobs:
           identifier: ${{ inputs.comment-identifier }}
 
       - name: Add Comment
-        uses: FigurePOS/github-actions/.github/actions/github-upsert-comment@tmp-david
+        uses: FigurePOS/github-actions/.github/actions/github-upsert-comment@v4
         if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff != '[]' }}
         env:
           GH_TOKEN: ${{ github.token }}
