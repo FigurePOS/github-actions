@@ -1,0 +1,122 @@
+name: "Fingerprint"
+# This workflow is used to check the fingerprint of the mobile (expo) app and detect changes in the native layer during a PR.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Environment"
+        required: false
+        type: string
+        #options: development, production (we default to production, because we want to check primary the production fingerprint)
+        default: "production"
+      whitelabel:
+        description: "Whitelabel (used for mobile ordering)"
+        required: false
+        type: string
+        default: ""
+      working-directory:
+        description: "Working directory"
+        required: false
+        type: string
+        default: "./"
+      fingerprint-db-cache-key:
+        description: A cache key to use for saving the fingerprint database (needed for monorepo so that each app has its own fingerprint database)
+        required: false
+        type: string
+        default: fingerprint-db
+    secrets:
+      BUDDY_TRIGGER_URL:
+        description: "Buddy trigger URL"
+        required: true
+      BUGSNAG_API_KEY:
+        description: "Bugsnag API key"
+        required: true
+      EXPO_TOKEN:
+        description: "EXPO token"
+        required: true
+      ENV_JSON:
+        description: "Environment JSON"
+        required: false
+
+permissions:
+  contents: read
+  packages: read
+  # REQUIRED: Allow comments of PRs
+  pull-requests: write
+  # REQUIRED: Allow updating fingerprint in action caches
+  actions: write
+
+jobs:
+  fingerprint:
+    name: "Check Expo Fingerprint"
+    runs-on: blacksmith-4vcpu-ubuntu-2204
+    env:
+      APP_VARIANT: ${{ inputs.environment }}
+      WHITELABEL: ${{ inputs.whitelabel }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+        with:
+          version: "22.x"
+
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+      - name: Set Environment
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
+        with:
+          env-json: ${{ secrets.ENV_JSON }}
+          destination: ${{ inputs.working-directory }}/env.json
+
+      - name: Check Fingerprint
+        id: fingerprint
+        uses: expo/expo-github-action/fingerprint@main
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
+
+      - name: Print Fingerprint Diff
+        env:
+          FINGERPRINT_DIFF: ${{ steps.fingerprint.outputs.fingerprint-diff }}
+        run: |
+          echo "Fingerprint diff:"
+          echo "$FINGERPRINT_DIFF" | jq '.'
+
+      - name: Remove Comment
+        uses: FigurePOS/github-actions/.github/actions/github-delete-comment@tmp-david
+        if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff == '[]' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          identifier: pr-fingerprint-check
+
+      - name: Add Comment
+        uses: FigurePOS/github-actions/.github/actions/github-upsert-comment@tmp-david
+        if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff != '[]' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FINGERPRINT_DIFF: ${{ steps.fingerprint.outputs.fingerprint-diff }}
+        with:
+          identifier: pr-fingerprint-check
+          body: |
+            ## ⚠️ Native Changes Detected
+
+            This PR contains changes that affect the native layer of the application. Please ensure you:
+
+            1. Increment the native (minor) version number in `package.json`.
+
+            2. After the PR is merged, make sure to start the builds on EAS.<br>
+            For more information see `Releasing new minor (native) version` in our [documentation](https://twbrds.atlassian.net/wiki/spaces/PT/pages/164009/Building+Expo+Apps).
+
+            <details>
+            <summary>Changes Detected by Fingerprint</summary>
+
+            ```json
+            FINGERPRINT_DIFF_PLACEHOLDER
+            ```
+
+            </details>

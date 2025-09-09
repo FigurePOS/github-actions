@@ -1,0 +1,25 @@
+name: GitHub Delete Comment
+description: Delete a comment on a GitHub issue or pull request
+
+inputs:
+  identifier:
+    description: "The identifier of the comment to delete, identifier is located in the comment body"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Delete Comment
+      shell: bash
+      run: |
+        list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method GET --field per_page=100)
+        bot_comment=$(echo "$list_comments" | jq -r --arg identifier "pr-${{ github.event.pull_request.number }}-${{ inputs.env }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
+
+        if [[ -n "$bot_comment" ]]; then
+          # Delete comment
+          echo "Comment found, deleting..."
+          gh api /repos/${{ github.repository }}/issues/comments/${bot_comment} --method DELETE
+          echo "Comment with identifier '${{ inputs.identifier }}' deleted."
+        else
+          echo "Comment with identifier '${{ inputs.identifier }}' not found."
+        fi
