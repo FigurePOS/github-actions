@@ -25,6 +25,11 @@ on:
         required: false
         type: string
         default: fingerprint-db
+      message-suffix:
+        description: A suffix to add to the message
+        required: false
+        type: string
+        default: ""
     secrets:
       ENV_JSON:
         description: "Environment JSON"
@@ -94,7 +99,7 @@ jobs:
         with:
           identifier: pr-fingerprint-check
           body: |
-            ## ⚠️ Native Changes Detected
+            ## ⚠️ Native Changes Detected${{ inputs.message-suffix }}
 
             This PR contains changes that affect the native layer of the application. Please ensure you:
 
