@@ -26,15 +26,6 @@ on:
         type: string
         default: fingerprint-db
     secrets:
-      BUDDY_TRIGGER_URL:
-        description: "Buddy trigger URL"
-        required: true
-      BUGSNAG_API_KEY:
-        description: "Bugsnag API key"
-        required: true
-      EXPO_TOKEN:
-        description: "EXPO token"
-        required: true
       ENV_JSON:
         description: "Environment JSON"
         required: false
