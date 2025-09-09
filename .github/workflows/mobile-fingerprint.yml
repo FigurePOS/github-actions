@@ -30,6 +30,11 @@ on:
         required: false
         type: string
         default: ""
+      comment-identifier:
+        description: A identifier to use for the comment
+        required: false
+        type: string
+        default: pr-fingerprint-check
     secrets:
       ENV_JSON:
         description: "Environment JSON"
@@ -88,7 +93,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         with:
-          identifier: pr-fingerprint-check
+          identifier: ${{ inputs.comment-identifier }}
 
       - name: Add Comment
         uses: FigurePOS/github-actions/.github/actions/github-upsert-comment@tmp-david
@@ -97,7 +102,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           FINGERPRINT_DIFF: ${{ steps.fingerprint.outputs.fingerprint-diff }}
         with:
-          identifier: pr-fingerprint-check
+          identifier: ${{ inputs.comment-identifier }}
           body: |
             ## ⚠️ Native Changes Detected${{ inputs.message-suffix }}
 
