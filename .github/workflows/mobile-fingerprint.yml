@@ -82,10 +82,10 @@ jobs:
 
       - name: Print Fingerprint Diff
         env:
-          FINGERPRINT_DIFF: ${{ steps.fingerprint.outputs.fingerprint-diff }}
+          JSON_DATA_VALUE: ${{ steps.fingerprint.outputs.fingerprint-diff }}
         run: |
           echo "Fingerprint diff:"
-          echo "$FINGERPRINT_DIFF" | jq '.'
+          echo "$JSON_DATA_VALUE" | jq '.'
 
       - name: Remove Comment
         uses: FigurePOS/github-actions/.github/actions/github-delete-comment@v4
@@ -100,7 +100,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff != '[]' }}
         env:
           GH_TOKEN: ${{ github.token }}
-          FINGERPRINT_DIFF: ${{ steps.fingerprint.outputs.fingerprint-diff }}
+          JSON_DATA_VALUE: ${{ steps.fingerprint.outputs.fingerprint-diff }}
         with:
           identifier: ${{ inputs.comment-identifier }}
           body: |
@@ -117,7 +117,7 @@ jobs:
             <summary>Changes Detected by Fingerprint</summary>
 
             ```json
-            FINGERPRINT_DIFF_PLACEHOLDER
+            JSON_DATA_PLACEHOLDER
             ```
 
             </details>
