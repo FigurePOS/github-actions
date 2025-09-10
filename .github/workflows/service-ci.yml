@@ -35,6 +35,11 @@ on:
         required: false
         type: string
         default: ""
+      ubuntu-release:
+        description: "Ubuntu release (e.g., 2204, 2404)"
+        required: false
+        type: string
+        default: "2404"
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
@@ -70,7 +75,7 @@ concurrency:
     
 jobs:
   build:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
         with:
@@ -79,7 +84,7 @@ jobs:
           service-name: ${{ inputs.service-name }}
   
   test-unit:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
         with:
@@ -90,7 +95,7 @@ jobs:
   test-e2e:
     needs:
       - build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
         with:
@@ -109,7 +114,7 @@ jobs:
       BUDDY_TRIGGER_URL: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-validate:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
         with:
@@ -122,7 +127,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
@@ -138,7 +143,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
@@ -157,7 +162,7 @@ jobs:
       - test-e2e
       - test-unit
       - test-lambda
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     outputs:
       deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
     steps:
@@ -178,7 +183,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs:
       - push
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
         with:
@@ -209,7 +214,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs:
       - terraform-deploy-dev
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v4
         with:
