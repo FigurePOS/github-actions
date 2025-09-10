@@ -61,6 +61,7 @@ runs:
         ref: ${{ inputs.sha != '' && inputs.sha || github.sha }}
 
     - name: Set Up Node.js
+      if: ${{ hashFiles('package.json') != '' }}
       uses: FigurePOS/github-actions/.github/actions/node-setup@v4
 
     - name: Download Artifact
