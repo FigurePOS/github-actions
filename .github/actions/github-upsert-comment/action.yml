@@ -1,0 +1,44 @@
+name: GitHub Upsert Comment
+description: Creates or updates a comment on a GitHub issue or pull request
+
+inputs:
+  identifier:
+    description: "The identifier of the comment, identifier is automatically added to the body"
+    required: true
+  body:
+    description: "The body of the comment"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Upsert Comment
+      shell: bash
+      env:
+        COMMENT_BODY: ${{ inputs.body }}
+        COMMENT_IDENTIFIER: ${{ inputs.identifier }}
+      run: |
+        list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments --method GET --field per_page=100)
+        bot_comment=$(echo "$list_comments" | jq -r --arg identifier "$COMMENT_IDENTIFIER" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
+
+        # Use jq to process the body, handle placeholder replacement, and escape properly
+        if [[ -n "$JSON_DATA_VALUE" && "$COMMENT_BODY" == *"JSON_DATA_PLACEHOLDER"* ]]; then
+          # Format the JSON nicely first
+          formatted_json=$(echo "$JSON_DATA_VALUE" | jq '.')
+          # Replace placeholder with formatted JSON using jq, extract raw string
+          body=$(jq -n --arg body "$COMMENT_BODY" --arg id "$COMMENT_IDENTIFIER" --arg diff "$formatted_json" '
+            ($body | gsub("JSON_DATA_PLACEHOLDER"; $diff)) + "<!-- " + $id + " -->"
+          ' | jq -r '.')
+        else
+          # Use jq to properly escape the body content and add identifier, extract raw string
+          body=$(jq -n --arg body "$COMMENT_BODY" --arg id "$COMMENT_IDENTIFIER" '$body + "<!-- " + $id + " -->"' | jq -r '.')
+        fi
+        if [[ -n "$bot_comment" ]]; then
+          # Update existing comment.
+          pr_comment=$(gh api /repos/${{ github.repository }}/issues/comments/${bot_comment} --method PATCH --field "body=$body")
+          echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+        else
+          # Post new comment.
+          pr_comment=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments --method POST --field "body=$body")
+          echo "comment_id=$(echo "$pr_comment" | jq -r '.id')" >> "$GITHUB_OUTPUT"
+        fi
