@@ -75,7 +75,7 @@ jobs:
 
       - name: Check Fingerprint
         id: fingerprint
-        uses: expo/expo-github-action/fingerprint@main
+        uses: expo/expo-github-action/fingerprint@v8
         with:
           working-directory: ${{ inputs.working-directory }}
           fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
