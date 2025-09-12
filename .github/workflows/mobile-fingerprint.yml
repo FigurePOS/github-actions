@@ -82,7 +82,7 @@ jobs:
 
       - name: Check Fingerprint
         id: fingerprint
-        uses: expo/expo-github-action/fingerprint@v8
+        uses: expo/expo-github-action/fingerprint@main
         with:
           working-directory: ${{ inputs.working-directory }}
           fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
