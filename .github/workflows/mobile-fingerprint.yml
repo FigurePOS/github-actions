@@ -51,7 +51,7 @@ permissions:
 jobs:
   fingerprint:
     name: "Check Expo Fingerprint"
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     env:
       APP_VARIANT: ${{ inputs.environment }}
       WHITELABEL: ${{ inputs.whitelabel }}
@@ -60,12 +60,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          version: "22.x"
+          node-version: 22.x
+          cache: yarn
 
-      - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+      - name: Set GitHub Packages Token
+        shell: bash
+        run: |
+          npm config set @figurepos:registry https://npm.pkg.github.com/
+          npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+
+      - name: Install dependencies
+        run: yarn install
 
       - name: Set Environment
         uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
