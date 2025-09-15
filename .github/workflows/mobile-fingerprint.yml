@@ -35,6 +35,10 @@ on:
         required: false
         type: string
         default: pr-fingerprint-check
+      previous-git-commit:
+        description: The previous git commit to use for the fingerprint check
+        required: false
+        type: string
     secrets:
       ENV_JSON:
         description: "Environment JSON"
@@ -86,6 +90,7 @@ jobs:
         with:
           working-directory: ${{ inputs.working-directory }}
           fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
+          previous-git-commit: ${{ inputs.previous-git-commit }}
 
       - name: Print Fingerprint Diff
         env:
