@@ -92,12 +92,19 @@ jobs:
           fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
           previous-git-commit: ${{ inputs.previous-git-commit }}
 
+      - name: Get Previous Git Commit
+        uses: FigurePOS/github-actions/.github/actions/git-get-no-skip-ci-commit@v4
+        id: get-previous-git-commit
+        with:
+          commit-sha: ${{ inputs.previous-git-commit }}
+
       - name: Print Fingerprint Diff
         env:
           JSON_DATA_VALUE: ${{ steps.fingerprint.outputs.fingerprint-diff }}
         run: |
           echo "Fingerprint diff:"
           echo "$JSON_DATA_VALUE" | jq '.'
+          echo "Previous git commit: ${{ steps.get-previous-git-commit.outputs.commit-sha }}"n
 
       - name: Remove Comment
         uses: FigurePOS/github-actions/.github/actions/github-delete-comment@v4

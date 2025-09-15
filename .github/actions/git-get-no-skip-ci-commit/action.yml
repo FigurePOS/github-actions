@@ -1,0 +1,49 @@
+name: Get Last Non-Skip CI Commit
+description: Get the most recent commit SHA that doesn't contain [skip ci] in its message
+
+inputs:
+  commit-sha:
+    description: "The commit SHA to start searching from"
+    required: true
+
+outputs:
+  commit-sha:
+    description: "The SHA of the most recent commit without [skip ci] in its message"
+    value: ${{ steps.find-commit.outputs.commit-sha }}
+
+runs:
+  using: composite
+  steps:
+    - name: Find Non-Skip CI Commit
+      id: find-commit
+      shell: bash
+      run: |
+        # Start from the input commit and look backwards through history
+        current_sha="${{ inputs.commit-sha }}"
+        echo "Starting search from commit: $current_sha"
+
+        while true; do
+          # Get the commit message for the current SHA
+          commit_msg=$(git log -1 --format=%B "$current_sha")
+          echo "Checking commit: $current_sha"
+          echo "\tCommit message: $commit_msg"
+          
+          # Check if the commit message contains [skip ci]
+          if [[ ! "$commit_msg" =~ "\[skip ci\]" ]]; then
+            echo "\tFound commit without [skip ci]: $current_sha"
+            echo "commit-sha=$current_sha" >> $GITHUB_OUTPUT
+            break
+          else
+            echo "\tCommit contains [skip ci], moving to parent commit"
+          fi
+          
+          # Get the parent commit
+          parent_sha=$(git rev-parse "$current_sha^")
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to get parent commit for $current_sha"
+            echo "Error: Reached end of history without finding a non-skip-ci commit"
+            exit 1
+          fi
+          echo "\tMoving to parent commit: $parent_sha"
+          current_sha=$parent_sha
+        done
