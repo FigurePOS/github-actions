@@ -19,6 +19,9 @@ runs:
       shell: bash
       run: |
         # Start from the input commit and look backwards through history
+        echo "Last 20 commits:"
+        git log -20 --oneline
+
         echo "Starting search from git reference: ${{ inputs.start-git-ref }}"
         current_sha="$(git rev-parse "${{ inputs.start-git-ref }}")"
         echo "Starting search from commit: $current_sha"
