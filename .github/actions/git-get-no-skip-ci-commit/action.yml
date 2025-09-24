@@ -48,6 +48,6 @@ runs:
             echo "Error: Reached end of history without finding a non-skip-ci commit"
             exit 1
           fi
-          echo "\tMoving to parent commit: $parent_sha"
+          echo "  Moving to parent commit: $parent_sha"
           current_sha=$parent_sha
         done
