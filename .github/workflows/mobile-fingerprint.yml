@@ -59,6 +59,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # The ref has to be specified to make sure git checkout takes the real branch,
+          # because for pull_request triggers, the action takes some temporary ref with weird name and message.
+          ref: ${{ github.event.pull_request.head.ref }}
+          # This makes sure that all commits are checked out, because the previous commit is needed for the fingerprint check.
           fetch-depth: 0
 
       - name: Set Up Node.js
