@@ -35,10 +35,6 @@ on:
         required: false
         type: string
         default: pr-fingerprint-check
-      previous-git-commit:
-        description: The previous git commit to use for the fingerprint check
-        required: false
-        type: string
     secrets:
       ENV_JSON:
         description: "Environment JSON"
@@ -62,6 +58,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set Up Node.js
         uses: actions/setup-node@v3
@@ -84,19 +82,19 @@ jobs:
           env-json: ${{ secrets.ENV_JSON }}
           destination: ${{ inputs.working-directory }}/env.json
 
+      - name: Get Previous Git Commit
+        uses: FigurePOS/github-actions/.github/actions/git-get-no-skip-ci-commit@v4
+        id: get-previous-git-commit
+        with:
+          start-git-ref: ${{ github.event.pull_request.base.ref }}
+
       - name: Check Fingerprint
         id: fingerprint
         uses: expo/expo-github-action/fingerprint@main
         with:
           working-directory: ${{ inputs.working-directory }}
           fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
-          previous-git-commit: ${{ inputs.previous-git-commit }}
-
-      - name: Get Previous Git Commit
-        uses: FigurePOS/github-actions/.github/actions/git-get-no-skip-ci-commit@v4
-        id: get-previous-git-commit
-        with:
-          commit-sha: ${{ inputs.previous-git-commit }}
+          previous-git-commit: ${{ steps.get-previous-git-commit.outputs.commit-sha }}
 
       - name: Print Fingerprint Diff
         env:

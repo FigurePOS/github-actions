@@ -2,8 +2,8 @@ name: Get Last Non-Skip CI Commit
 description: Get the most recent commit SHA that doesn't contain [skip ci] in its message
 
 inputs:
-  commit-sha:
-    description: "The commit SHA to start searching from"
+  start-git-ref:
+    description: "The git reference to start searching from"
     required: true
 
 outputs:
@@ -19,7 +19,8 @@ runs:
       shell: bash
       run: |
         # Start from the input commit and look backwards through history
-        current_sha="${{ inputs.commit-sha }}"
+        echo "Starting search from git reference: ${{ inputs.start-git-ref }}"
+        current_sha="$(git rev-parse "${{ inputs.start-git-ref }}")"
         echo "Starting search from commit: $current_sha"
 
         while true; do
