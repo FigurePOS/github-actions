@@ -89,6 +89,7 @@ jobs:
       - name: Get Previous Git Commit
         uses: FigurePOS/github-actions/.github/actions/git-get-no-skip-ci-commit@v4
         id: get-previous-git-commit
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           start-git-ref: ${{ github.event.pull_request.base.sha }}
 
