@@ -30,15 +30,15 @@ runs:
           # Get the commit message for the current SHA
           commit_msg=$(git log -1 --format=%B "$current_sha")
           echo "Checking commit: $current_sha"
-          echo "\tCommit message: $commit_msg"
+          echo "  Commit message: $commit_msg"
           
           # Check if the commit message contains [skip ci]
-          if [[ ! "$commit_msg" =~ "\[skip ci\]" ]]; then
-            echo "\tFound commit without [skip ci]: $current_sha"
+          if [[ ! "$commit_msg" == *"[skip ci]"* ]]; then
+            echo "  Found commit without [skip ci]: $current_sha"
             echo "commit-sha=$current_sha" >> $GITHUB_OUTPUT
             break
           else
-            echo "\tCommit contains [skip ci], moving to parent commit"
+            echo "  Commit contains [skip ci], moving to parent commit"
           fi
           
           # Get the parent commit
