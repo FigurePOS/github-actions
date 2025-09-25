@@ -13,10 +13,7 @@ runs:
       shell: bash
       run: |
         list_comments=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --method GET --field per_page=100)
-        echo "List comments: $list_comments"
-
         bot_comment=$(echo "$list_comments" | jq -r --arg identifier "${{ inputs.identifier }}" '.[] | select(.user.type == "Bot") | select(.body | contains($identifier)) | .id' | head -n 1)
-        echo "Bot comment: $bot_comment"
 
         if [[ -n "$bot_comment" ]]; then
           # Delete comment
