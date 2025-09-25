@@ -49,8 +49,9 @@ permissions:
   actions: write
 
 jobs:
-  fingerprint:
+  check-fingerprint:
     name: "Check Expo Fingerprint"
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     env:
       APP_VARIANT: ${{ inputs.environment }}
@@ -89,7 +90,6 @@ jobs:
       - name: Get Previous Git Commit
         uses: FigurePOS/github-actions/.github/actions/git-get-no-skip-ci-commit@v4
         id: get-previous-git-commit
-        if: github.event_name == 'pull_request'
         with:
           start-git-ref: ${{ github.event.pull_request.base.sha }}
 
@@ -111,7 +111,7 @@ jobs:
 
       - name: Remove Comment
         uses: FigurePOS/github-actions/.github/actions/github-delete-comment@v4
-        if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff == '[]' }}
+        if: ${{ steps.fingerprint.outputs.fingerprint-diff == '[]' }}
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -119,7 +119,7 @@ jobs:
 
       - name: Add Comment
         uses: FigurePOS/github-actions/.github/actions/github-upsert-comment@v4
-        if: ${{ github.event_name == 'pull_request' && steps.fingerprint.outputs.fingerprint-diff != '[]' }}
+        if: ${{ steps.fingerprint.outputs.fingerprint-diff != '[]' }}
         env:
           GH_TOKEN: ${{ github.token }}
           JSON_DATA_VALUE: ${{ steps.fingerprint.outputs.fingerprint-diff }}
@@ -143,3 +143,42 @@ jobs:
             ```
 
             </details>
+
+  build-fingerprint:
+    name: "Build Expo Fingerprint"
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      APP_VARIANT: ${{ inputs.environment }}
+      WHITELABEL: ${{ inputs.whitelabel }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+          cache: yarn
+
+      - name: Set GitHub Packages Token
+        shell: bash
+        run: |
+          npm config set @figurepos:registry https://npm.pkg.github.com/
+          npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Set Environment
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
+        with:
+          env-json: ${{ secrets.ENV_JSON }}
+          destination: ${{ inputs.working-directory }}/env.json
+
+      - name: Build Fingerprint
+        id: fingerprint
+        uses: expo/expo-github-action/fingerprint@main
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
