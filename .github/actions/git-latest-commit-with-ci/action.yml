@@ -1,4 +1,4 @@
-name: Get Last Non-Skip CI Commit
+name: Get Last Commit Without [skip ci]
 description: Get the most recent commit SHA that doesn't contain [skip ci] in its message
 
 inputs:

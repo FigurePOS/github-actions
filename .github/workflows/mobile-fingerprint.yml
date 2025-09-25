@@ -81,7 +81,7 @@ jobs:
           destination: ${{ inputs.working-directory }}/env.json
 
       - name: Get Previous Git Commit
-        uses: FigurePOS/github-actions/.github/actions/git-get-no-skip-ci-commit@v4
+        uses: FigurePOS/github-actions/.github/actions/git-latest-commit-with-ci@v4
         id: get-previous-git-commit
         with:
           start-git-ref: ${{ github.event.pull_request.base.sha }}
