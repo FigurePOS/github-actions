@@ -168,7 +168,7 @@ jobs:
     steps:
       - name: Create Deployment
         id: create_deployment
-        uses: ./.github/actions/github-deployment-create
+        uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
         with:
           environment: development
           ref: ${{ github.sha }}
@@ -196,7 +196,7 @@ jobs:
           service-name: ${{ inputs.service-name }}
       - name: Update Deployment Status - Success
         if: success()
-        uses: ./.github/actions/github-deployment-status
+        uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
         with:
           deployment-id: ${{ needs.push.outputs.deployment-id }}
           state: success
@@ -204,7 +204,7 @@ jobs:
         
       - name: Update Deployment Status - Failure
         if: failure()
-        uses: ./.github/actions/github-deployment-status
+        uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
         with:
           deployment-id: ${{ needs.push.outputs.deployment-id }}
           state: failure
