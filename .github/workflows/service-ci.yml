@@ -35,11 +35,6 @@ on:
         required: false
         type: string
         default: ""
-      ubuntu-release:
-        description: "Ubuntu release (e.g., 2204, 2404)"
-        required: false
-        type: string
-        default: "2404"
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
@@ -66,8 +61,6 @@ permissions:
   packages: read
   # Enables commenting and updating PR status (e.g., posting test results, terraform plans)
   pull-requests: write
-  # Allows creating and updating Deployments
-  deployments: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
@@ -75,7 +68,7 @@ concurrency:
     
 jobs:
   build:
-    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
         with:
@@ -84,7 +77,7 @@ jobs:
           service-name: ${{ inputs.service-name }}
   
   test-unit:
-    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
         with:
@@ -95,7 +88,7 @@ jobs:
   test-e2e:
     needs:
       - build
-    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
         with:
@@ -114,7 +107,7 @@ jobs:
       BUDDY_TRIGGER_URL: ${{ secrets.BUDDY_TRIGGER_URL }}
   
   terraform-validate:
-    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
         with:
@@ -127,7 +120,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
@@ -143,7 +136,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs:
       - terraform-validate
-    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
         with:
@@ -162,17 +155,8 @@ jobs:
       - test-e2e
       - test-unit
       - test-lambda
-    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
-    outputs:
-      deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
-      - name: Create Deployment
-        id: create_deployment
-        uses: ./.github/actions/github-deployment-create
-        with:
-          environment: development
-          ref: ${{ github.sha }}
-          description: Deploy
       - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
@@ -183,7 +167,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs:
       - push
-    runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
         with:
@@ -194,27 +178,12 @@ jobs:
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-      - name: Update Deployment Status - Success
-        if: success()
-        uses: ./.github/actions/github-deployment-status
-        with:
-          deployment-id: ${{ needs.push.outputs.deployment-id }}
-          state: success
-          description: Terraform deployment completed successfully
-        
-      - name: Update Deployment Status - Failure
-        if: failure()
-        uses: ./.github/actions/github-deployment-status
-        with:
-          deployment-id: ${{ needs.push.outputs.deployment-id }}
-          state: failure
-          description: Terraform deployment failed
 
   notify-buddy:
     if: github.ref == 'refs/heads/master'
     needs:
       - terraform-deploy-dev
-    runs-on: ${{ format('blacksmith-2vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-notify-buddy@v4
         with:
