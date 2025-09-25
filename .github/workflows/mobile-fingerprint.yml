@@ -52,7 +52,7 @@ jobs:
   check-fingerprint:
     name: "Check Expo Fingerprint"
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       APP_VARIANT: ${{ inputs.environment }}
       WHITELABEL: ${{ inputs.whitelabel }}
@@ -67,19 +67,12 @@ jobs:
           fetch-depth: 0
 
       - name: Set Up Node.js
-        uses: actions/setup-node@v3
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
         with:
-          node-version: 22.x
-          cache: yarn
+          version: 22.x
 
-      - name: Set GitHub Packages Token
-        shell: bash
-        run: |
-          npm config set @figurepos:registry https://npm.pkg.github.com/
-          npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
-
-      - name: Install dependencies
-        run: yarn install
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Set Environment
         uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
@@ -147,7 +140,7 @@ jobs:
   build-fingerprint:
     name: "Build Expo Fingerprint"
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       APP_VARIANT: ${{ inputs.environment }}
       WHITELABEL: ${{ inputs.whitelabel }}
@@ -156,19 +149,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set Up Node.js
-        uses: actions/setup-node@v3
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
         with:
-          node-version: 22.x
-          cache: yarn
+          version: 22.x
 
-      - name: Set GitHub Packages Token
-        shell: bash
-        run: |
-          npm config set @figurepos:registry https://npm.pkg.github.com/
-          npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
-
-      - name: Install dependencies
-        run: yarn install
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Set Environment
         uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v3
