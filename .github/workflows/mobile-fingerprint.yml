@@ -100,7 +100,7 @@ jobs:
         run: |
           echo "Fingerprint diff:"
           echo "$JSON_DATA_VALUE" | jq '.'
-          echo "Previous git commit: ${{ steps.get-previous-git-commit.outputs.commit-sha }}"n
+          echo "Previous git commit: ${{ steps.get-previous-git-commit.outputs.commit-sha }}"
 
       - name: Remove Comment
         uses: FigurePOS/github-actions/.github/actions/github-delete-comment@v4
