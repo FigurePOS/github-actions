@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: Create Deployment
         id: create_deployment
-        uses: ./.github/actions/github-deployment-create
+        uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
         with:
           environment: production
           ref: ${{ inputs.sha }}
@@ -67,13 +67,13 @@ jobs:
           sha: ${{ inputs.sha }}
 
       - name: Create a Release Tag and Update the Production Tag
-        uses: ./.github/actions/github-tag-release
+        uses: FigurePOS/github-actions/.github/actions/github-tag-release@v4
         with:
           sha: ${{ inputs.sha }}
 
       - name: Update Deployment Status - Success
         if: success()
-        uses: ./.github/actions/github-deployment-status
+        uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
         with:
           deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
           state: success
@@ -81,7 +81,7 @@ jobs:
 
       - name: Update Deployment Status - Failure
         if: failure()
-        uses: ./.github/actions/github-deployment-status
+        uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
         with:
           deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
           state: failure
