@@ -60,6 +60,14 @@ runs:
       with:
         ref: ${{ inputs.sha != '' && inputs.sha || github.sha }}
 
+    - name: Create Deployment
+      id: create_deployment
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
+      with:
+        environment: ${{ inputs.env }}
+        ref: ${{ github.sha }}
+        description: Deploy
+
     - name: Set Up Node.js
       if: ${{ hashFiles('package.json') != '' }}
       uses: FigurePOS/github-actions/.github/actions/node-setup@v4
@@ -123,6 +131,22 @@ runs:
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
+
+    - name: Update Deployment Status - Success
+      if: success()
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
+      with:
+        deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
+        state: success
+        description: Terraform deployment completed successfully
+      
+    - name: Update Deployment Status - Failure
+      if: failure()
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
+      with:
+        deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
+        state: failure
+        description: Terraform deployment failed
 
     - name: Send Slack Notification About Failure
       if: failure() && github.ref == 'refs/heads/master'
