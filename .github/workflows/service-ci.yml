@@ -163,16 +163,7 @@ jobs:
       - test-unit
       - test-lambda
     runs-on: ${{ format('blacksmith-4vcpu-ubuntu-{0}', inputs.ubuntu-release) }}
-    outputs:
-      deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
     steps:
-      - name: Create Deployment
-        id: create_deployment
-        uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
-        with:
-          environment: development
-          ref: ${{ github.sha }}
-          description: Deploy
       - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
         with:
           buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
@@ -194,21 +185,6 @@ jobs:
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-      - name: Update Deployment Status - Success
-        if: success()
-        uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
-        with:
-          deployment-id: ${{ needs.push.outputs.deployment-id }}
-          state: success
-          description: Terraform deployment completed successfully
-        
-      - name: Update Deployment Status - Failure
-        if: failure()
-        uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
-        with:
-          deployment-id: ${{ needs.push.outputs.deployment-id }}
-          state: failure
-          description: Terraform deployment failed
 
   notify-buddy:
     if: github.ref == 'refs/heads/master'
