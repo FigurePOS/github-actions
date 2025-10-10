@@ -46,7 +46,11 @@ runs:
         cd ${{ inputs.dir }}
         backend_key=${{ inputs.backend-s3-key }}
         if [ -z "$backend_key" ]; then
-          backend_key="aws/app/${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate"
+          if [ "${{ inputs.env }}" = "development" ] || [ "${{ inputs.env }}" = "production" ]; then
+            backend_key="aws/app/${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate"
+          else
+            backend_key="aws/${{ inputs.env }}/${{ inputs.service-name }}/infrastructure.tfstate"
+          fi
         fi
         tofu init -reconfigure \
           -backend-config="bucket=fgr-terraform-state" \
