@@ -91,7 +91,7 @@ jobs:
         uses: expo/expo-github-action/fingerprint@b184ff86a3c926240f1b6db41764c83a01c02eef
         with:
           working-directory: ${{ inputs.working-directory }}
-          fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
+          fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}-${{ steps.get-previous-git-commit.outputs.commit-sha }}
           previous-git-commit: ${{ steps.get-previous-git-commit.outputs.commit-sha }}
 
       - name: Print Fingerprint Diff
@@ -167,4 +167,4 @@ jobs:
         uses: expo/expo-github-action/fingerprint@b184ff86a3c926240f1b6db41764c83a01c02eef
         with:
           working-directory: ${{ inputs.working-directory }}
-          fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}
+          fingerprint-db-cache-key: ${{ inputs.fingerprint-db-cache-key }}-${{ github.sha }}
