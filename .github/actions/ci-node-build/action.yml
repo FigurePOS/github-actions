@@ -6,9 +6,6 @@ inputs:
     description: Additional path to cache
     required: false
     default: ""
-  buddy-trigger-url:
-    description: The Buddy trigger URL
-    required: true
   ecr-repository-name:
     description: The ECR repository name
     required: true
@@ -78,12 +75,3 @@ runs:
       with:
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
-
-    - name: Send Slack Notification About Failure
-      if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
-      with:
-        job-name: build
-        service-name: ${{ inputs.service-name }}
-        trigger-url: ${{ inputs.buddy-trigger-url }}
-

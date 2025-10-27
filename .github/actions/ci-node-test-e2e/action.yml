@@ -2,9 +2,6 @@ name: Node Test E2E
 description: Runs the e2e tests for the Node.js app
 
 inputs:
-  buddy-trigger-url:
-    description: The Buddy trigger URL
-    required: true
   docker-command:
     description: Command to start the service in Docker
     required: false
@@ -76,12 +73,3 @@ runs:
         TEST_CMD="npm run start" npm run test:integration:prepare
       env:
         SERVICE_DOCKER_COMMAND: node --enable-source-maps ${{ inputs.docker-command }}
-
-    - name: Send Slack Notification About Failure
-      if: failure() && github.ref == 'refs/heads/master' && steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
-      with:
-        job-name: test-e2e
-        service-name: ${{ inputs.service-name }}
-        trigger-url: ${{ inputs.buddy-trigger-url }}
-

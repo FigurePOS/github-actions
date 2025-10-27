@@ -79,7 +79,6 @@ jobs:
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
         with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
   
@@ -88,7 +87,6 @@ jobs:
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
         with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           service-name: ${{ inputs.service-name }}
   
@@ -99,7 +97,6 @@ jobs:
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
         with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           env-vars: ${{ inputs.test-e2e-env-vars || secrets.TEST_E2E_ENV_VARS }}
@@ -119,7 +116,6 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
         with:
           aws-region: ${{ inputs.aws-region }}
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
 
@@ -133,7 +129,6 @@ jobs:
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
@@ -149,7 +144,6 @@ jobs:
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
@@ -166,7 +160,6 @@ jobs:
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
         with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
           
@@ -180,7 +173,6 @@ jobs:
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
