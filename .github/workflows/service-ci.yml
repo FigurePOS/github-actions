@@ -21,6 +21,11 @@ on:
         description: "ECR Docker repository name"
         required: true
         type: string
+      npm-legacy-peer-deps:
+        description: "Whether to use legacy peer dependencies"
+        required: false
+        type: boolean
+        default: false
       service-name:
         description: "Service name"
         required: true
@@ -80,6 +85,7 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
+          npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           service-name: ${{ inputs.service-name }}
   
   test-unit:
@@ -88,6 +94,7 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
         with:
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
+          npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           service-name: ${{ inputs.service-name }}
   
   test-e2e:
