@@ -2,9 +2,6 @@ name: Node Test Lambda Functions
 description: Runs the linters and tests for the Node.js lambda functions
 
 inputs:
-  buddy-trigger-url:
-    description: The Buddy trigger URL
-    required: true
   directory:
     description: The directory containing the lambda functions
     required: false
@@ -37,12 +34,3 @@ runs:
       run: |
         cd ${{ inputs.directory }}
         npm run ci:test
-
-    - name: Send Slack Notification About Failure
-      if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
-      with:
-        job-name: test-unit
-        service-name: ${{ inputs.service-name }}
-        trigger-url: ${{ inputs.buddy-trigger-url }}
-

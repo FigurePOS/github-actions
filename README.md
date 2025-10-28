@@ -430,19 +430,6 @@ Parameters:
       trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
 
-### Notify about Failed CI Pipeline
-
-Parameters:
-- `service-name`
-- `trigger-url`: Buddy URL endpoint.
-
-```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4"
-    if: failure() && github.ref == 'refs/heads/master'
-    with:
-      service-name: fgr-service-account
-      trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-```
 
 ## How to release a new tag
 - create new tag from Github: Releases -> `Draft a new release` -> fill the necessary info

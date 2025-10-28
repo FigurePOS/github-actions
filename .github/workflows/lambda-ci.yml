@@ -81,7 +81,6 @@ jobs:
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v4
         with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           directory: ${{ matrix.directory }}
           service-name: ${{ inputs.service-name }}
 
@@ -114,6 +113,5 @@ jobs:
     steps:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v4
         with:
-          buddy-trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
           directory: ${{ matrix.directory }}
           service-name: ${{ inputs.service-name }}

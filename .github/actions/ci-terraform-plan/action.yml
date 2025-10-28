@@ -23,9 +23,6 @@ inputs:
     description: The S3 key for the backend
     required: false
     type: string
-  buddy-trigger-url:
-    description: The Buddy trigger URL
-    required: true
   db-tunnel-mapping:
     description: DB tunnel mapping
     required: false
@@ -112,12 +109,3 @@ runs:
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
-
-    - name: Send Slack Notification About Failure
-      if: failure() && github.ref == 'refs/heads/master'
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-fail-service@v4
-      with:
-        job-name: terraform-plan-${{ inputs.env }}
-        service-name: ${{ inputs.service-name }}
-        trigger-url: ${{ inputs.buddy-trigger-url }}
-
