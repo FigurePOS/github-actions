@@ -107,6 +107,7 @@ jobs:
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           env-vars: ${{ inputs.test-e2e-env-vars || secrets.TEST_E2E_ENV_VARS }}
+          npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           service-name: ${{ inputs.service-name }}
 
   test-lambda:
