@@ -25,6 +25,11 @@ on:
         description: Release commit SHA
         required: true
         type: string
+      use-github-runners:
+        description: "Use GitHub-hosted runners instead of blacksmith runners"
+        required: false
+        type: boolean
+        default: false
     secrets:
       BUDDY_TRIGGER_URL:
         description: Buddy trigger URL
@@ -44,7 +49,7 @@ permissions:
 
 jobs:
   terraform-deploy:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
