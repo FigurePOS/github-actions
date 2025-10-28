@@ -6,6 +6,11 @@ on:
       service-name:
         required: true
         type: string
+      use-github-runners:
+        description: "Use GitHub-hosted runners instead of blacksmith runners"
+        required: false
+        type: boolean
+        default: false
     secrets:
       BUDDY_TRIGGER_URL:
         required: true
@@ -28,7 +33,7 @@ jobs:
   lambda-list:
     if: needs.lambda-check-dir.outputs.lambda_exists == 'true'
     needs: [lambda-check-dir]
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     outputs:
       dirs: ${{ steps.set-matrix.outputs.dirs }}
     steps:
@@ -74,7 +79,7 @@ jobs:
   lambda-test-unit:
     if: needs.lambda-test-unit-or-skip.outputs.will_run == 'true'
     needs: [lambda-check-dir, lambda-list, lambda-test-unit-or-skip]
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     strategy:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
@@ -106,7 +111,7 @@ jobs:
   lambda-test-e2e:
     if: needs.lambda-test-e2e-or-skip.outputs.will_run == 'true'
     needs: [lambda-check-dir, lambda-list, lambda-test-e2e-or-skip]
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     strategy:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
