@@ -24,6 +24,7 @@ runs:
       shell: bash
       run: |
         npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+        npm config set @figurepos:registry https://npm.pkg.github.com/
     
     - id: sha_short
       run: echo "sha_short=$(git rev-parse --short ${{ inputs.sha || github.sha }})" >> $GITHUB_OUTPUT
