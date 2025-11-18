@@ -130,7 +130,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Update Deployment Status - Success
-      if: success()
+      if: success() && steps.create_deployment.outputs.deployment-id != ''
       uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
@@ -138,7 +138,7 @@ runs:
         description: Terraform deployment completed successfully
       
     - name: Update Deployment Status - Failure
-      if: failure()
+      if: failure() && steps.create_deployment.outputs.deployment-id != ''
       uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
