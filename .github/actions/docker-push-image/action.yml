@@ -31,17 +31,5 @@ runs:
       shell: bash
       run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
 
-    - run: |-
-        docker push "${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}"
-        
-        MANIFEST=$(aws ecr batch-get-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'images[].imageManifest' --output text)
-        
-        # Check if the image with the 'latest' tag already exists
-        IMAGE_EXISTS=$(aws ecr describe-images --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-ids imageTag="latest" imageTag="${{ steps.sha_short.outputs.sha_short }}" --query 'imageDetails' --output text)
-
-        if [ -z "$IMAGE_EXISTS" ]; then
-          aws ecr put-image --region "${{ inputs.aws-region }}" --repository-name "${{ inputs.repository-name }}" --image-tag "latest" --image-manifest "$MANIFEST"
-        else
-          echo "Image with tags 'latest' and '${{ steps.sha_short.outputs.sha_short }}' already exists. Skipping put-image."
-        fi
+    - run: docker push "${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}"
       shell: bash
