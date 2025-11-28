@@ -38,8 +38,8 @@ on:
       enabled:
         description: Enable or disable the fingerprint jobs
         required: false
-        type: string
-        default: "false"
+        type: boolean
+        default: false
     secrets:
       ENV_JSON:
         description: "Environment JSON"
@@ -56,7 +56,7 @@ permissions:
 jobs:
   check-fingerprint:
     name: "Check Expo Fingerprint"
-    if: github.event_name == 'pull_request' && inputs.enabled != 'false'
+    if: github.event_name == 'pull_request' && inputs.enabled
     runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       APP_VARIANT: ${{ inputs.environment }}
@@ -144,7 +144,7 @@ jobs:
 
   build-fingerprint:
     name: "Build Expo Fingerprint"
-    if: github.event_name == 'push' && inputs.enabled != 'false'
+    if: github.event_name == 'push' && inputs.enabled
     runs-on: blacksmith-4vcpu-ubuntu-2204
     env:
       APP_VARIANT: ${{ inputs.environment }}
