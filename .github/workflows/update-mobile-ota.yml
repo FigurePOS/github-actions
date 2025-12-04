@@ -47,6 +47,9 @@ on:
         type: string
         default: "./"
     secrets:
+      BUDDY_SLACK_NOTIFIER_AUTH_TOKEN:
+        description: "Buddy Slack Notifier Auth Token"
+        required: true
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
         required: true
