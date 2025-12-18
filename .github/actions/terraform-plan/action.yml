@@ -58,11 +58,11 @@ runs:
     working-directory: ${{ inputs.dir }}
     run: |
       if [ -f tf.plan ]; then
-        tofu show tf.plan -no-color > tf.console.txt
+        tofu show tf.plan -no-color > tf.show.txt
 
         # Diff of changes.
         # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
-        grep -E '^  # ' tf.console.txt | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be updated\|.* be replaced\)/! \1/' -e 's/^  # \(.* be read\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
+        grep -E '^  # ' tf.show.txt | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be updated\|.* be replaced\)/! \1/' -e 's/^  # \(.* be read\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
       else
         echo "::warning::tf.plan file not found, skipping show step"
       fi
@@ -109,17 +109,17 @@ runs:
         fi
       else
         # Plan was successful or had changes - use normal processing
-        if [[ -f tf.console.txt ]]; then
-          # Parse the tf.console.txt file, truncated for character limit.
+        if [[ -f tf.show.txt ]]; then
+          # Parse the tf.show.txt file (detailed output from tofu show), truncated for character limit.
           # Fix: Use temp file to avoid broken pipe with head
-          grep -v '\.\.\.$' tf.console.txt > tf.temp.txt
+          grep -v '\.\.\.$' tf.show.txt > tf.temp.txt
           console=$(head -c 42000 tf.temp.txt | sed '${/^  /d}')
         else
           console="No plan output available"
         fi
 
-        # Parse the tf.console.txt file for the summary.
-        summary=$(cat tf.console.txt | tac | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac || echo "View output.")
+        # Parse the tf.console.txt file (original plan output) for the summary.
+        summary=$(tac tf.console.txt 2>/dev/null | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac 2>/dev/null || echo "No changes.")
 
         # If tf.diff.txt exists, display it within a diff block, truncated for character limit.
         if [[ -s tf.diff.txt ]]; then
@@ -144,7 +144,11 @@ runs:
         echo "$console"
         echo EOTFVIAPR
       } >> "$GITHUB_OUTPUT"
-      echo "summary=$summary" >> "$GITHUB_OUTPUT"
+      
+      { echo 'summary<<EOTFVIAPR'
+        echo "$summary"
+        echo EOTFVIAPR
+      } >> "$GITHUB_OUTPUT"
 
       if [[ -s tf.diff.txt ]]; then
         { echo 'diff<<EOTFVIAPR'
@@ -190,5 +194,5 @@ runs:
       fi
 
       # Clean up files.
-      rm -f tf.console.txt tf.diff.txt tf.temp.txt tf.plan
+      rm -f tf.console.txt tf.show.txt tf.diff.txt tf.temp.txt tf.plan
 
