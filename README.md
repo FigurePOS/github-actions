@@ -288,14 +288,12 @@ Authenticates Terraform providers. This action should be run before any Terrafor
 Parameters:
 - `aws-region`: AWS region to use, default: `us-east-1`.
 - `providers`: Comma separated list of providers to authenticate.
-  - `grafana`: Creates service token for Grafana provider and sets it to Terraform variable.
 - `service-name`: The service name.
 
 ```yml
 - uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v4
   with:
     aws-region: ${{ inputs.aws-region }}
-    providers: grafana
     service-name: ${{ inputs.service-name }}
 ```
 
@@ -306,14 +304,12 @@ Cleans up authenticated Terraform providers after Terraform operations are compl
 Parameters:
 - `aws-region`: AWS region to use, default: `us-east-1`.
 - `providers`: Comma separated list of providers to clean up.
-  - `grafana`: Deletes service token for Grafana provider.
 - `service-name`: The service name.
 
 ```yml
 - uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v4
   with:
     aws-region: ${{ inputs.aws-region }}
-    providers: grafana
     service-name: ${{ inputs.service-name }}
 ```
 
