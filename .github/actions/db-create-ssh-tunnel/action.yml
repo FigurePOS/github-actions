@@ -1,4 +1,5 @@
 name: Create SSH tunnel
+description: Creates an SSH tunnel to the database
 
 inputs:
   aws-account-id:

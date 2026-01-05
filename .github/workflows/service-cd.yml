@@ -53,7 +53,7 @@ jobs:
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v5
         with:
           aws-account-id: ${{ inputs.aws-account-id }}
           aws-region: ${{ inputs.aws-region }}
@@ -64,6 +64,6 @@ jobs:
           sha: ${{ inputs.sha }}
 
       - name: Create a Release Tag and Update the Production Tag
-        uses: FigurePOS/github-actions/.github/actions/github-tag-release@v4
+        uses: FigurePOS/github-actions/.github/actions/github-tag-release@v5
         with:
           sha: ${{ inputs.sha }}

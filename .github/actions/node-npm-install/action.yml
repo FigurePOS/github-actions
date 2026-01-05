@@ -27,6 +27,11 @@ runs:
       run: |
         npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
 
+    - name: Get Node.js version
+      id: node-version
+      shell: bash
+      run: echo "version=$(node --version)" >> $GITHUB_OUTPUT
+
     - name: Setup Node Cache
       id: node-cache
       uses: actions/cache@v4
@@ -34,9 +39,12 @@ runs:
         path: |
           ${{ inputs.directory }}/node_modules
           ${{ inputs.additional-cache-path }}
-        key: npm-${{ runner.os }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'package-lock.json' || format('{0}/package-lock.json', inputs.directory)) }}
+        key: npm-${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'package-lock.json' || format('{0}/package-lock.json', inputs.directory)) }}
+        restore-keys: |
+          npm-${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ inputs.prod == 'true' && 'prod' || 'dev' }}-${{ inputs.directory == '' && '.' || inputs.directory }}-
 
     - name: Install Dependencies
+      if: steps.node-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         echo "Running npm install"

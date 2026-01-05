@@ -12,7 +12,7 @@ inputs:
   npm-legacy-peer-deps:
     description: Whether to use legacy peer dependencies
     required: false
-    default: false
+    default: "false"
   service-name:
     description: The service name
     required: true
@@ -22,16 +22,17 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v4
-    
+
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v4
-    
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
+
     - name: Install Dev Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
+    # SDK handling (for services that have a separate SDK directory)
     - name: Check for SDK Directory
       id: check-sdk
       shell: bash
@@ -46,7 +47,7 @@ runs:
 
     - name: Install SDK Dependencies
       if: steps.check-sdk.outputs.sdk-exists == 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
       with:
         directory: ./sdk
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -59,19 +60,9 @@ runs:
       shell: bash
       run: npm run check:deps
 
-    - name: Build
-      shell: bash
-      run: npm run ci:build
-
-    - name: Install Prod Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
-      with:
-        additional-cache-path: ${{ inputs.additional-cache-path }}
-        legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
-        prod: true
-
+    # TypeScript build and prod dependencies are handled inside Docker
     - name: Build Image
-      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v4
+      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
       with:
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}

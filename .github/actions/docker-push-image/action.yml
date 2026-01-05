@@ -1,4 +1,5 @@
 name: Push Docker image
+description: Pushes a Docker image to ECR
 
 inputs:
   aws-account-id:
