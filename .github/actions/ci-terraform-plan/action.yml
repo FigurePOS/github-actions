@@ -59,14 +59,14 @@ runs:
 
     - name: Set Env Vars From SSM Parameters
       if: inputs.ssm-parameters != ''
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v4
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v5
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
         service-name: ${{ inputs.service-name }}
 
     - name: Authenticate Terraform Providers
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v4
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v5
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
@@ -74,7 +74,7 @@ runs:
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''
       id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v4
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v5
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -82,7 +82,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v4
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@v5
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -94,7 +94,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Plan
-      uses: FigurePOS/github-actions/.github/actions/terraform-plan@v4
+      uses: FigurePOS/github-actions/.github/actions/terraform-plan@v5
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
@@ -105,7 +105,7 @@ runs:
 
     - name: Cleanup Authenticated Terraform Providers
       if: always()
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v4
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v5
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}

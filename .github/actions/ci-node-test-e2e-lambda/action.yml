@@ -25,7 +25,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v4
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
 
     - name: Assume AWS Role in Root Account Using OIDC
       uses: aws-actions/configure-aws-credentials@v4
@@ -38,7 +38,7 @@ runs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
       with:
         directory: ${{ inputs.directory }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}

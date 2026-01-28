@@ -82,7 +82,7 @@ jobs:
   build:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v5
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -91,7 +91,7 @@ jobs:
   test-unit:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v5
         with:
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -102,7 +102,7 @@ jobs:
       - build
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v5
         with:
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -121,7 +121,7 @@ jobs:
   terraform-validate:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v5
         with:
           aws-region: ${{ inputs.aws-region }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
@@ -133,7 +133,7 @@ jobs:
       - terraform-validate
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v5
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -148,7 +148,7 @@ jobs:
       - terraform-validate
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v5
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
@@ -166,7 +166,7 @@ jobs:
       - test-lambda
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v5
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
@@ -177,7 +177,7 @@ jobs:
       - push
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v4
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v5
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}

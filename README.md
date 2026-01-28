@@ -10,7 +10,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v4
+- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v5
   with:
     aws-region: ${{ inputs.aws-region }}
     parameters: "DATADOG_API_KEY=terraform/datadog/api_key;DATADOG_APP_KEY=terraform/datadog/app_key"
@@ -28,10 +28,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/node-setup@v4
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v5
 ```
 
 ### Install Node.js Dependencies
@@ -50,10 +50,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
+        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
         with:
           prod: false
 ```
@@ -71,10 +71,10 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Release
-        uses: FigurePOS/github-actions/.github/actions/node-release-it@v4
+        uses: FigurePOS/github-actions/.github/actions/node-release-it@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
@@ -95,10 +95,10 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Test Lambda Functions
-        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v4
+        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v5
         with:
           directory: ./lambda
           npm-legacy-peer-deps: false
@@ -119,10 +119,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Configure Git user
-        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v4
+        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v5
 ```
 
 ### Get Git commit message from history
@@ -141,11 +141,11 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v4
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v5
 
       - name: Trigger DEV Build on EAS
         run: |
@@ -186,10 +186,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Build image
-        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v4
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -199,12 +199,12 @@ jobs:
       - build
     steps:
       - name: Load image
-        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v4
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
         with:
           service-name: make-it-butter-api
       
       - name: Push image
-        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v4
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v5
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -228,7 +228,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Setup EAS
       uses: expo/expo-github-action@v8
@@ -237,14 +237,14 @@ jobs:
         token: ${{ secrets.EXPO_TOKEN }}
 
     - name: Get App Info
-      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v4
+      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v5
       id: get-app-info
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
 
     - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v4
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v5
       if: ${{ inputs.should-notify }}
       with:
           app-name: ${{ steps.get-app-info.outputs.app-name }}
@@ -268,10 +268,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Upload Source Maps to Bugsnag
-      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v4
+      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v5
       with:
         api-key: ${{ secrets.BUGSNAG_API_KEY }}
         version: ${{ inputs.version }}
@@ -291,7 +291,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v4
+- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v5
   with:
     aws-region: ${{ inputs.aws-region }}
     service-name: ${{ inputs.service-name }}
@@ -307,7 +307,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v4
+- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v5
   with:
     aws-region: ${{ inputs.aws-region }}
     service-name: ${{ inputs.service-name }}
@@ -323,7 +323,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v4"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v5"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -339,7 +339,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v4"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v5"
     with:
       aws-region: ${{ inputs.aws-region }}
       db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
@@ -357,7 +357,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v4"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v5"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -374,7 +374,7 @@ Parameters:
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v4"
+  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v5"
     with:
       aws-region: ${{ inputs.aws-region }}
       env: ${{ inputs.env }}
@@ -398,7 +398,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v4"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v5"
     with:
       app-name: Figure POS
       app-version: 1.0.0
@@ -418,7 +418,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v4"
+  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v5"
     with:
       commit-hash: 1e17438
       commit-message: "fix: typo"
@@ -447,7 +447,7 @@ Outputs:
 ```yml
 - name: Create Deployment
   id: create_deployment
-  uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
+  uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v5
   with:
     environment: development
     ref: ${{ github.sha }}
@@ -463,7 +463,7 @@ Parameters:
 
 ```yml
 - name: Mark Deployment Success
-  uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
+  uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v5
   with:
     deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
     state: success
@@ -477,7 +477,7 @@ Parameters:
 
 ```yml
 - name: Create Release + Update Production Tag
-  uses: FigurePOS/github-actions/.github/actions/github-tag-release@v4
+  uses: FigurePOS/github-actions/.github/actions/github-tag-release@v5
   with:
     sha: ${{ inputs.sha }}
 ```

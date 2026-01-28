@@ -91,7 +91,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
 
       - name: Set Environment
-        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v4
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v5
         with:
           env-json: ${{ secrets.ENV_JSON }}
           destination: ${{ inputs.working-directory }}/env.json
@@ -104,12 +104,12 @@ jobs:
 
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v4
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v5
         with:
           commit-offset: 2
 
       - name: Get App Info
-        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v4
+        uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v5
         id: get-app-info
         with:
           environment: ${{ inputs.environment }}
@@ -132,7 +132,7 @@ jobs:
           eas update --channel ${{ inputs.environment }} -p ${{ inputs.platform }} -m "$message" --non-interactive
 
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v4
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v5
         with:
           api-key: ${{ secrets.BUGSNAG_API_KEY }}
           version: ${{ inputs.version }}

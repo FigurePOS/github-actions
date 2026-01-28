@@ -50,23 +50,23 @@ runs:
 
     - name: Set Up Node.js
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v4
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
 
     - name: Install Dependencies
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
       with:
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: Load Docker Image
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v4
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
       with:
         service-name: ${{ inputs.service-name }}
 
     - name: Install Dependencies in Tests Directory
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v4
+      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
       with:
         directory: tests
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}

@@ -59,7 +59,7 @@ runs:
 
     - name: Create Deployment
       id: create_deployment
-      uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v4
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v5
       with:
         environment: ${{ inputs.env }}
         ref: ${{ github.sha }}
@@ -67,7 +67,7 @@ runs:
 
     - name: Set Up Node.js
       if: ${{ hashFiles('package.json') != '' }}
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v4
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
 
     - name: Download Artifact
       if: inputs.artifact-path != ''
@@ -77,14 +77,14 @@ runs:
 
     - name: Set Env Vars From SSM Parameters
       if: inputs.ssm-parameters != ''
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v4
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v5
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
         service-name: ${{ inputs.service-name }}
 
     - name: Authenticate Terraform Providers
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v4
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v5
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
@@ -92,7 +92,7 @@ runs:
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''
       id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v4
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v5
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -100,7 +100,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v4
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@v5
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -112,7 +112,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Apply
-      uses: FigurePOS/github-actions/.github/actions/terraform-apply@v4
+      uses: FigurePOS/github-actions/.github/actions/terraform-apply@v5
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
@@ -124,14 +124,14 @@ runs:
 
     - name: Cleanup Authenticated Terraform Providers
       if: always()
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v4
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v5
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
 
     - name: Update Deployment Status - Success
       if: success() && steps.create_deployment.outputs.deployment-id != ''
-      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v5
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: success
@@ -139,7 +139,7 @@ runs:
       
     - name: Update Deployment Status - Failure
       if: failure() && steps.create_deployment.outputs.deployment-id != ''
-      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v4
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v5
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: failure
