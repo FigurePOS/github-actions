@@ -21,6 +21,11 @@ on:
         description: "ECR Docker repository name"
         required: true
         type: string
+      extra-apk-packages:
+        description: "Extra Alpine packages for Docker build (e.g. libjpeg-turbo libpng)"
+        required: false
+        type: string
+        default: ""
       npm-legacy-peer-deps:
         description: "Whether to use legacy peer dependencies"
         required: false
@@ -85,6 +90,7 @@ jobs:
       - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v5
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
+          extra-apk-packages: ${{ inputs.extra-apk-packages }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           service-name: ${{ inputs.service-name }}
   
