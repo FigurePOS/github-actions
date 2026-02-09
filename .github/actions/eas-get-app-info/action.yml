@@ -43,4 +43,5 @@ runs:
       id: parse
       shell: bash
       run: |
-        echo 'app-name=${{ fromJson(steps.get-config.outputs.config).appConfig.name }}' >> $GITHUB_OUTPUT
+        app_name="${{ fromJson(steps.get-config.outputs.config).appConfig.name }}"
+        echo "app-name=$app_name" >> $GITHUB_OUTPUT
