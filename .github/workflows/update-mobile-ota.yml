@@ -145,8 +145,8 @@ jobs:
         run: |
           commit_hash_short=$(echo "${{ steps.get-git-message.outputs.hash }}" | cut -c1-7)
           repository_name=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          commit_message='${{ steps.get-git-message.outputs.message }}'
-          app_name='${{ steps.get-app-info.outputs.app-name }}'
+          commit_message=$(printf "%s" "${{ steps.get-git-message.outputs.message }}")
+          app_name=$(printf "%s" "${{ steps.get-app-info.outputs.app-name }}")
           version='${{ inputs.version }}'
           case "${{ inputs.environment }}" in
             production)
