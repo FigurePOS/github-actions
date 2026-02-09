@@ -145,6 +145,7 @@ jobs:
         run: |
           commit_hash_short=$(echo "${{ steps.get-git-message.outputs.hash }}" | cut -c1-7)
           repository_name=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          app_name="${{ steps.get-app-info.outputs.app-name }}"
           case "${{ inputs.environment }}" in
             production)
               env_transformed="prod"
@@ -161,5 +162,5 @@ jobs:
             -X POST \
             -H "Content-type: application/json" \
             -H "Authorization: Bearer ${{ secrets.BUDDY_SLACK_NOTIFIER_AUTH_TOKEN }}" \
-            --data '{"channel":"figure-buddy","emoji":"'"${env_transformed}"'-available","title": "Finished building *${{ steps.get-app-info.outputs.app-name }} ${{ inputs.version }}* for _Expo_","text":"Commit: *${{ steps.get-git-message.outputs.message }}* (`'"${commit_hash_short}"'`)","repository":"'"${repository_name}"'"}' \
+            --data '{"channel":"figure-buddy","emoji":"'"${env_transformed}"'-available","title": "Finished building *${app_name} ${{ inputs.version }}* for _Expo_","text":"Commit: *${{ steps.get-git-message.outputs.message }}* (`'"${commit_hash_short}"'`)","repository":"'"${repository_name}"'"}' \
             ${{ vars.BUDDY_SLACK_NOTIFIER_URL }}
