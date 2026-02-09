@@ -145,7 +145,7 @@ jobs:
         run: |
           commit_hash_short=$(echo "${{ steps.get-git-message.outputs.hash }}" | cut -c1-7)
           repository_name=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          app_name="${{ steps.get-app-info.outputs.app-name }}"
+          app_name=$(echo "${{ steps.get-app-info.outputs.app-name }}")
           case "${{ inputs.environment }}" in
             production)
               env_transformed="prod"
