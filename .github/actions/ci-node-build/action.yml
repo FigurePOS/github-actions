@@ -9,6 +9,10 @@ inputs:
   ecr-repository-name:
     description: The ECR repository name
     required: true
+  extra-apk-packages:
+    description: Extra Alpine packages for Docker build (e.g. libjpeg-turbo libpng). Sets EXTRA_APK_PACKAGES build-arg.
+    required: false
+    default: ""
   npm-legacy-peer-deps:
     description: Whether to use legacy peer dependencies
     required: false
@@ -61,8 +65,21 @@ runs:
       run: npm run check:deps
 
     # TypeScript build and prod dependencies are handled inside Docker
+    - name: Resolve Dockerfile path
+      id: dockerfile
+      shell: bash
+      run: |
+        SHARED=./node_modules/@figurepos/platform-tooling/resources/service/Dockerfile
+        if [ -f "$SHARED" ]; then
+          echo "path=$SHARED" >> $GITHUB_OUTPUT
+        else
+          echo "path=" >> $GITHUB_OUTPUT
+        fi
     - name: Build Image
       uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
       with:
+        build-args: ${{ inputs.extra-apk-packages != '' && format('EXTRA_APK_PACKAGES={0}', inputs.extra-apk-packages) || '' }}
+        file: ${{ steps.dockerfile.outputs.path }}
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
+        

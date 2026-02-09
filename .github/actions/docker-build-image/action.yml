@@ -8,6 +8,14 @@ inputs:
   aws-region:
     required: false
     default: us-east-1
+  build-args:
+    description: Docker build args (e.g. EXTRA_APK_PACKAGES=libjpeg-turbo libpng). Multiline for multiple.
+    required: false
+    default: ""
+  file:
+    description: Path to Dockerfile (e.g. from platform-tooling). Omit to use context Dockerfile.
+    required: false
+    default: ""
   repository-name:
     required: true
   repository-url:
@@ -48,6 +56,8 @@ runs:
       uses: useblacksmith/build-push-action@v2
       with:
         context: .
+        file: ${{ inputs.file || './Dockerfile' }}
+        build-args: ${{ inputs.build-args }}
         load: true
         target: production
         tags: ${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}
