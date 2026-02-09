@@ -145,6 +145,9 @@ jobs:
         run: |
           commit_hash_short=$(echo "${{ steps.get-git-message.outputs.hash }}" | cut -c1-7)
           repository_name=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          commit_message=$(printf "%s" "${{ steps.get-git-message.outputs.message }}")
+          app_name=$(printf "%s" "${{ steps.get-app-info.outputs.app-name }}")
+          version='${{ inputs.version }}'
           case "${{ inputs.environment }}" in
             production)
               env_transformed="prod"
@@ -156,10 +159,17 @@ jobs:
               env_transformed="dev"
               ;;
           esac
+          payload=$(jq -n \
+            --arg channel "figure-buddy" \
+            --arg emoji "${env_transformed}-available" \
+            --arg title "Finished building *${app_name} ${version}* for _Expo_" \
+            --arg text "Commit: *${commit_message}* (\`${commit_hash_short}\`)" \
+            --arg repository "${repository_name}" \
+            '{channel: $channel, emoji: $emoji, title: $title, text: $text, repository: $repository}')
           curl \
             --retry 3 --retry-connrefused \
             -X POST \
             -H "Content-type: application/json" \
             -H "Authorization: Bearer ${{ secrets.BUDDY_SLACK_NOTIFIER_AUTH_TOKEN }}" \
-            --data '{"channel":"figure-buddy","emoji":"'"${env_transformed}"'-available","title": "Finished building *${{ steps.get-app-info.outputs.app-name }} ${{ inputs.version }}* for _Expo_","text":"Commit: *${{ steps.get-git-message.outputs.message }}* (`'"${commit_hash_short}"'`)","repository":"'"${repository_name}"'"}' \
+            --data "$payload" \
             ${{ vars.BUDDY_SLACK_NOTIFIER_URL }}
