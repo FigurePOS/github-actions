@@ -142,6 +142,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
 
       - name: Send Slack Notification
+        if: ${{ inputs.should-notify }}
         run: |
           commit_hash_short=$(echo "${{ steps.get-git-message.outputs.hash }}" | cut -c1-7)
           repository_name=$(echo "${{ github.repository }}" | cut -d'/' -f2)
