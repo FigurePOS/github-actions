@@ -62,4 +62,4 @@ runs:
           echo "Using --production"
           PROD_FLAG="--production"
         fi
-        npm install $PROD_FLAG $LEGACY_PEER_DEPS --no-fund
+        npm ci $PROD_FLAG $LEGACY_PEER_DEPS --no-fund
