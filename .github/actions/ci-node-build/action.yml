@@ -82,4 +82,3 @@ runs:
         file: ${{ steps.dockerfile.outputs.path }}
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
-        

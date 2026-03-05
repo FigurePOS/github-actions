@@ -30,7 +30,8 @@ runs:
             ref: `${{ inputs.ref }}`,
             environment: `${{ inputs.environment }}`,
             description: `${{ inputs.description }}`,
-            required_contexts: []
+            required_contexts: [],
+            auto_merge: false
           });
           core.setOutput('deployment-id', response.data.id);
     - name: Mark Deployment In Progress
