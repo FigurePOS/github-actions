@@ -16,10 +16,10 @@ runs:
       shell: bash
       run: echo "file_name=${{ inputs.service-name }}-${{ steps.sha_short.outputs.sha_short }}.tar" >> $GITHUB_OUTPUT
 
-    - uses: actions/download-artifact@v4.1.0
+    - uses: actions/download-artifact@v8
       with:
         name: ${{ steps.docker_file.outputs.file_name }}
         path: docker-images
-    
+
     - run: docker image load < docker-images/${{ steps.docker_file.outputs.file_name }}
       shell: bash

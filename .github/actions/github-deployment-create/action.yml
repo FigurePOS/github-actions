@@ -21,7 +21,7 @@ runs:
   steps:
     - name: Create Deployment
       id: create
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           const response = await github.rest.repos.createDeployment({
@@ -35,7 +35,7 @@ runs:
           });
           core.setOutput('deployment-id', response.data.id);
     - name: Mark Deployment In Progress
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           await github.rest.repos.createDeploymentStatus({

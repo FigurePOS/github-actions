@@ -22,7 +22,7 @@ runs:
   using: composite
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set Up Node.js
       uses: FigurePOS/github-actions/.github/actions/node-setup@v5
@@ -47,25 +47,25 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.directory }}
-        
+
         # Check if package.json exists
         if [ ! -f "package.json" ]; then
           echo "::warning::No package.json found in ${{ inputs.directory }}"
           exit 0
         fi
-        
+
         # Check if "ti" script exists
         if ! grep -q "\"ti\":" package.json; then
           echo "::warning::No ti script found in ${{ inputs.directory }}"
           exit 0
         fi
-        
+
         # Check if "tip" script exists  
         if ! grep -q "\"tip\":" package.json; then
           echo "::warning::No tip script found in ${{ inputs.directory }}"
           exit 0
         fi
-        
+
         # Run tests
         if ! TEST_CMD="npm run ti" npm run tip; then
           echo "::error::npm run tip failed in ${{ inputs.directory }}"

@@ -63,7 +63,7 @@ jobs:
       WHITELABEL: ${{ inputs.whitelabel }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # The ref has to be specified to make sure git checkout takes the real branch,
           # because for pull_request triggers, the action takes some temporary ref with weird name and message.
@@ -151,7 +151,7 @@ jobs:
       WHITELABEL: ${{ inputs.whitelabel }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1

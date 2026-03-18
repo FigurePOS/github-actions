@@ -5,6 +5,7 @@
 ### Set Env Vars From SSM Parameters
 
 Parameters:
+
 - `aws-region`: The AWS region to use.
 - `parameters`: The parameters in format "env_var_name1=ssm_path1;env_var_name2=ssm_path2".
 - `service-name`: The service name.
@@ -28,8 +29,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/node-setup@v5
 ```
@@ -39,6 +40,7 @@ jobs:
 Installs Node.js dependencies using npm and authenticates Figure private Github package registry.
 
 Parameters:
+
 - `additional-cache-path`: Additional path to cache, default: `""`.
 - `directory`: Directory to install dependencies in, default: `"."`.
 - `prod`: Whether to install only prod dependencies, default: `false`.
@@ -50,8 +52,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
         with:
@@ -61,6 +63,7 @@ jobs:
 ### Release It
 
 Parameters:
+
 - `github-token`: GitHub token for creating releases.
 - `npm-token`: NPM token for publishing packages.
 
@@ -71,8 +74,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Release
         uses: FigurePOS/github-actions/.github/actions/node-release-it@v5
         with:
@@ -85,6 +88,7 @@ jobs:
 Tests Lambda functions in a directory. Each Lambda function should have its own package.json with a `ci:test` script.
 
 Parameters:
+
 - `directory`: Directory containing Lambda functions.
 - `npm-legacy-peer-deps`: Whether to use legacy peer dependencies, default: `false`.
 
@@ -95,8 +99,8 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Test Lambda Functions
         uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v5
         with:
@@ -109,6 +113,7 @@ jobs:
 ### Configure Git user
 
 Parameters:
+
 - `email`: Email address to use for the git user, default: `github-actions[bot]@users.noreply.github.com`.
 - `name`: Name to use for the git user, default: `github-actions[bot]`.
 
@@ -119,8 +124,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Configure Git user
         uses: FigurePOS/github-actions/.github/actions/git-configure-user@v5
 ```
@@ -128,9 +133,11 @@ jobs:
 ### Get Git commit message from history
 
 Parameters:
+
 - `offset`: Commit offset from HEAD to get the message from. Default is 1 (current commit). Use 2 for the previous commit, 3 for the commit before that, etc.
-  
+
 Outputs:
+
 - `hash`: Hash of the commit.
 - `message`: Message of the commit.
 
@@ -141,8 +148,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Get Git Message
         id: get-git-message
         uses: FigurePOS/github-actions/.github/actions/git-get-message@v5
@@ -161,6 +168,7 @@ Docker actions for building, loading, and pushing Docker images to ECR. These ac
 Builds docker image and uploads it to artifacts. Use `docker-load-image` in subsequent job to work with the image.
 
 Parameters:
+
 - `repository-name`: Name of the ECR repository.
 - `service-name`: Service name.
 
@@ -169,6 +177,7 @@ Parameters:
 Downloads the image built by `docker-build-image` job and loads it to docker.
 
 Parameters:
+
 - `service-name`: Service name.
 
 ## Push Image
@@ -176,6 +185,7 @@ Parameters:
 Pushes the image built by `docker-build-image` job to ECR.
 
 Parameters:
+
 - `repository-name`: Name of the ECR repository.
 - `service-name`: Service name.
 
@@ -186,14 +196,14 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      
+      - uses: actions/checkout@v6
+
       - name: Build image
         uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
-  
+
   push:
     needs:
       - build
@@ -202,7 +212,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
         with:
           service-name: make-it-butter-api
-      
+
       - name: Push image
         uses: FigurePOS/github-actions/.github/actions/docker-push-image@v5
         with:
@@ -210,15 +220,17 @@ jobs:
           service-name: make-it-butter-api
 ```
 
-## Expo 
+## Expo
 
 ### Get Expo App Name
 
 Parameters:
+
 - `environment`: Environment to get the app name for.
 - `platform`: Platform to get the app name for.
 
 Outputs:
+
 - `appName`: App name of the project.
 
 ```yml
@@ -228,8 +240,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    
+    - uses: actions/checkout@v6
+
     - name: Setup EAS
       uses: expo/expo-github-action@v8
       with:
@@ -256,6 +268,7 @@ jobs:
 ### Upload Bugsnag Source Maps for Mobile
 
 Parameters:
+
 - `api-key`: Auth token for the Bugsnag API.
 - `version`: Version of the app.
 - `platform`: Platform to upload source maps for. Options: `ios`, `android`, `all`.
@@ -268,15 +281,15 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    
-    - name: Upload Source Maps to Bugsnag
-      uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v5
-      with:
-        api-key: ${{ secrets.BUGSNAG_API_KEY }}
-        version: ${{ inputs.version }}
-        platform: ${{ inputs.platform }}
-        environment: ${{ inputs.environment }}
+      - uses: actions/checkout@v6
+
+      - name: Upload Source Maps to Bugsnag
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v5
+        with:
+          api-key: ${{ secrets.BUGSNAG_API_KEY }}
+          version: ${{ inputs.version }}
+          platform: ${{ inputs.platform }}
+          environment: ${{ inputs.environment }}
 ```
 
 ## Terraform
@@ -286,6 +299,7 @@ jobs:
 Authenticates Terraform providers. This action should be run before any Terraform operations that require provider authentication. It gets all parameters from SSM with `/terraform` prefix and sets them to the corresponding Terraform variables. Optionally, you can specify a list of providers to authenticate.
 
 Parameters:
+
 - `aws-region`: AWS region to use, default: `us-east-1`.
 - `providers`: Comma separated list of providers to authenticate.
 - `service-name`: The service name.
@@ -302,6 +316,7 @@ Parameters:
 Cleans up authenticated Terraform providers after Terraform operations are complete. This action should be run after Terraform operations to clean up any temporary credentials or tokens.
 
 Parameters:
+
 - `aws-region`: AWS region to use, default: `us-east-1`.
 - `providers`: Comma separated list of providers to clean up.
 - `service-name`: The service name.
@@ -318,33 +333,35 @@ Parameters:
 You need to run `terraform-init` job beforehand.
 
 Parameters:
+
 - `aws-account-id`
 - `env`
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v5"
-    with:
-      aws-region: ${{ inputs.aws-region }}
-      env: ${{ inputs.env }}
-      service-name: ${{ inputs.service-name }}
+- uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v5"
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    env: ${{ inputs.env }}
+    service-name: ${{ inputs.service-name }}
 ```
 
 ### Init
 
 Parameters:
+
 - `aws-account-id`
 - `db-tunnel-mapping`
 - `env`
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-init@v5"
-    with:
-      aws-region: ${{ inputs.aws-region }}
-      db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
-      env: ${{ inputs.env }}
-      service-name: ${{ inputs.service-name }}
+- uses: "FigurePOS/github-actions/.github/actions/terraform-init@v5"
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+    env: ${{ inputs.env }}
+    service-name: ${{ inputs.service-name }}
 ```
 
 ### Plan
@@ -352,16 +369,17 @@ Parameters:
 You need to run `terraform-init` job beforehand.
 
 Parameters:
+
 - `aws-account-id`
 - `env`
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v5"
-    with:
-      aws-region: ${{ inputs.aws-region }}
-      env: ${{ inputs.env }}
-      service-name: ${{ inputs.service-name }}
+- uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v5"
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    env: ${{ inputs.env }}
+    service-name: ${{ inputs.service-name }}
 ```
 
 ### Validate
@@ -369,16 +387,17 @@ Parameters:
 You need to run `terraform-init` job beforehand.
 
 Parameters:
+
 - `aws-account-id`
 - `env`
 - `service-name`
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v5"
-    with:
-      aws-region: ${{ inputs.aws-region }}
-      env: ${{ inputs.env }}
-      service-name: ${{ inputs.service-name }}
+- uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v5"
+  with:
+    aws-region: ${{ inputs.aws-region }}
+    env: ${{ inputs.env }}
+    service-name: ${{ inputs.service-name }}
 ```
 
 ## Buddy
@@ -386,6 +405,7 @@ Parameters:
 ### Notify about Mobile Deployment
 
 Parameters:
+
 - `app-name`: Name of the app.
 - `app-version`: Version of the app.
 - `author`: Author of the build (optional).
@@ -398,38 +418,39 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v5"
-    with:
-      app-name: Figure POS
-      app-version: 1.0.0
-      build-type: native
-      commit-message: "fix: typo"
-      environment: production
-      paltform: all
-      trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v5"
+  with:
+    app-name: Figure POS
+    app-version: 1.0.0
+    build-type: native
+    commit-message: "fix: typo"
+    environment: production
+    paltform: all
+    trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
 
 ### Notify about Service Deployment
 
 Parameters:
+
 - `commit-hash`: Commit hash of the build, last commit hash by default.
 - `commit-message`: Commit message of the build, last commit message by default.
 - `service-name`
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-  - uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v5"
-    with:
-      commit-hash: 1e17438
-      commit-message: "fix: typo"
-      service-name: fgr-service-account
-      trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
+- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v5"
+  with:
+    commit-hash: 1e17438
+    commit-message: "fix: typo"
+    service-name: fgr-service-account
+    trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
 
-
 ## How to release a new tag
+
 - create new tag from Github: Releases -> `Draft a new release` -> fill the necessary info
-- if you want to move tag to a different commit (e.g. adding v4.0.2 and moving tag v4 to same commit):  
+- if you want to move tag to a different commit (e.g. adding v4.0.2 and moving tag v4 to same commit):
   - run `git tag -f <tag-name> <commit-sha>` and the push tags with `git push -f --tags` (first pull latest tags)
 
 ## GitHub Deployments
@@ -437,11 +458,13 @@ Parameters:
 ### Create Deployment (GitHub)
 
 Parameters:
+
 - `environment`: Environment name (e.g., development, production)
 - `ref`: Commit SHA or ref to deploy (optional; defaults to current SHA)
 - `description`: Deployment description (optional)
 
 Outputs:
+
 - `deployment-id`: ID of the created deployment
 
 ```yml
@@ -457,6 +480,7 @@ Outputs:
 ### Update Deployment Status (GitHub)
 
 Parameters:
+
 - `deployment-id`: Deployment ID
 - `state`: One of `success`, `failure`, `inactive`, `error`, `queued`, `in_progress`, `pending`
 - `description`: Status description (optional)
@@ -473,6 +497,7 @@ Parameters:
 ### Update Release and Production Tags (GitHub)
 
 Parameters:
+
 - `sha`: Commit SHA to tag
 
 ```yml
@@ -483,4 +508,3 @@ Parameters:
 ```
 
 Note: Ensure workflow permissions include `deployments: write` to create/update deployment objects.
-

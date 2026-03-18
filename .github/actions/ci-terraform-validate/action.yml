@@ -25,13 +25,12 @@ inputs:
   service-name:
     description: The service name
     required: true
-  
 
 runs:
   using: composite
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Terraform Init
       uses: FigurePOS/github-actions/.github/actions/terraform-init@v5
