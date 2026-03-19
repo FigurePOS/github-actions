@@ -8,7 +8,7 @@ runs:
   using: composite
   steps:
     - name: Create a Release Tag and Update the Production Tag
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         retries: 3
         script: |

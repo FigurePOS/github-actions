@@ -21,7 +21,7 @@ jobs:
     outputs:
       lambda_exists: ${{ steps.check.outputs.lambda_exists }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: check
         run: |
           if [ -d "./lambda" ]; then
@@ -37,7 +37,7 @@ jobs:
     outputs:
       dirs: ${{ steps.set-matrix.outputs.dirs }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: set-matrix
         run: |
           dirs="["
@@ -90,7 +90,13 @@ jobs:
           service-name: ${{ inputs.service-name }}
 
   lambda-test-e2e-or-skip:
-    needs: [lambda-check-dir, lambda-list, lambda-test-unit-or-skip, lambda-test-unit]
+    needs:
+      [
+        lambda-check-dir,
+        lambda-list,
+        lambda-test-unit-or-skip,
+        lambda-test-unit,
+      ]
     runs-on: ubuntu-latest
     outputs:
       will_run: ${{ steps.check.outputs.will_run }}

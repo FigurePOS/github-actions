@@ -53,7 +53,7 @@ runs:
   using: composite
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ inputs.sha != '' && inputs.sha || github.sha }}
 
@@ -71,7 +71,7 @@ runs:
 
     - name: Download Artifact
       if: inputs.artifact-path != ''
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: ${{ inputs.artifact-path }}
 
@@ -136,7 +136,7 @@ runs:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: success
         description: Terraform deployment completed successfully
-      
+
     - name: Update Deployment Status - Failure
       if: failure() && steps.create_deployment.outputs.deployment-id != ''
       uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v5

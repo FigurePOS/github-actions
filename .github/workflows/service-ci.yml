@@ -1,5 +1,5 @@
 name: Integration
-on: 
+on:
   workflow_call:
     inputs:
       aws-region:
@@ -67,7 +67,7 @@ permissions:
   # Required to query workflow run status and trigger other workflows
   actions: read
   # Allows the workflow to create and update check runs (e.g., test results, linting)
-  checks: write 
+  checks: write
   # Needed to checkout repository code and read repository contents
   contents: read
   # Required for OIDC authentication with AWS
@@ -81,8 +81,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-    
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
@@ -93,7 +93,7 @@ jobs:
           extra-apk-packages: ${{ inputs.extra-apk-packages }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           service-name: ${{ inputs.service-name }}
-  
+
   test-unit:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
@@ -102,7 +102,7 @@ jobs:
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           service-name: ${{ inputs.service-name }}
-  
+
   test-e2e:
     needs:
       - build
@@ -123,7 +123,7 @@ jobs:
       use-github-runners: ${{ inputs.use-github-runners }}
     secrets:
       BUDDY_TRIGGER_URL: ${{ secrets.BUDDY_TRIGGER_URL }}
-  
+
   terraform-validate:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
@@ -147,7 +147,7 @@ jobs:
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
-  
+
   terraform-plan-prod:
     if: github.event_name == 'pull_request'
     needs:
@@ -176,7 +176,7 @@ jobs:
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
-          
+
   terraform-deploy-dev:
     if: github.ref == 'refs/heads/master'
     needs:

@@ -13,7 +13,7 @@ runs:
   using: composite
   steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Load docker image
       uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
