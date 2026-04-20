@@ -30,7 +30,7 @@ runs:
 
     - id: sha_short
       shell: bash
-      run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+      run: echo "sha_short=$(git rev-parse --short=8 ${{ github.sha }})" >> $GITHUB_OUTPUT
 
     - run: docker push "${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}"
       shell: bash
