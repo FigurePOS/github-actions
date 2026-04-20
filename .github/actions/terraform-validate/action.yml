@@ -20,7 +20,7 @@ runs:
   using: composite
   steps:
   - id: sha_short
-    run: echo "sha_short=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+    run: echo "sha_short=$(git rev-parse --short=7 ${{ github.sha }})" >> $GITHUB_OUTPUT
     shell: bash
 
   - run: |-
