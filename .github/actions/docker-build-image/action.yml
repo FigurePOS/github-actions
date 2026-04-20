@@ -40,7 +40,7 @@ runs:
 
     - id: sha_short
       shell: bash
-      run: echo "sha_short=$(git rev-parse --short=7 ${{ github.sha }})" >> $GITHUB_OUTPUT
+      run: echo "sha_short=$(git rev-parse --short=8 ${{ github.sha }})" >> $GITHUB_OUTPUT
 
     - id: docker_file
       shell: bash

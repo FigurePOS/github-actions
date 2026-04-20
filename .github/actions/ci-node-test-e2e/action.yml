@@ -75,7 +75,7 @@ runs:
       if: steps.check.outputs.skip != 'true'
       shell: bash
       run: |-
-        sha_short=$(git rev-parse --short=7 ${{ github.sha }})
+        sha_short=$(git rev-parse --short=8 ${{ github.sha }})
         export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
         TEST_CMD="npm run start" npm run test:integration:prepare
       env:
