@@ -1,4 +1,5 @@
 name: Terraform Apply
+description: Runs tofu apply for a service, resolving the deployment image tag against ECR.
 
 inputs:
   aws-account-id:
@@ -9,6 +10,10 @@ inputs:
   dir:
     required: false
     default: tf
+  ecr-repository-name:
+    description: ECR repository (e.g. figure/message-router). When set, deployment_tag falls back to 7-char SHA if the 8-char tag is missing (transition support).
+    required: false
+    default: ""
   env:
     required: true
   service-name:
@@ -25,19 +30,57 @@ runs:
       run: |
         npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
         npm config set @figurepos:registry https://npm.pkg.github.com/
-    
+
     - id: sha_short
-      run: echo "sha_short=$(git rev-parse --short=8 ${{ inputs.sha || github.sha }})" >> $GITHUB_OUTPUT
       shell: bash
+      run: |
+        full_sha="${{ inputs.sha || github.sha }}"
+        echo "sha8=$(git rev-parse --short=8 "$full_sha")" >> $GITHUB_OUTPUT
+        echo "sha7=$(git rev-parse --short=7 "$full_sha")" >> $GITHUB_OUTPUT
+
+    - name: Resolve deployment tag against ECR
+      id: deployment_tag
+      shell: bash
+      env:
+        ECR_REGION: ${{ inputs.aws-region }}
+        ECR_REPOSITORY: ${{ inputs.ecr-repository-name }}
+        SHA8: ${{ steps.sha_short.outputs.sha8 }}
+        SHA7: ${{ steps.sha_short.outputs.sha7 }}
+      run: |
+        if [[ -z "$ECR_REPOSITORY" ]]; then
+          echo "No ecr-repository-name provided; using 8-char tag: $SHA8"
+          echo "tag=$SHA8" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        tag_exists() {
+          aws ecr describe-images \
+            --registry-id 637192944017 \
+            --region "$ECR_REGION" \
+            --repository-name "$ECR_REPOSITORY" \
+            --image-ids "imageTag=$1" \
+            >/dev/null 2>&1
+        }
+
+        if tag_exists "$SHA8"; then
+          echo "Using 8-char tag: $SHA8"
+          echo "tag=$SHA8" >> "$GITHUB_OUTPUT"
+        elif tag_exists "$SHA7"; then
+          echo "::warning::8-char tag $SHA8 not found in $ECR_REPOSITORY; falling back to 7-char tag $SHA7 (legacy image)."
+          echo "tag=$SHA7" >> "$GITHUB_OUTPUT"
+        else
+          echo "::warning::Neither $SHA8 nor $SHA7 found in $ECR_REPOSITORY; defaulting to 8-char tag (deployment may fail if image is not pushed)."
+          echo "tag=$SHA8" >> "$GITHUB_OUTPUT"
+        fi
 
     - run: |-
-        cd "${{ inputs.dir }}" || exit 
-        
+        cd "${{ inputs.dir }}" || exit
+
         tofu apply --auto-approve -lock-timeout=60s
       env:
         TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"
         TF_VAR_aws_region: "${{ inputs.aws-region }}"
-        TF_VAR_deployment_tag: "${{ steps.sha_short.outputs.sha_short }}"
+        TF_VAR_deployment_tag: "${{ steps.deployment_tag.outputs.tag }}"
         TF_VAR_env: "${{ inputs.env }}"
         TF_VAR_git_commit_hash: "${{ inputs.sha || github.sha }}"
         TF_VAR_service_name: "${{ inputs.service-name }}"

@@ -188,6 +188,7 @@ jobs:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          ecr-repository-name: ${{ inputs.ecr-repository-name }}
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}

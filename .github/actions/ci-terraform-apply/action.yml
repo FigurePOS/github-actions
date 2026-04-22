@@ -31,6 +31,11 @@ inputs:
   dir:
     required: false
     default: tf
+  ecr-repository-name:
+    description: ECR repository (e.g. figure/message-router). Used for short-SHA tag fallback during the 7→8 char transition.
+    required: false
+    type: string
+    default: ""
   env:
     description: The environment
     required: true
@@ -116,6 +121,7 @@ runs:
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
+        ecr-repository-name: ${{ inputs.ecr-repository-name }}
         env: ${{ inputs.env }}
         service-name: ${{ inputs.service-name }}
         sha: ${{ inputs.sha }}

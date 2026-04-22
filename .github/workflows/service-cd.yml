@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ""
+      ecr-repository-name:
+        description: ECR repository (e.g. figure/message-router). Used for short-SHA tag fallback during the 7→8 char transition.
+        required: false
+        type: string
+        default: ""
       service-name:
         description: Service name
         required: true
@@ -58,6 +63,7 @@ jobs:
           aws-account-id: ${{ inputs.aws-account-id }}
           aws-region: ${{ inputs.aws-region }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
+          ecr-repository-name: ${{ inputs.ecr-repository-name }}
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
           service-name: ${{ inputs.service-name }}
