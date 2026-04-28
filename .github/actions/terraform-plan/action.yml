@@ -63,7 +63,7 @@ runs:
 
           # Diff of changes.
           # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
-          grep -E '^  # ' tf.show.txt | grep -Ev '^  # .*(be read during apply|\(depends on a resource or a module with changes pending\)|\(config refers to values not yet known\))' | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be updated\|.* be replaced\)/! \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
+          grep -E '^  # ' tf.show.txt | grep -Ev '^  # .*(be read during apply|\(depends on a resource or a module with changes pending\)|\(config refers to values not yet known\))' | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be replaced\)/-\/+ \1/' -e 's/^  # \(.* be updated\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
         else
           echo "::warning::tf.plan file not found, skipping show step"
         fi
