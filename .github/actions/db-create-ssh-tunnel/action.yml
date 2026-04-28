@@ -16,14 +16,14 @@ runs:
   using: composite
   steps:
     - name: Assume AWS Role in Root Account Using OIDC
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
 
     - name: Assume AWS Role in App Account
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       id: assume-role
       with:
         aws-region: ${{ inputs.aws-region }}
@@ -67,4 +67,3 @@ runs:
         AWS_ACCESS_KEY_ID: ${{ steps.assume-role.outputs.aws-access-key-id }}
         AWS_SECRET_ACCESS_KEY: ${{ steps.assume-role.outputs.aws-secret-access-key }}
         AWS_SESSION_TOKEN: ${{ steps.assume-role.outputs.aws-session-token }}
-

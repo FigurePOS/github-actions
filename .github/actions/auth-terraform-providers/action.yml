@@ -18,7 +18,7 @@ runs:
   using: composite
   steps:
     - name: Assume AWS Role in Root Account Using OIDC
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc

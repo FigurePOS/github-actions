@@ -19,12 +19,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: aws-actions/configure-aws-credentials@v4
+    - uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
-    
+
     - id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
