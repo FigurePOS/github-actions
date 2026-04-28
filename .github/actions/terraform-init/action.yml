@@ -37,11 +37,11 @@ runs:
           git config --global advice.detachedHead false
         fi
       shell: bash
-      
+
     - uses: opentofu/setup-opentofu@v1
       with:
         tofu_version: ~1.10.0
-    
+
     - run: |
         cd ${{ inputs.dir }}
         backend_key=${{ inputs.backend-s3-key }}
@@ -90,4 +90,3 @@ runs:
       shell: bash
       env:
         AWS_REGION: ${{ inputs.aws-region }}
-    
