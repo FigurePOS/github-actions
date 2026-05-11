@@ -46,6 +46,11 @@ on:
         required: false
         type: string
         default: "./"
+      node-version:
+        description: "Node version"
+        required: false
+        type: string
+        default: "22.x"
     secrets:
       BUDDY_SLACK_NOTIFIER_AUTH_TOKEN:
         description: "Buddy Slack Notifier Auth Token"
@@ -85,7 +90,7 @@ jobs:
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/setup-node@v1
         with:
-          version: "22.x"
+          version: ${{ inputs.node-version }}
 
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
