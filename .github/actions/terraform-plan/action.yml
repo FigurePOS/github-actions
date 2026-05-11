@@ -61,9 +61,18 @@ runs:
         if [ -f tf.plan ]; then
           tofu show tf.plan -no-color > tf.show.txt
 
-          # Diff of changes.
-          # Filter lines starting with "  # " and save to tf.diff.txt, then prepend diff-specific symbols based on specific keywords.
-          grep -E '^  # ' tf.show.txt | grep -Ev '^  # .*(be read during apply|\(depends on a resource or a module with changes pending\)|\(config refers to values not yet known\))' | sed -e 's/^  # \(.* be created\)/+ \1/' -e 's/^  # \(.* be destroyed\)/- \1/' -e 's/^  # \(.* be replaced\)/-\/+ \1/' -e 's/^  # \(.* be updated\)/~ \1/' -e 's/^  # \(.*\)/# \1/' > tf.diff.txt || true
+          # Diff of changes from `tofu show` (human-readable plan).
+          # Match two leading spaces before `#` (tabs/alignment differ across CLI versions).
+          # Filter noisy dependency/unknown-value lines, then map to diff-style prefixes.
+          build_diff_from_plan_text() {
+            grep -E '^[[:space:]]{2}# ' "$1" | grep -Ev '^[[:space:]]{2}# .*(be read during apply|\(depends on a resource or a module with changes pending\)|\(config refers to values not yet known\))' | sed -e 's/^[[:space:]]\{2\}# \(.* be created\)/+ \1/' -e 's/^[[:space:]]\{2\}# \(.* be destroyed\)/- \1/' -e 's/^[[:space:]]\{2\}# \(.* be replaced\)/-\/+ \1/' -e 's/^[[:space:]]\{2\}# \(.* be updated\)/~ \1/' -e 's/^[[:space:]]\{2\}# \(.*\)/# \1/'
+          }
+          build_diff_from_plan_text tf.show.txt > tf.diff.txt || true
+          # If show output format did not yield resource lines, fall back to stdout from `tofu plan`
+          # (same "  # resource ... will be …" headers) so the PR summary is never empty when there are changes.
+          if [[ ! -s tf.diff.txt ]] && [[ -f tf.console.txt ]]; then
+            build_diff_from_plan_text tf.console.txt >> tf.diff.txt || true
+          fi
         else
           echo "::warning::tf.plan file not found, skipping show step"
         fi
@@ -119,9 +128,13 @@ runs:
             console="No plan output available"
           fi
 
-          # Parse the tf.console.txt file (original plan output) for the summary.
-          summary=$(tac tf.console.txt 2>/dev/null | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac 2>/dev/null || echo "No changes.")
+          # Last plan status line from console (stable; avoids scanning from EOF with tac).
+          summary=$(grep -E '^(Plan:|No changes\.|Error:|Apply complete!|Success)' tf.console.txt 2>/dev/null | tail -n 1)
+          if [[ -z "$summary" ]]; then
+            summary="OpenTofu plan finished (see Detailed Plan below)."
+          fi
 
+          plan_exit="${{ steps.plan.outputs.exit_code }}"
           # If tf.diff.txt exists, display it within a diff block, truncated for character limit.
           if [[ -s tf.diff.txt ]]; then
             diff="
@@ -131,8 +144,19 @@ runs:
           $(head -c 24000 tf.diff.txt)
           \`\`\`
           "
+          elif [[ "$plan_exit" == "2" ]]; then
+            # -detailed-exitcode 2 = changes present; do not claim "No changes." if compact diff is empty.
+            diff="
+            ${summary}
+
+            \`\`\`diff
+            # Compact resource list unavailable; expand Detailed Plan below.
+            \`\`\`
+            "
           else
             diff="
+            ${summary}
+
             \`\`\`diff
             No changes.
             \`\`\`
