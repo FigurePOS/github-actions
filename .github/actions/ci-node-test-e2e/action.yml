@@ -2,6 +2,10 @@ name: Node Test E2E
 description: Runs the e2e tests for the Node.js app
 
 inputs:
+  aws-region:
+    description: The AWS region
+    required: false
+    default: us-east-1
   docker-command:
     description: Command to start the service in Docker
     required: false
@@ -70,6 +74,18 @@ runs:
       with:
         directory: tests
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+
+    - name: Assume AWS Role in Root Account Using OIDC
+      if: steps.check.outputs.skip != 'true'
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
+        role-skip-session-tagging: true
+
+    - name: Login to ECR
+      if: steps.check.outputs.skip != 'true'
+      uses: aws-actions/amazon-ecr-login@v2
 
     - name: Run Tests
       if: steps.check.outputs.skip != 'true'
