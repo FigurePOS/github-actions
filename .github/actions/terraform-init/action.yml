@@ -43,7 +43,21 @@ runs:
       with:
         tofu_version: ~1.10.0
 
+    - name: Cache Terraform provider plugins
+      uses: actions/cache@v4
+      with:
+        path: ~/.terraform.d/plugin-cache
+        key: tofu-plugins-${{ hashFiles(format('{0}/.terraform.lock.hcl', inputs.dir)) }}
+        restore-keys: |
+          tofu-plugins-
+
     - run: |
+        mkdir -p "$HOME/.terraform.d/plugin-cache"
+        export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+        export TF_PROVIDER_DOWNLOAD_RETRY=5
+        export TF_REGISTRY_DISCOVERY_RETRY=3
+        export TF_REGISTRY_CLIENT_TIMEOUT=30
+
         cd ${{ inputs.dir }}
         backend_key=${{ inputs.backend-s3-key }}
         if [ -z "$backend_key" ]; then
