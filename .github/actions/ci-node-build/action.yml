@@ -70,10 +70,15 @@ runs:
       shell: bash
       run: |
         SHARED=./node_modules/@figurepos/platform-tooling/resources/service/Dockerfile
-        if [ -f "$SHARED" ]; then
+        if [ -f "./Dockerfile" ]; then
+          echo "path=./Dockerfile" >> $GITHUB_OUTPUT
+          echo "Using service-local Dockerfile"
+        elif [ -f "$SHARED" ]; then
           echo "path=$SHARED" >> $GITHUB_OUTPUT
+          echo "Using shared platform-tooling Dockerfile"
         else
           echo "path=" >> $GITHUB_OUTPUT
+          echo "Using repository root Dockerfile (docker-build-image default)"
         fi
     - name: Build Image
       uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
