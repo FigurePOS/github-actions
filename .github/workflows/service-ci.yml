@@ -65,7 +65,7 @@ on:
 
 permissions:
   # Required to query workflow run status, trigger other workflows, and save OpenTofu provider cache
-  actions: write
+  actions: read
   # Allows the workflow to create and update check runs (e.g., test results, linting)
   checks: write
   # Needed to checkout repository code and read repository contents
