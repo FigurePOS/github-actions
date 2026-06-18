@@ -54,23 +54,23 @@ runs:
 
     - name: Set Up Node.js
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
+      uses: ./../node-setup
 
     - name: Install Dependencies
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+      uses: ./../node-pnpm-install
       with:
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: Load Docker Image
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
+      uses: ./../docker-load-image
       with:
         service-name: ${{ inputs.service-name }}
 
     - name: Install Dependencies in Tests Directory
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+      uses: ./../node-pnpm-install
       with:
         directory: tests
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -93,6 +93,6 @@ runs:
       run: |-
         sha_short=$(git rev-parse --short=8 ${{ github.sha }})
         export SERVICE_DOCKER_IMAGE=637192944017.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.ecr-repository-name }}:$sha_short
-        TEST_CMD="npm run start" npm run test:integration:prepare
+        TEST_CMD="pnpm run start" pnpm run test:integration:prepare
       env:
         SERVICE_DOCKER_COMMAND: node --enable-source-maps ${{ inputs.docker-command }}

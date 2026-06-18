@@ -1,0 +1,57 @@
+name: Install Dependencies
+description: Install dependencies using pnpm
+
+inputs:
+  additional-cache-path:
+    description: Additional path to cache
+    required: false
+    default: ""
+  directory:
+    description: Directory to install dependencies in
+    required: false
+    default: "."
+  legacy-peer-deps:
+    description: Whether to use legacy peer dependencies
+    required: false
+    default: false
+  prod:
+    description: Whether to install only prod dependencies
+    required: false
+    default: false
+
+runs:
+  using: composite
+  steps:
+    - name: Set GitHub Packages Token
+      shell: bash
+      run: pnpm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+
+    - name: Setup Additional Cache
+      if: inputs.additional-cache-path != ''
+      uses: actions/cache@v5
+      with:
+        path: ${{ inputs.additional-cache-path }}
+        key: pnpm-additional-${{ runner.os }}-${{ inputs.directory == '' && '.' || inputs.directory }}-${{ hashFiles(inputs.directory == '' && 'pnpm-lock.yaml' || format('{0}/pnpm-lock.yaml', inputs.directory)) }}
+        restore-keys: |
+          pnpm-additional-${{ runner.os }}-${{ inputs.directory == '' && '.' || inputs.directory }}-
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        echo "Running pnpm install --frozen-lockfile"
+        INSTALL_DIR="${{ inputs.directory }}"
+        if [ "$INSTALL_DIR" != "" ] && [ "$INSTALL_DIR" != "." ]; then
+          cd "$INSTALL_DIR"
+          echo "Changing directory to ${PWD}"
+        fi
+        LEGACY_PEER_DEPS=""
+        if [ "${{ inputs.legacy-peer-deps }}" = "true" ]; then
+          echo "Using legacy-peer-deps"
+          LEGACY_PEER_DEPS="--config.legacy-peer-deps=true"
+        fi
+        PROD_FLAG=""
+        if [ "${{ inputs.prod }}" = "true" ]; then
+          echo "Using --prod"
+          PROD_FLAG="--prod"
+        fi
+        pnpm install --frozen-lockfile $PROD_FLAG $LEGACY_PEER_DEPS

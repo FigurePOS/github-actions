@@ -58,6 +58,8 @@ runs:
         context: .
         file: ${{ inputs.file || './Dockerfile' }}
         build-args: ${{ inputs.build-args }}
+        cache-from: type=gha,scope=${{ inputs.service-name }}-docker
+        cache-to: type=gha,mode=max,scope=${{ inputs.service-name }}-docker
         load: true
         target: production
         tags: ${{ inputs.repository-url }}/${{ inputs.repository-name }}:${{ steps.sha_short.outputs.sha_short }}
