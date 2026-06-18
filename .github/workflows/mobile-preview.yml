@@ -36,7 +36,7 @@ on:
 jobs:
   deploy:
     name: "Deploy"
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: ${{ github.event.action != 'closed' }}
     permissions:
       contents: read
@@ -148,7 +148,7 @@ jobs:
 
   clean-up:
     name: "Clean Up"
-    runs-on: blacksmith-4vcpu-ubuntu-2204
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: ${{ github.event.action == 'closed' }}
     permissions:
       contents: read
