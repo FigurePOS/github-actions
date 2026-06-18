@@ -9,7 +9,6 @@ inputs:
   docker-command:
     description: Command to start the service in Docker
     required: false
-    type: string
     default: build/index.js
   ecr-repository-name:
     description: The ECR repository name
