@@ -14,7 +14,7 @@ runs:
   steps:
     - uses: actions/checkout@v6
 
-    - uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v5
+    - uses: ./../buddy-notify-deploy-service
       with:
         service-name: ${{ inputs.service-name }}
         trigger-url: ${{ inputs.buddy-trigger-url }}

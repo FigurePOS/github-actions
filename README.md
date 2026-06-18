@@ -11,7 +11,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v5
+- uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v6
   with:
     aws-region: ${{ inputs.aws-region }}
     parameters: "DATADOG_API_KEY=terraform/datadog/api_key;DATADOG_APP_KEY=terraform/datadog/app_key"
@@ -20,7 +20,13 @@ Parameters:
 
 ## Node.js
 
+Actions in this repository use **pnpm** (`node-pnpm-install`, `node-setup`). Pin **`@v6`** when referencing actions from other repositories.
+
+Workflows and composite actions in this repo use **relative paths** (e.g. `./.github/actions/ci-node-build`, `./../node-setup`) so they always run the matching version from the same commit.
+
 ### Set Up Node.js
+
+Sets up Node.js and pnpm. Caches the pnpm store based on `pnpm-lock.yaml` files in the repository.
 
 ```yml
 on: push
@@ -32,18 +38,21 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Set Up Node.js
-        uses: FigurePOS/github-actions/.github/actions/node-setup@v5
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v6
 ```
 
 ### Install Node.js Dependencies
 
-Installs Node.js dependencies using npm and authenticates Figure private Github package registry.
+Installs Node.js dependencies using pnpm and authenticates Figure private Github package registry.
 
 Parameters:
 
 - `additional-cache-path`: Additional path to cache, default: `""`.
 - `directory`: Directory to install dependencies in, default: `"."`.
+- `legacy-peer-deps`: Whether to use legacy peer dependencies, default: `false`.
 - `prod`: Whether to install only prod dependencies, default: `false`.
+
+Requires `pnpm-lock.yaml` in the install directory. Run `node-setup` before this action.
 
 ```yml
 on: push
@@ -54,11 +63,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/node-setup@v6
+
       - name: Install Dependencies
-        uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+        uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@v6
         with:
           prod: false
 ```
+
+`node-npm-install` remains available as a deprecated alias for `node-pnpm-install`.
 
 ### Release It
 
@@ -77,7 +91,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Release
-        uses: FigurePOS/github-actions/.github/actions/node-release-it@v5
+        uses: FigurePOS/github-actions/.github/actions/node-release-it@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
@@ -102,7 +116,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Test Lambda Functions
-        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v5
+        uses: FigurePOS/github-actions/.github/actions/node-test-lambda@v6
         with:
           directory: ./lambda
           npm-legacy-peer-deps: false
@@ -127,7 +141,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Configure Git user
-        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v5
+        uses: FigurePOS/github-actions/.github/actions/git-configure-user@v6
 ```
 
 ### Get Git commit message from history
@@ -152,7 +166,7 @@ jobs:
 
       - name: Get Git Message
         id: get-git-message
-        uses: FigurePOS/github-actions/.github/actions/git-get-message@v5
+        uses: FigurePOS/github-actions/.github/actions/git-get-message@v6
 
       - name: Trigger DEV Build on EAS
         run: |
@@ -167,10 +181,12 @@ Docker actions for building, loading, and pushing Docker images to ECR. These ac
 
 Builds docker image and uploads it to artifacts. Use `docker-load-image` in subsequent job to work with the image.
 
+Uses GitHub Actions cache for Docker BuildKit layers (scoped per service). Works with the shared platform-tooling Dockerfile pnpm store cache mounts.
+
 Parameters:
 
 - `repository-name`: Name of the ECR repository.
-- `service-name`: Service name.
+- `service-name`: Service name (also used as the Docker cache scope).
 
 ## Load Image
 
@@ -199,7 +215,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Build image
-        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
+        uses: FigurePOS/github-actions/.github/actions/docker-build-image@v6
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -209,12 +225,12 @@ jobs:
       - build
     steps:
       - name: Load image
-        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
+        uses: FigurePOS/github-actions/.github/actions/docker-load-image@v6
         with:
           service-name: make-it-butter-api
 
       - name: Push image
-        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v5
+        uses: FigurePOS/github-actions/.github/actions/docker-push-image@v6
         with:
           repository-name: figure/makeitbutter-api
           service-name: make-it-butter-api
@@ -249,14 +265,14 @@ jobs:
         token: ${{ secrets.EXPO_TOKEN }}
 
     - name: Get App Info
-      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v5
+      uses: FigurePOS/github-actions/.github/actions/eas-get-app-info@v6
       id: get-app-info
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
 
     - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v5
+      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v6
       if: ${{ inputs.should-notify }}
       with:
           app-name: ${{ steps.get-app-info.outputs.app-name }}
@@ -284,7 +300,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Upload Source Maps to Bugsnag
-        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v5
+        uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-mobile@v6
         with:
           api-key: ${{ secrets.BUGSNAG_API_KEY }}
           version: ${{ inputs.version }}
@@ -305,7 +321,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v5
+- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v6
   with:
     aws-region: ${{ inputs.aws-region }}
     service-name: ${{ inputs.service-name }}
@@ -322,7 +338,7 @@ Parameters:
 - `service-name`: The service name.
 
 ```yml
-- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v5
+- uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v6
   with:
     aws-region: ${{ inputs.aws-region }}
     service-name: ${{ inputs.service-name }}
@@ -339,7 +355,7 @@ Parameters:
 - `service-name`
 
 ```yml
-- uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v5"
+- uses: "FigurePOS/github-actions/.github/actions/terraform-apply@v6"
   with:
     aws-region: ${{ inputs.aws-region }}
     env: ${{ inputs.env }}
@@ -356,7 +372,7 @@ Parameters:
 - `service-name`
 
 ```yml
-- uses: "FigurePOS/github-actions/.github/actions/terraform-init@v5"
+- uses: "FigurePOS/github-actions/.github/actions/terraform-init@v6"
   with:
     aws-region: ${{ inputs.aws-region }}
     db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
@@ -375,7 +391,7 @@ Parameters:
 - `service-name`
 
 ```yml
-- uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v5"
+- uses: "FigurePOS/github-actions/.github/actions/terraform-plan@v6"
   with:
     aws-region: ${{ inputs.aws-region }}
     env: ${{ inputs.env }}
@@ -393,7 +409,7 @@ Parameters:
 - `service-name`
 
 ```yml
-- uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v5"
+- uses: "FigurePOS/github-actions/.github/actions/terraform-validate@v6"
   with:
     aws-region: ${{ inputs.aws-region }}
     env: ${{ inputs.env }}
@@ -418,7 +434,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v5"
+- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v6"
   with:
     app-name: Figure POS
     app-version: 1.0.0
@@ -439,7 +455,7 @@ Parameters:
 - `trigger-url`: Buddy URL endpoint.
 
 ```yml
-- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v5"
+- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v6"
   with:
     commit-hash: 1e17438
     commit-message: "fix: typo"
@@ -449,7 +465,7 @@ Parameters:
 
 ## How to release a new tag
 
-- create new tag from Github: Releases -> `Draft a new release` -> fill the necessary info
+- create new tag from Github: Releases -> `Draft a new release` -> fill the necessary info (e.g. `v6` for the pnpm migration)
 - if you want to move tag to a different commit (e.g. adding v4.0.2 and moving tag v4 to same commit):
   - run `git tag -f <tag-name> <commit-sha>` and the push tags with `git push -f --tags` (first pull latest tags)
 
@@ -470,7 +486,7 @@ Outputs:
 ```yml
 - name: Create Deployment
   id: create_deployment
-  uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v5
+  uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v6
   with:
     environment: development
     ref: ${{ github.sha }}
@@ -487,7 +503,7 @@ Parameters:
 
 ```yml
 - name: Mark Deployment Success
-  uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v5
+  uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v6
   with:
     deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
     state: success
@@ -502,7 +518,7 @@ Parameters:
 
 ```yml
 - name: Create Release + Update Production Tag
-  uses: FigurePOS/github-actions/.github/actions/github-tag-release@v5
+  uses: FigurePOS/github-actions/.github/actions/github-tag-release@v6
   with:
     sha: ${{ inputs.sha }}
 ```

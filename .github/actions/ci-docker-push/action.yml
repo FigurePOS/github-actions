@@ -16,12 +16,12 @@ runs:
       uses: actions/checkout@v6
 
     - name: Load docker image
-      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v5
+      uses: ./../docker-load-image
       with:
         service-name: ${{ inputs.service-name }}
 
     - name: Push Docker Image
-      uses: FigurePOS/github-actions/.github/actions/docker-push-image@v5
+      uses: ./../docker-push-image
       with:
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}
