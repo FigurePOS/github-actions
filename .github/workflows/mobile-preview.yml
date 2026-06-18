@@ -1,0 +1,183 @@
+name: "Mobile Preview"
+# This workflow is used to create a preview build of the mobile app for a PR which can be used to test the app before merging.
+
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        description: "App name shown in the PR comment"
+        required: true
+        type: string
+      working-directory:
+        description: "Directory containing the Expo app"
+        required: true
+        type: string
+      env-destination:
+        description: "Path where env.json should be written"
+        required: true
+        type: string
+      preview-branch:
+        description: "EAS Update branch used for the preview"
+        required: true
+        type: string
+      node-version:
+        description: "Node.js version used by the setup action"
+        required: false
+        type: string
+        default: "22.x"
+    secrets:
+      ENV_JSON:
+        description: "Environment JSON for the app"
+        required: true
+      EXPO_TOKEN:
+        description: "Expo token"
+        required: true
+
+jobs:
+  deploy:
+    name: "Deploy"
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    if: ${{ github.event.action != 'closed' }}
+    permissions:
+      contents: read
+      issues: write
+      packages: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # The ref has to be specified to make sure git checkout takes the real branch,
+          # because for pull_request triggers, the action takes some temporary ref with weird name and message.
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+        with:
+          version: ${{ inputs.node-version }}
+
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+      - name: Set Environment
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v5
+        with:
+          env-json: ${{ secrets.ENV_JSON }}
+          destination: ${{ inputs.env-destination }}
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Deploy Preview Update
+        id: preview
+        uses: expo/expo-github-action/preview@v8
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          command: eas update --auto --non-interactive --branch "${{ inputs.preview-branch }}"
+          comment: false
+
+      - name: Comment Preview Update
+        uses: actions/github-script@v7
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          BRANCH_NAME: ${{ steps.preview.outputs.branchName }}
+          RUNTIME_VERSION: ${{ steps.preview.outputs.runtimeVersion }}
+          UPDATE_MESSAGE: ${{ steps.preview.outputs.message }}
+          COMMIT_HASH: ${{ steps.preview.outputs.gitCommitHash }}
+          PREVIEW_LINK: ${{ steps.preview.outputs.link }}
+          QR_CODE: ${{ steps.preview.outputs.qr }}
+        with:
+          script: |
+            const appName = process.env.APP_NAME ?? "";
+            const branchName = process.env.BRANCH_NAME ?? "";
+            const runtimeVersion = process.env.RUNTIME_VERSION ?? "";
+            const updateMessage = process.env.UPDATE_MESSAGE ?? "";
+            const commitHash = process.env.COMMIT_HASH ?? "";
+            const previewLink = process.env.PREVIEW_LINK ?? "";
+            const qrCode = process.env.QR_CODE ?? "";
+            const commentMarker = `<!-- preview-update:${appName} -->`;
+
+            const shortCommitHash = commitHash ? commitHash.slice(0, 7) : "unknown";
+            const qrCodeSection = qrCode
+              ? `<img src="${qrCode}" width="240" alt="${appName} preview QR code" />`
+              : "_QR code unavailable_";
+
+            const body = [
+              "<details>",
+              `<summary>Preview Update: <strong>${appName}</strong> is ready (${shortCommitHash})</summary>`,
+              "",
+              `- App: \`${appName}\``,
+              `- Branch: \`${branchName}\``,
+              `- Runtime version: \`${runtimeVersion}\``,
+              `- Commit: \`${shortCommitHash}\``,
+              `- Message: ${updateMessage}`,
+              "",
+              qrCodeSection,
+              "",
+              `**[Open preview](${previewLink})**`,
+              "",
+              "</details>",
+              commentMarker,
+            ].join("\n");
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            for (const comment of comments) {
+              if (comment.body?.includes(commentMarker)) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id,
+                });
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+  clean-up:
+    name: "Clean Up"
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    if: ${{ github.event.action == 'closed' }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set Up Node.js
+        uses: FigurePOS/github-actions/.github/actions/setup-node@v1
+        with:
+          version: ${{ inputs.node-version }}
+
+      - name: Install Dependencies
+        uses: FigurePOS/github-actions/.github/actions/install-dependencies@v1
+
+      - name: Set Environment
+        uses: FigurePOS/github-actions/.github/actions/mobile-set-env@v5
+        with:
+          env-json: ${{ secrets.ENV_JSON }}
+          destination: ${{ inputs.env-destination }}
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Clean Up Preview
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          eas branch:delete "${{ inputs.preview-branch }}" --non-interactive
