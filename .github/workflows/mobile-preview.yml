@@ -20,6 +20,12 @@ on:
         description: "EAS Update branch used for the preview"
         required: true
         type: string
+      platform:
+        description: "Platform to update"
+        required: false
+        default: "all"
+        type: string
+        # options: all, ios, android
       node-version:
         description: "Node.js version used by the setup action"
         required: false
@@ -81,7 +87,7 @@ jobs:
         uses: expo/expo-github-action/preview@v8
         with:
           working-directory: ${{ inputs.working-directory }}
-          command: eas update --auto --non-interactive --branch "${{ inputs.preview-branch }}"
+          command: eas update --auto --non-interactive --branch "${{ inputs.preview-branch }}" --platform "${{ inputs.platform }}"
           comment: false
 
       - name: Comment Preview Update
