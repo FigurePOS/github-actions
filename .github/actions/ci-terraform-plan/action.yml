@@ -5,28 +5,22 @@ inputs:
   artifact-path:
     description: Path to download artifact from
     required: false
-    type: string
   auth-providers:
     description: Providers to authenticate
     required: false
-    type: string
   aws-account-id:
     description: AWS account ID
     required: true
-    type: string
   aws-region:
     description: AWS region
     required: false
-    type: string
     default: us-east-1
   backend-s3-key:
     description: The S3 key for the backend
     required: false
-    type: string
   db-tunnel-mapping:
     description: DB tunnel mapping
     required: false
-    type: string
     default: ""
   dir:
     required: false
@@ -34,7 +28,6 @@ inputs:
   env:
     description: The environment
     required: true
-    type: string
   github-token-terraform:
     description: GitHub token to access other private repositories
     required: false
