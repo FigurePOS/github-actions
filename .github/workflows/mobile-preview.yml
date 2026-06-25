@@ -51,7 +51,6 @@ jobs:
     if: ${{ github.event.action != 'closed' }}
     permissions:
       contents: read
-      issues: write
       packages: read
       pull-requests: write
     steps:
