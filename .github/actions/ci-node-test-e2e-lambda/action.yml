@@ -25,7 +25,7 @@ runs:
       uses: actions/checkout@v6
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Assume AWS Role in Root Account Using OIDC
       uses: aws-actions/configure-aws-credentials@v6
@@ -38,7 +38,7 @@ runs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         directory: ${{ inputs.directory }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -67,7 +67,7 @@ runs:
         fi
 
         # Run tests
-        if ! TEST_CMD="npm run ti" npm run tip; then
-          echo "::error::npm run tip failed in ${{ inputs.directory }}"
+        if ! TEST_CMD="pnpm run ti" pnpm run tip; then
+          echo "::error::pnpm run tip failed in ${{ inputs.directory }}"
           exit 1
         fi

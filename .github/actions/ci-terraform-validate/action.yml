@@ -6,16 +6,13 @@ inputs:
     description: AWS account ID
     required: false
     default: 880892332156 # Dev account
-    type: string
   aws-region:
     description: AWS region
     required: false
-    type: string
     default: us-east-1
   backend-s3-key:
     description: The S3 key for the backend
     required: false
-    type: string
   dir:
     required: false
     default: tf
@@ -33,7 +30,7 @@ runs:
       uses: actions/checkout@v6
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v5
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -45,7 +42,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Validate
-      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v5
+      uses: FigurePOS/github-actions/.github/actions/terraform-validate@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}

@@ -14,16 +14,24 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set Up Node.js
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+
     - name: Process Lambda Function
       shell: bash
       run: |
         if [ -f "${{ inputs.directory }}/package.json" ]; then
           cd "${{ inputs.directory }}"
           echo "Installing dependencies for ${{ inputs.directory }}"
-          npm install --legacy-peer-deps=${{ inputs.npm-legacy-peer-deps }} || exit 1
+          LEGACY_PEER_DEPS=""
+          if [ "${{ inputs.npm-legacy-peer-deps }}" = "true" ]; then
+            LEGACY_PEER_DEPS="--config.legacy-peer-deps=true"
+          fi
+          pnpm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+          pnpm install --frozen-lockfile $LEGACY_PEER_DEPS || exit 1
           if grep -q "\"ci:test\":" package.json; then
             echo "Running tests for ${{ inputs.directory }}"
-            if npm run ci:test 2>&1 | tee test-output.log; then
+            if pnpm run ci:test 2>&1 | tee test-output.log; then
               # Test command succeeded
               if grep -q "No tests found" test-output.log; then
                 echo "::warning::No tests found in Lambda function ${{ inputs.directory }}"

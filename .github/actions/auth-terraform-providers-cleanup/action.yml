@@ -5,7 +5,6 @@ inputs:
   aws-region:
     description: AWS region
     required: false
-    type: string
     default: us-east-1
   providers:
     description: "Comma separated list of providers to authenticate"

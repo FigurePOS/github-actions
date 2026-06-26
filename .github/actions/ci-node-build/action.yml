@@ -28,10 +28,10 @@ runs:
       uses: actions/checkout@v6
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Install Dev Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -51,18 +51,18 @@ runs:
 
     - name: Install SDK Dependencies
       if: steps.check-sdk.outputs.sdk-exists == 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         directory: ./sdk
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: License Compliance
       shell: bash
-      run: npm run check:licenses
+      run: pnpm run check:licenses
 
     - name: Dependency Check
       shell: bash
-      run: npm run check:deps
+      run: pnpm run check:deps
 
     # TypeScript build and prod dependencies are handled inside Docker
     - name: Resolve Dockerfile path
@@ -81,7 +81,7 @@ runs:
           echo "Using repository root Dockerfile (docker-build-image default)"
         fi
     - name: Build Image
-      uses: FigurePOS/github-actions/.github/actions/docker-build-image@v5
+      uses: FigurePOS/github-actions/.github/actions/docker-build-image@pnpm
       with:
         build-args: ${{ inputs.extra-apk-packages != '' && format('EXTRA_APK_PACKAGES={0}', inputs.extra-apk-packages) || '' }}
         file: ${{ steps.dockerfile.outputs.path }}

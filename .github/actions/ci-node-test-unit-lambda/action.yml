@@ -21,10 +21,10 @@ runs:
       uses: actions/checkout@v6
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@v5
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-npm-install@v5
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         directory: ${{ inputs.directory }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -33,4 +33,4 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.directory }}
-        npm run ci:test
+        pnpm run ci:test

@@ -5,28 +5,22 @@ inputs:
   artifact-path:
     description: Path to download artifact from
     required: false
-    type: string
   auth-providers:
     description: Providers to authenticate
     required: false
-    type: string
   aws-account-id:
     description: AWS account ID
     required: true
-    type: string
   aws-region:
     description: AWS region
     required: false
-    type: string
     default: us-east-1
   backend-s3-key:
     description: The S3 key for the backend
     required: false
-    type: string
   db-tunnel-mapping:
     description: DB tunnel mapping
     required: false
-    type: string
     default: ""
   dir:
     required: false
@@ -34,7 +28,6 @@ inputs:
   env:
     description: The environment
     required: true
-    type: string
   github-token-terraform:
     description: GitHub token to access other private repositories
     required: false
@@ -59,14 +52,14 @@ runs:
 
     - name: Set Env Vars From SSM Parameters
       if: inputs.ssm-parameters != ''
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v5
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@pnpm
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
         service-name: ${{ inputs.service-name }}
 
     - name: Authenticate Terraform Providers
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v5
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@pnpm
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
@@ -74,7 +67,7 @@ runs:
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''
       id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v5
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -82,7 +75,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@v5
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -94,7 +87,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Plan
-      uses: FigurePOS/github-actions/.github/actions/terraform-plan@v5
+      uses: FigurePOS/github-actions/.github/actions/terraform-plan@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
@@ -105,7 +98,7 @@ runs:
 
     - name: Cleanup Authenticated Terraform Providers
       if: always()
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v5
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@pnpm
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
