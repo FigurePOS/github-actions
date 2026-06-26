@@ -30,7 +30,7 @@ runs:
       uses: actions/checkout@v6
 
     - name: Terraform Init
-      uses: ./../terraform-init
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -42,7 +42,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Validate
-      uses: ./../terraform-validate
+      uses: FigurePOS/github-actions/.github/actions/terraform-validate@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}

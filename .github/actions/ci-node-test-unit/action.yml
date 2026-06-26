@@ -20,10 +20,10 @@ runs:
       uses: actions/checkout@v6
 
     - name: Set Up Node.js
-      uses: ./../node-setup
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Install Dependencies
-      uses: ./../node-pnpm-install
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
@@ -41,7 +41,7 @@ runs:
 
     - name: Install SDK Dependencies
       if: steps.check-sdk.outputs.sdk-exists == 'true'
-      uses: ./../node-pnpm-install
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         directory: ./sdk
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}

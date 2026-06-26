@@ -84,7 +84,7 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: ./.github/actions/ci-node-test-unit-lambda
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@pnpm
         with:
           directory: ${{ matrix.directory }}
           service-name: ${{ inputs.service-name }}
@@ -122,7 +122,7 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: ./.github/actions/ci-node-test-e2e-lambda
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@pnpm
         with:
           directory: ${{ matrix.directory }}
           service-name: ${{ inputs.service-name }}

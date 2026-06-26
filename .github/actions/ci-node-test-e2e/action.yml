@@ -53,23 +53,23 @@ runs:
 
     - name: Set Up Node.js
       if: steps.check.outputs.skip != 'true'
-      uses: ./../node-setup
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Install Dependencies
       if: steps.check.outputs.skip != 'true'
-      uses: ./../node-pnpm-install
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: Load Docker Image
       if: steps.check.outputs.skip != 'true'
-      uses: ./../docker-load-image
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@pnpm
       with:
         service-name: ${{ inputs.service-name }}
 
     - name: Install Dependencies in Tests Directory
       if: steps.check.outputs.skip != 'true'
-      uses: ./../node-pnpm-install
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         directory: tests
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}

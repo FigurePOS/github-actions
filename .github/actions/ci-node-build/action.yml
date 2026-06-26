@@ -28,10 +28,10 @@ runs:
       uses: actions/checkout@v6
 
     - name: Set Up Node.js
-      uses: ./../node-setup
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Install Dev Dependencies
-      uses: ./../node-pnpm-install
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         additional-cache-path: ${{ inputs.additional-cache-path }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -51,7 +51,7 @@ runs:
 
     - name: Install SDK Dependencies
       if: steps.check-sdk.outputs.sdk-exists == 'true'
-      uses: ./../node-pnpm-install
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
       with:
         directory: ./sdk
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -81,7 +81,7 @@ runs:
           echo "Using repository root Dockerfile (docker-build-image default)"
         fi
     - name: Build Image
-      uses: ./../docker-build-image
+      uses: FigurePOS/github-actions/.github/actions/docker-build-image@pnpm
       with:
         build-args: ${{ inputs.extra-apk-packages != '' && format('EXTRA_APK_PACKAGES={0}', inputs.extra-apk-packages) || '' }}
         file: ${{ steps.dockerfile.outputs.path }}

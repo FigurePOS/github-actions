@@ -51,7 +51,7 @@ runs:
 
     - name: Create Deployment
       id: create_deployment
-      uses: ./../github-deployment-create
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-create@pnpm
       with:
         environment: ${{ inputs.env }}
         ref: ${{ github.sha }}
@@ -59,7 +59,7 @@ runs:
 
     - name: Set Up Node.js
       if: ${{ hashFiles('package.json') != '' }}
-      uses: ./../node-setup
+      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
 
     - name: Download Artifact
       if: inputs.artifact-path != ''
@@ -69,14 +69,14 @@ runs:
 
     - name: Set Env Vars From SSM Parameters
       if: inputs.ssm-parameters != ''
-      uses: ./../set-env-vars-from-ssm-parameters
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@pnpm
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
         service-name: ${{ inputs.service-name }}
 
     - name: Authenticate Terraform Providers
-      uses: ./../auth-terraform-providers
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@pnpm
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
@@ -84,7 +84,7 @@ runs:
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''
       id: create-ssh-tunnel
-      uses: ./../db-create-ssh-tunnel
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -92,7 +92,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: ./../terraform-init
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -104,7 +104,7 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
 
     - name: Terraform Apply
-      uses: ./../terraform-apply
+      uses: FigurePOS/github-actions/.github/actions/terraform-apply@pnpm
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
@@ -116,14 +116,14 @@ runs:
 
     - name: Cleanup Authenticated Terraform Providers
       if: always()
-      uses: ./../auth-terraform-providers-cleanup
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@pnpm
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
 
     - name: Update Deployment Status - Success
       if: success() && steps.create_deployment.outputs.deployment-id != ''
-      uses: ./../github-deployment-status
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@pnpm
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: success
@@ -131,7 +131,7 @@ runs:
 
     - name: Update Deployment Status - Failure
       if: failure() && steps.create_deployment.outputs.deployment-id != ''
-      uses: ./../github-deployment-status
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@pnpm
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: failure
