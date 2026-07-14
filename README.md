@@ -39,6 +39,8 @@ jobs:
 
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/node-setup@v6
+        with:
+          pnpm-version: "11.9.0"
 ```
 
 ### Install Node.js Dependencies
@@ -65,6 +67,8 @@ jobs:
 
       - name: Set Up Node.js
         uses: FigurePOS/github-actions/.github/actions/node-setup@v6
+        with:
+          pnpm-version: "11.9.0"
 
       - name: Install Dependencies
         uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@v6

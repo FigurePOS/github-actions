@@ -12,16 +12,22 @@ inputs:
 runs:
   using: composite
   steps:
+    # pnpm/action-setup's version pinning goes through `pnpm self-update`,
+    # which installs the target version via the native @pnpm/exe package.
+    # That package ships a placeholder binary ("This file intentionally
+    # left blank") that only becomes the real executable once its
+    # preinstall script runs -- a script self-update does not run,
+    # leaving pnpm broken. Installing the plain npm "pnpm" package instead
+    # avoids @pnpm/exe (and its native-binary placeholder) entirely.
     - name: Set Up pnpm
-      uses: pnpm/action-setup@v6
-      with:
-        version: ${{ inputs.pnpm-version }}
+      shell: bash
+      run: npm install --global "pnpm@${{ inputs.pnpm-version }}"
 
     - name: Set Up Node.js
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.version }}
         cache: pnpm
-        cache-dependency-path: "**/pnpm-lock.yaml"
+        cache-dependency-path: pnpm-lock.yaml
       env:
         GITHUB_TOKEN: ${{ github.token }}

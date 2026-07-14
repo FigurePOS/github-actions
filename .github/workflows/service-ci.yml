@@ -31,6 +31,11 @@ on:
         required: false
         type: boolean
         default: false
+      pnpm-version:
+        description: "pnpm version to use"
+        required: false
+        type: string
+        default: "11.9.0"
       service-name:
         description: "Service name"
         required: true
@@ -92,6 +97,7 @@ jobs:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           extra-apk-packages: ${{ inputs.extra-apk-packages }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
 
   test-unit:
@@ -101,6 +107,7 @@ jobs:
         with:
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
 
   test-e2e:
@@ -114,11 +121,13 @@ jobs:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           env-vars: ${{ inputs.test-e2e-env-vars || secrets.TEST_E2E_ENV_VARS }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
 
   test-lambda:
     uses: FigurePOS/github-actions/.github/workflows/lambda-ci.yml@pnpm
     with:
+      pnpm-version: ${{ inputs.pnpm-version }}
       service-name: ${{ inputs.service-name }}
       use-github-runners: ${{ inputs.use-github-runners }}
     secrets:
@@ -190,4 +199,5 @@ jobs:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}

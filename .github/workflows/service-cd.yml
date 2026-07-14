@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ""
+      pnpm-version:
+        description: pnpm version to use
+        required: false
+        type: string
+        default: "11.9.0"
       service-name:
         description: Service name
         required: true
@@ -60,6 +65,7 @@ jobs:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
           sha: ${{ inputs.sha }}
 

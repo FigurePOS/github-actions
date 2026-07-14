@@ -31,6 +31,10 @@ inputs:
   github-token-terraform:
     description: GitHub token to access other private repositories
     required: false
+  pnpm-version:
+    description: pnpm version to use
+    required: false
+    default: "11.9.0"
   service-name:
     description: The service name
     required: true
@@ -60,6 +64,8 @@ runs:
     - name: Set Up Node.js
       if: ${{ hashFiles('package.json') != '' }}
       uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+      with:
+        pnpm-version: ${{ inputs.pnpm-version }}
 
     - name: Download Artifact
       if: inputs.artifact-path != ''

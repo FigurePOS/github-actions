@@ -14,6 +14,10 @@ inputs:
     description: Whether to use legacy peer dependencies
     required: false
     default: false
+  pnpm-version:
+    description: pnpm version to use
+    required: false
+    default: "11.9.0"
   service-name:
     description: The service name
     required: true
@@ -26,6 +30,8 @@ runs:
 
     - name: Set Up Node.js
       uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+      with:
+        pnpm-version: ${{ inputs.pnpm-version }}
 
     - name: Assume AWS Role in Root Account Using OIDC
       uses: aws-actions/configure-aws-credentials@v6
