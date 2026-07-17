@@ -67,6 +67,12 @@ runs:
       with:
         pnpm-version: ${{ inputs.pnpm-version }}
 
+    # Install so aws-lambda-function local-exec can reuse node_modules/.bin/fgr
+    # (version from the service lockfile) instead of unversioned npx.
+    - name: Install Dependencies
+      if: ${{ hashFiles('package.json') != '' }}
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
+
     - name: Download Artifact
       if: inputs.artifact-path != ''
       uses: actions/download-artifact@v8
@@ -108,6 +114,25 @@ runs:
         service-name: ${{ inputs.service-name }}
       env:
         AWS_REGION: ${{ inputs.aws-region }}
+
+    # ponytail: avoid releasing terraform-modules — patch vendored lambda.tf to use
+    # the fgr from the service lockfile instead of unversioned npx (wrong latest).
+    - name: Point Lambda builds at local fgr
+      if: ${{ hashFiles('package.json') != '' }}
+      shell: bash
+      run: |
+        FGR="$(pwd)/node_modules/.bin/fgr"
+        if [ ! -x "$FGR" ]; then
+          echo "No local fgr at $FGR; leaving module npx command as-is"
+          exit 0
+        fi
+        echo "Using $FGR"
+        find "${{ inputs.dir }}/.terraform/modules" -name 'lambda.tf' -type f | while read -r f; do
+          if grep -q 'npx --yes @figurepos/platform-tooling' "$f"; then
+            echo "Patching $f"
+            sed -i "s|npx --yes @figurepos/platform-tooling|${FGR}|g" "$f"
+          fi
+        done
 
     - name: Terraform Apply
       uses: FigurePOS/github-actions/.github/actions/terraform-apply@pnpm
