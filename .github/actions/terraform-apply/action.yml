@@ -1,4 +1,5 @@
 name: Terraform Apply
+description: Applies the Terraform code
 
 inputs:
   aws-account-id:
@@ -15,24 +16,28 @@ inputs:
     required: true
   sha:
     required: false
-    type: string
 
 runs:
   using: composite
   steps:
+    # npm: legacy npx fallback in aws-lambda-function. pnpm: install-from-lockfile path.
     - name: Set GitHub Packages Token for Lambda Deployment
       shell: bash
       run: |
         npm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
         npm config set @figurepos:registry https://npm.pkg.github.com/
-    
+        if command -v pnpm >/dev/null 2>&1; then
+          pnpm config set //npm.pkg.github.com/:_authToken ${{ github.token }}
+          pnpm config set @figurepos:registry https://npm.pkg.github.com/
+        fi
+
     - id: sha_short
       run: echo "sha_short=$(git rev-parse --short=8 ${{ inputs.sha || github.sha }})" >> $GITHUB_OUTPUT
       shell: bash
 
     - run: |-
         cd "${{ inputs.dir }}" || exit 
-        
+
         tofu apply --auto-approve -lock-timeout=60s
       env:
         TF_VAR_aws_account_id: "${{ inputs.aws-account-id }}"

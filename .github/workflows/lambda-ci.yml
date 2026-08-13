@@ -3,6 +3,11 @@ name: Lambda CI
 on:
   workflow_call:
     inputs:
+      pnpm-version:
+        description: pnpm version to use
+        required: false
+        type: string
+        default: "11.20.0"
       service-name:
         required: true
         type: string
@@ -84,9 +89,10 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v5
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v6
         with:
           directory: ${{ matrix.directory }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
 
   lambda-test-e2e-or-skip:
@@ -122,7 +128,8 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v5
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v6
         with:
           directory: ${{ matrix.directory }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}

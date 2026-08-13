@@ -1,5 +1,5 @@
 name: Production Deployment
-on: 
+on:
   workflow_call:
     inputs:
       aws-account-id:
@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ""
+      pnpm-version:
+        description: pnpm version to use
+        required: false
+        type: string
+        default: "11.20.0"
       service-name:
         description: Service name
         required: true
@@ -53,17 +58,18 @@ jobs:
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v5
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v6
         with:
           aws-account-id: ${{ inputs.aws-account-id }}
           aws-region: ${{ inputs.aws-region }}
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
+          pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
           sha: ${{ inputs.sha }}
 
       - name: Create a Release Tag and Update the Production Tag
-        uses: FigurePOS/github-actions/.github/actions/github-tag-release@v5
+        uses: FigurePOS/github-actions/.github/actions/github-tag-release@v6
         with:
           sha: ${{ inputs.sha }}
