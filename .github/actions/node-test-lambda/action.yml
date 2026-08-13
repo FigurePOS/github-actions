@@ -13,13 +13,13 @@ inputs:
   pnpm-version:
     description: pnpm version to use
     required: false
-    default: "11.9.0"
+    default: "11.20.0"
 
 runs:
   using: composite
   steps:
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v6
       with:
         pnpm-version: ${{ inputs.pnpm-version }}
 

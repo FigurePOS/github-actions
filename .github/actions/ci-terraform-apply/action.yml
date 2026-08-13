@@ -34,7 +34,7 @@ inputs:
   pnpm-version:
     description: pnpm version to use
     required: false
-    default: "11.9.0"
+    default: "11.20.0"
   service-name:
     description: The service name
     required: true
@@ -55,7 +55,7 @@ runs:
 
     - name: Create Deployment
       id: create_deployment
-      uses: FigurePOS/github-actions/.github/actions/github-deployment-create@pnpm
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v6
       with:
         environment: ${{ inputs.env }}
         ref: ${{ github.sha }}
@@ -63,7 +63,7 @@ runs:
 
     - name: Set Up Node.js
       if: ${{ hashFiles('package.json') != '' }}
-      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v6
       with:
         pnpm-version: ${{ inputs.pnpm-version }}
 
@@ -71,7 +71,7 @@ runs:
     # (version from the service lockfile) instead of unversioned npx.
     - name: Install Dependencies
       if: ${{ hashFiles('package.json') != '' }}
-      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@v6
 
     - name: Download Artifact
       if: inputs.artifact-path != ''
@@ -81,14 +81,14 @@ runs:
 
     - name: Set Env Vars From SSM Parameters
       if: inputs.ssm-parameters != ''
-      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@pnpm
+      uses: FigurePOS/github-actions/.github/actions/set-env-vars-from-ssm-parameters@v6
       with:
         aws-region: ${{ inputs.aws-region }}
         parameters: ${{ inputs.ssm-parameters }}
         service-name: ${{ inputs.service-name }}
 
     - name: Authenticate Terraform Providers
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@pnpm
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v6
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
@@ -96,7 +96,7 @@ runs:
     - name: Create SSH tunnel
       if: inputs.db-tunnel-mapping != ''
       id: create-ssh-tunnel
-      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@pnpm
+      uses: FigurePOS/github-actions/.github/actions/db-create-ssh-tunnel@v6
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         aws-region: ${{ inputs.aws-region }}
@@ -104,7 +104,7 @@ runs:
         service-name: ${{ inputs.service-name }}
 
     - name: Terraform Init
-      uses: FigurePOS/github-actions/.github/actions/terraform-init@pnpm
+      uses: FigurePOS/github-actions/.github/actions/terraform-init@v6
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         backend-s3-key: ${{ inputs.backend-s3-key }}
@@ -135,7 +135,7 @@ runs:
         done
 
     - name: Terraform Apply
-      uses: FigurePOS/github-actions/.github/actions/terraform-apply@pnpm
+      uses: FigurePOS/github-actions/.github/actions/terraform-apply@v6
       with:
         aws-account-id: ${{ inputs.aws-account-id }}
         dir: ${{ inputs.dir }}
@@ -147,14 +147,14 @@ runs:
 
     - name: Cleanup Authenticated Terraform Providers
       if: always()
-      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@pnpm
+      uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v6
       with:
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
 
     - name: Update Deployment Status - Success
       if: success() && steps.create_deployment.outputs.deployment-id != ''
-      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@pnpm
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v6
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: success
@@ -162,7 +162,7 @@ runs:
 
     - name: Update Deployment Status - Failure
       if: failure() && steps.create_deployment.outputs.deployment-id != ''
-      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@pnpm
+      uses: FigurePOS/github-actions/.github/actions/github-deployment-status@v6
       with:
         deployment-id: ${{ steps.create_deployment.outputs.deployment-id }}
         state: failure

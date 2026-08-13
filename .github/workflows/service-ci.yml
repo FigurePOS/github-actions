@@ -35,7 +35,7 @@ on:
         description: "pnpm version to use"
         required: false
         type: string
-        default: "11.9.0"
+        default: "11.20.0"
       service-name:
         description: "Service name"
         required: true
@@ -92,7 +92,7 @@ jobs:
   build:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v6
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           extra-apk-packages: ${{ inputs.extra-apk-packages }}
@@ -103,7 +103,7 @@ jobs:
   test-unit:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v6
         with:
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -115,7 +115,7 @@ jobs:
       - build
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v6
         with:
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -125,7 +125,7 @@ jobs:
           service-name: ${{ inputs.service-name }}
 
   test-lambda:
-    uses: FigurePOS/github-actions/.github/workflows/lambda-ci.yml@pnpm
+    uses: FigurePOS/github-actions/.github/workflows/lambda-ci.yml@v6
     with:
       pnpm-version: ${{ inputs.pnpm-version }}
       service-name: ${{ inputs.service-name }}
@@ -136,7 +136,7 @@ jobs:
   terraform-validate:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v6
         with:
           aws-region: ${{ inputs.aws-region }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
@@ -148,7 +148,7 @@ jobs:
       - terraform-validate
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v6
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -163,7 +163,7 @@ jobs:
       - terraform-validate
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v6
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
@@ -181,7 +181,7 @@ jobs:
       - test-lambda
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v6
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
@@ -192,7 +192,7 @@ jobs:
       - push
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v6
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}

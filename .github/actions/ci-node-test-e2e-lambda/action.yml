@@ -17,7 +17,7 @@ inputs:
   pnpm-version:
     description: pnpm version to use
     required: false
-    default: "11.9.0"
+    default: "11.20.0"
   service-name:
     description: The service name
     required: true
@@ -29,7 +29,7 @@ runs:
       uses: actions/checkout@v6
 
     - name: Set Up Node.js
-      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v6
       with:
         pnpm-version: ${{ inputs.pnpm-version }}
 
@@ -44,7 +44,7 @@ runs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Install Dependencies
-      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@v6
       with:
         directory: ${{ inputs.directory }}
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}

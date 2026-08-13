@@ -7,7 +7,7 @@ on:
         description: pnpm version to use
         required: false
         type: string
-        default: "11.9.0"
+        default: "11.20.0"
       service-name:
         required: true
         type: string
@@ -89,7 +89,7 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v6
         with:
           directory: ${{ matrix.directory }}
           pnpm-version: ${{ inputs.pnpm-version }}
@@ -128,7 +128,7 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@pnpm
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v6
         with:
           directory: ${{ matrix.directory }}
           pnpm-version: ${{ inputs.pnpm-version }}

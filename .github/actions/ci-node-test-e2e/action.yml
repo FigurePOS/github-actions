@@ -23,7 +23,7 @@ inputs:
   pnpm-version:
     description: pnpm version to use
     required: false
-    default: "11.9.0"
+    default: "11.20.0"
   service-name:
     description: The service name
     required: true
@@ -57,25 +57,25 @@ runs:
 
     - name: Set Up Node.js
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-setup@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-setup@v6
       with:
         pnpm-version: ${{ inputs.pnpm-version }}
 
     - name: Install Dependencies
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@v6
       with:
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
 
     - name: Load Docker Image
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/docker-load-image@pnpm
+      uses: FigurePOS/github-actions/.github/actions/docker-load-image@v6
       with:
         service-name: ${{ inputs.service-name }}
 
     - name: Install Dependencies in Tests Directory
       if: steps.check.outputs.skip != 'true'
-      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@pnpm
+      uses: FigurePOS/github-actions/.github/actions/node-pnpm-install@v6
       with:
         directory: tests
         legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
