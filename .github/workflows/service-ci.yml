@@ -58,6 +58,9 @@ on:
     secrets:
       BUDDY_TRIGGER_URL:
         description: "Buddy trigger URL"
+      BUGSNAG_API_KEY:
+        description: "Bugsnag API key for uploading Node source maps"
+        required: false
       GH_TOKEN_TERRAFORM:
         description: "GitHub token to access other private repositories"
         required: false
@@ -199,5 +202,24 @@ jobs:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: development
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
+          pnpm-version: ${{ inputs.pnpm-version }}
+          service-name: ${{ inputs.service-name }}
+
+  bugsnag-upload-source-maps:
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - build
+      - test-e2e
+      - test-unit
+      - test-lambda
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    env:
+      BUGSNAG_API_KEY: ${{ secrets.BUGSNAG_API_KEY }}
+    steps:
+      - if: env.BUGSNAG_API_KEY != ''
+        uses: FigurePOS/github-actions/.github/actions/ci-bugsnag-upload-source-maps@v6
+        with:
+          api-key: ${{ env.BUGSNAG_API_KEY }}
+          npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
           pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}

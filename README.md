@@ -312,6 +312,29 @@ jobs:
           environment: ${{ inputs.environment }}
 ```
 
+### Upload Bugsnag Source Maps for Node
+
+Uploads TypeScript/Node source maps from a compiled output directory (`build` by default, matching service `tsconfig` `outDir`).
+`--app-version` must match the notifier `appVersion`, which is `OTEL_SERVICE_VERSION` (ECS `deployment_tag`: 8-char SHA).
+`appType` (service name) already separates events in a shared team project; maps are keyed by `appVersion` + file path.
+
+Parameters:
+
+- `api-key`: Auth token for the Bugsnag API.
+- `version`: App version (8-char SHA).
+- `directory`: Directory with compiled JS and `.map` files (default: `build`).
+
+```yml
+- name: Upload Source Maps to Bugsnag
+  uses: FigurePOS/github-actions/.github/actions/bugsnag-upload-source-maps-node@v6
+  with:
+    api-key: ${{ secrets.BUGSNAG_API_KEY }}
+    version: abc12345
+    directory: build
+```
+
+The reusable `service-ci` workflow runs this on `master` via `ci-bugsnag-upload-source-maps` when `BUGSNAG_API_KEY` is set (e.g. via `secrets: inherit`).
+
 ## Terraform
 
 ### Authenticate Terraform Providers
