@@ -1,5 +1,5 @@
-name: CI Bugsnag Upload Source Maps
-description: Builds the Node.js service and uploads source maps to Bugsnag
+name: CI Bugsnag Upload Source Maps (Node)
+description: Builds a Node.js backend service and uploads source maps to Bugsnag
 
 inputs:
   api-key:

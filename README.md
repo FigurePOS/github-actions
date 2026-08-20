@@ -333,7 +333,7 @@ Parameters:
     directory: build
 ```
 
-The reusable `service-ci` workflow runs this on `master` via `ci-bugsnag-upload-source-maps` when `BUGSNAG_API_KEY` is set (e.g. via `secrets: inherit`).
+The reusable `service-ci` workflow runs this on `master` via `ci-bugsnag-upload-source-maps-node` when `BUGSNAG_API_KEY` is set (e.g. via `secrets: inherit`).
 
 ## Terraform
 

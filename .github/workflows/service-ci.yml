@@ -205,7 +205,7 @@ jobs:
           pnpm-version: ${{ inputs.pnpm-version }}
           service-name: ${{ inputs.service-name }}
 
-  bugsnag-upload-source-maps:
+  bugsnag-upload-source-maps-node:
     if: github.ref == 'refs/heads/master'
     needs:
       - build
@@ -217,7 +217,7 @@ jobs:
       BUGSNAG_API_KEY: ${{ secrets.BUGSNAG_API_KEY }}
     steps:
       - if: env.BUGSNAG_API_KEY != ''
-        uses: FigurePOS/github-actions/.github/actions/ci-bugsnag-upload-source-maps@v6
+        uses: FigurePOS/github-actions/.github/actions/ci-bugsnag-upload-source-maps-node@v6
         with:
           api-key: ${{ env.BUGSNAG_API_KEY }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
