@@ -1,0 +1,36 @@
+name: Upload Node Source Maps to Bugsnag
+description: Uploads TypeScript/Node.js source maps to Bugsnag
+
+inputs:
+  api-key:
+    description: "Auth token for the Bugsnag API"
+    required: true
+  version:
+    description: "BugSnag appVersion (must match notifier: OTEL_SERVICE_VERSION / 8-char deployment_tag)"
+    required: true
+  directory:
+    description: "Directory containing compiled JS and .map files"
+    required: false
+    default: "build"
+  working-directory:
+    description: "Working directory"
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - name: Upload Source Maps to Bugsnag
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ ! -d "${{ inputs.directory }}" ] || [ -z "$(find "${{ inputs.directory }}" -name '*.map' -type f -print -quit)" ]; then
+          echo "No source maps found in ${{ inputs.directory }}"
+          exit 1
+        fi
+        npx --yes @bugsnag/source-maps upload-node \
+          --api-key "${{ inputs.api-key }}" \
+          --app-version "${{ inputs.version }}" \
+          --directory "${{ inputs.directory }}" \
+          --project-root . \
+          --overwrite
