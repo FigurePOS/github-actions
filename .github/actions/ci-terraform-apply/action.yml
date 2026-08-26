@@ -90,6 +90,8 @@ runs:
     - name: Authenticate Terraform Providers
       uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v6
       with:
+        aws-region: ${{ inputs.aws-region }}
+        dir: ${{ inputs.dir }}
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
 
@@ -149,6 +151,7 @@ runs:
       if: always()
       uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers-cleanup@v6
       with:
+        aws-region: ${{ inputs.aws-region }}
         providers: ${{ inputs.auth-providers }}
         service-name: ${{ inputs.service-name }}
 

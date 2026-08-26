@@ -6,6 +6,10 @@ inputs:
     description: AWS region
     required: false
     default: us-east-1
+  fgr-version:
+    description: "@figurepos/platform-tooling version used to delete Grafana tokens"
+    required: false
+    default: "2.4.0"
   providers:
     description: "Comma separated list of providers to authenticate"
     required: false
@@ -17,8 +21,44 @@ runs:
   using: composite
   steps:
     - name: Assume AWS Role in Root Account Using OIDC
+      if: env.GRAFANA_TF_AUTH_TOKEN_ID != ''
       uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: arn:aws:iam::637192944017:role/${{ inputs.service-name }}__oidc
         role-skip-session-tagging: true
+
+    - name: Set Up Node.js
+      if: always() && env.GRAFANA_TF_AUTH_TOKEN_ID != ''
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        registry-url: https://npm.pkg.github.com
+        scope: "@figurepos"
+
+    - name: Install fgr
+      if: always() && env.GRAFANA_TF_AUTH_TOKEN_ID != ''
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ github.token }}
+      run: npm install --global "@figurepos/platform-tooling@${{ inputs.fgr-version }}"
+
+    - name: Delete Grafana Terraform token
+      if: always() && env.GRAFANA_TF_AUTH_TOKEN_ID != ''
+      shell: bash
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        if fgr tf grafana-auth delete \
+          --workspace-id "$GRAFANA_TF_AUTH_WORKSPACE_ID" \
+          --service-account-id "$GRAFANA_TF_AUTH_SERVICE_ACCOUNT_ID" \
+          --token-id "$GRAFANA_TF_AUTH_TOKEN_ID" \
+          --region "$AWS_REGION"; then
+          echo "Grafana service account token deleted"
+        else
+          echo "Warning: failed to delete Grafana SA token ${GRAFANA_TF_AUTH_TOKEN_ID}"
+        fi
+        {
+          echo "TF_VAR_grafana_auth="
+          echo "GRAFANA_TF_AUTH_TOKEN_ID="
+        } >> "$GITHUB_ENV"
