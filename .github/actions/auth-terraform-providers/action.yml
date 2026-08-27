@@ -6,6 +6,14 @@ inputs:
     description: AWS region
     required: false
     default: us-east-1
+  dir:
+    description: Terraform stack directory (used to detect the Grafana provider)
+    required: false
+    default: "."
+  fgr-version:
+    description: "@figurepos/platform-tooling version used to mint Grafana tokens"
+    required: false
+    default: "2.5.0"
   providers:
     description: "Comma separated list of providers to authenticate"
     required: false
@@ -47,3 +55,80 @@ runs:
           echo "::add-mask::$value"
           echo "$var_name=$value" >> "$GITHUB_ENV"
         done <<< "$PARAMS"
+
+    - name: Detect Grafana Terraform auth
+      id: grafana
+      shell: bash
+      env:
+        PROVIDERS: ${{ inputs.providers }}
+        STACK_DIR: ${{ inputs.dir }}
+      run: |
+        mint=false
+        if echo ",${PROVIDERS}," | tr -d ' ' | grep -qi ',grafana,'; then
+          mint=true
+        elif compgen -G "${STACK_DIR}/*.tf" > /dev/null && grep -qE 'grafana/grafana|provider[[:space:]]+"grafana"' "${STACK_DIR}"/*.tf; then
+          mint=true
+        fi
+        if [ -n "${TF_VAR_grafana_auth:-}" ] && [ -n "${TF_VAR_grafana_url:-}" ]; then
+          mint=false
+        fi
+        echo "mint=${mint}" >> "$GITHUB_OUTPUT"
+
+    - name: Set Up Node.js
+      if: steps.grafana.outputs.mint == 'true'
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        registry-url: https://npm.pkg.github.com
+        scope: "@figurepos"
+
+    - name: Install fgr
+      if: steps.grafana.outputs.mint == 'true'
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ github.token }}
+      run: npm install --global "@figurepos/platform-tooling@${{ inputs.fgr-version }}"
+
+    - name: Mint Grafana Terraform token
+      if: steps.grafana.outputs.mint == 'true'
+      shell: bash
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+        PROVIDERS: ${{ inputs.providers }}
+        STACK_DIR: ${{ inputs.dir }}
+      run: |
+        force_args=()
+        if echo ",${PROVIDERS}," | tr -d ' ' | grep -qi ',grafana,'; then
+          force_args+=(--force)
+        fi
+
+        prune=$(fgr tf grafana-auth prune --region "${AWS_REGION}")
+        echo "Grafana token prune: $(echo "$prune" | jq -c '.')"
+
+        session=$(fgr tf grafana-auth mint --dir "${STACK_DIR}" --region "${AWS_REGION}" "${force_args[@]}")
+        if echo "$session" | jq -e '.skipped == true' >/dev/null; then
+          echo "Grafana mint skipped ($(echo "$session" | jq -r '.reason'))"
+          exit 0
+        fi
+
+        auth=$(echo "$session" | jq -r '.auth')
+        url=$(echo "$session" | jq -r '.url')
+        workspace_id=$(echo "$session" | jq -r '.workspaceId')
+        service_account_id=$(echo "$session" | jq -r '.serviceAccountId')
+        token_id=$(echo "$session" | jq -r '.tokenId')
+
+        if [ -z "$auth" ] || [ "$auth" = "null" ] || [ -z "$token_id" ] || [ "$token_id" = "null" ]; then
+          echo "fgr tf grafana-auth mint did not return a token"
+          echo "$session"
+          exit 1
+        fi
+
+        echo "::add-mask::${auth}"
+        {
+          echo "TF_VAR_grafana_url=${url}"
+          echo "TF_VAR_grafana_auth=${auth}"
+          echo "GRAFANA_TF_AUTH_WORKSPACE_ID=${workspace_id}"
+          echo "GRAFANA_TF_AUTH_SERVICE_ACCOUNT_ID=${service_account_id}"
+          echo "GRAFANA_TF_AUTH_TOKEN_ID=${token_id}"
+        } >> "$GITHUB_ENV"
+        echo "Grafana provider auth set for ${url}"

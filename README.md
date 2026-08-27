@@ -339,24 +339,29 @@ The reusable `service-ci` workflow runs this on `master` via `ci-bugsnag-upload-
 
 ### Authenticate Terraform Providers
 
-Authenticates Terraform providers. This action should be run before any Terraform operations that require provider authentication. It gets all parameters from SSM with `/terraform` prefix and sets them to the corresponding Terraform variables. Optionally, you can specify a list of providers to authenticate.
+Authenticates Terraform providers. This action should be run before any Terraform operations that require provider authentication. It gets all parameters from SSM with `/terraform` prefix and sets them to the corresponding Terraform variables.
+
+If the stack declares the Grafana provider (`grafana/grafana` or `provider "grafana"`), or `providers` includes `grafana`, it installs a pinned `fgr`, runs `fgr tf grafana-auth prune` (expired `fgr-tf-*` leftovers), then `mint`. Sets `TF_VAR_grafana_url` / `TF_VAR_grafana_auth`. Token ids are kept in job env for cleanup. Skip mint when those vars are already set.
 
 Parameters:
 
 - `aws-region`: AWS region to use, default: `us-east-1`.
-- `providers`: Comma separated list of providers to authenticate.
+- `dir`: Terraform stack directory used to detect the Grafana provider, default: `.`.
+- `fgr-version`: `@figurepos/platform-tooling` version, default: `2.4.0`.
+- `providers`: Comma separated list of providers to authenticate (include `grafana` to force mint).
 - `service-name`: The service name.
 
 ```yml
 - uses: FigurePOS/github-actions/.github/actions/auth-terraform-providers@v6
   with:
     aws-region: ${{ inputs.aws-region }}
+    dir: ${{ inputs.dir }}
     service-name: ${{ inputs.service-name }}
 ```
 
 ### Cleanup Authenticated Terraform Providers
 
-Cleans up authenticated Terraform providers after Terraform operations are complete. This action should be run after Terraform operations to clean up any temporary credentials or tokens.
+Cleans up authenticated Terraform providers after Terraform operations are complete. Deletes the AMG service-account token minted earlier in the job via `fgr tf grafana-auth delete`, then `prune` (no-op if none).
 
 Parameters:
 
