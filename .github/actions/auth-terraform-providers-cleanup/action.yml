@@ -9,7 +9,7 @@ inputs:
   fgr-version:
     description: "@figurepos/platform-tooling version used to delete Grafana tokens"
     required: false
-    default: "2.4.0"
+    default: "2.5.0"
   providers:
     description: "Comma separated list of providers to authenticate"
     required: false
@@ -58,6 +58,8 @@ runs:
         else
           echo "Warning: failed to delete Grafana SA token ${GRAFANA_TF_AUTH_TOKEN_ID}"
         fi
+        prune=$(fgr tf grafana-auth prune --region "$AWS_REGION") || true
+        echo "Grafana token prune: $(echo "$prune" | jq -c '.')"
         {
           echo "TF_VAR_grafana_auth="
           echo "GRAFANA_TF_AUTH_TOKEN_ID="

@@ -13,7 +13,7 @@ inputs:
   fgr-version:
     description: "@figurepos/platform-tooling version used to mint Grafana tokens"
     required: false
-    default: "2.4.0"
+    default: "2.5.0"
   providers:
     description: "Comma separated list of providers to authenticate"
     required: false
@@ -101,6 +101,9 @@ runs:
         if echo ",${PROVIDERS}," | tr -d ' ' | grep -qi ',grafana,'; then
           force_args+=(--force)
         fi
+
+        prune=$(fgr tf grafana-auth prune --region "${AWS_REGION}")
+        echo "Grafana token prune: $(echo "$prune" | jq -c '.')"
 
         session=$(fgr tf grafana-auth mint --dir "${STACK_DIR}" --region "${AWS_REGION}" "${force_args[@]}")
         if echo "$session" | jq -e '.skipped == true' >/dev/null; then
