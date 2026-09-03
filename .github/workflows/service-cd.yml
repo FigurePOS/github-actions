@@ -18,10 +18,10 @@ on:
         type: string
         default: ""
       pnpm-version:
-        description: pnpm version to use
+        description: "Optional exact pnpm override. Default: package.json packageManager."
         required: false
         type: string
-        default: "11.20.0"
+        default: ""
       service-name:
         description: Service name
         required: true
@@ -53,7 +53,21 @@ permissions:
   deployments: write
 
 jobs:
+  resolve-pnpm:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.sha }}
+      - id: resolve
+        uses: $/.github/actions/resolve-pnpm-version
+        with:
+          pnpm-version: ${{ inputs.pnpm-version }}
+
   terraform-deploy:
+    needs: [resolve-pnpm]
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     env:
       AWS_REGION: ${{ inputs.aws-region }}
@@ -65,7 +79,7 @@ jobs:
           db-tunnel-mapping: ${{ inputs.db-tunnel-mapping }}
           env: production
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
-          pnpm-version: ${{ inputs.pnpm-version }}
+          pnpm-version: ${{ needs.resolve-pnpm.outputs.version }}
           service-name: ${{ inputs.service-name }}
           sha: ${{ inputs.sha }}
 
