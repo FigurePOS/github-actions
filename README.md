@@ -24,7 +24,7 @@ Actions in this repository use **pnpm** (`node-pnpm-install`, `node-setup`). Pin
 
 `service-ci`, `service-cd`, and `lambda-ci` read the exact pnpm version from the caller repo `package.json` `packageManager` field and pass it into jobs (runner install and Docker `PNPM_VERSION`). Optional workflow input `pnpm-version` overrides that pin.
 
-Workflows in this repo reference sibling actions with `$/.github/actions/...` so they resolve against this repository at the running commit (not the caller checkout). `./` is workspace-relative and breaks when a reusable workflow is called from another repo. Pin **`@v6`** only when a *caller* repository references these workflows/actions.
+Reusable workflows pin sibling actions with `FigurePOS/github-actions/.github/actions/...@v6` (same as callers). `$/` / `./` fail actionlint here, and `./` would resolve against the service checkout.
 
 ### Set Up Node.js
 

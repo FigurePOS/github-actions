@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       pnpm-version:
-        description: Optional exact pnpm override. Default: package.json packageManager.
+        description: "Optional exact pnpm override. Default: package.json packageManager."
         required: false
         type: string
         default: ""
@@ -36,7 +36,7 @@ jobs:
             echo "lambda_exists=false" >> "$GITHUB_OUTPUT"
           fi
       - id: pnpm
-        uses: $/.github/actions/resolve-pnpm-version
+        uses: FigurePOS/github-actions/.github/actions/resolve-pnpm-version@v6
         with:
           pnpm-version: ${{ inputs.pnpm-version }}
 
