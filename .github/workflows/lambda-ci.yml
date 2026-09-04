@@ -36,7 +36,7 @@ jobs:
             echo "lambda_exists=false" >> "$GITHUB_OUTPUT"
           fi
       - id: pnpm
-        uses: FigurePOS/github-actions/.github/actions/resolve-pnpm-version@v6
+        uses: FigurePOS/github-actions/.github/actions/resolve-pnpm-version@pnpm
         with:
           pnpm-version: ${{ inputs.pnpm-version }}
 
@@ -94,7 +94,7 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@pnpm
         with:
           directory: ${{ matrix.directory }}
           pnpm-version: ${{ needs.lambda-check-dir.outputs.pnpm_version }}
@@ -133,7 +133,7 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@pnpm
         with:
           directory: ${{ matrix.directory }}
           pnpm-version: ${{ needs.lambda-check-dir.outputs.pnpm_version }}

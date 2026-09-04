@@ -99,7 +99,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - id: resolve
-        uses: FigurePOS/github-actions/.github/actions/resolve-pnpm-version@v6
+        uses: FigurePOS/github-actions/.github/actions/resolve-pnpm-version@pnpm
         with:
           pnpm-version: ${{ inputs.pnpm-version }}
 
@@ -107,7 +107,7 @@ jobs:
     needs: [resolve-pnpm]
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-build@pnpm
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           extra-apk-packages: ${{ inputs.extra-apk-packages }}
@@ -119,7 +119,7 @@ jobs:
     needs: [resolve-pnpm]
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit@pnpm
         with:
           env-vars: ${{ inputs.test-unit-env-vars || secrets.TEST_UNIT_ENV_VARS }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
@@ -132,7 +132,7 @@ jobs:
       - resolve-pnpm
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e@pnpm
         with:
           docker-command: ${{ inputs.docker-command }}
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
@@ -143,7 +143,7 @@ jobs:
 
   test-lambda:
     needs: [resolve-pnpm]
-    uses: FigurePOS/github-actions/.github/workflows/lambda-ci.yml@v6
+    uses: FigurePOS/github-actions/.github/workflows/lambda-ci.yml@pnpm
     with:
       pnpm-version: ${{ needs.resolve-pnpm.outputs.version }}
       service-name: ${{ inputs.service-name }}
@@ -154,7 +154,7 @@ jobs:
   terraform-validate:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@pnpm
         with:
           aws-region: ${{ inputs.aws-region }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
@@ -166,7 +166,7 @@ jobs:
       - terraform-validate
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@pnpm
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -181,7 +181,7 @@ jobs:
       - terraform-validate
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-plan@pnpm
         with:
           aws-account-id: 682919404744
           aws-region: ${{ inputs.aws-region }}
@@ -199,7 +199,7 @@ jobs:
       - test-lambda
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-docker-push@pnpm
         with:
           ecr-repository-name: ${{ inputs.ecr-repository-name }}
           service-name: ${{ inputs.service-name }}
@@ -211,7 +211,7 @@ jobs:
       - resolve-pnpm
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-apply@pnpm
         with:
           aws-account-id: 880892332156
           aws-region: ${{ inputs.aws-region }}
@@ -234,7 +234,7 @@ jobs:
       BUGSNAG_API_KEY: ${{ secrets.BUGSNAG_API_KEY }}
     steps:
       - if: env.BUGSNAG_API_KEY != ''
-        uses: FigurePOS/github-actions/.github/actions/ci-bugsnag-upload-source-maps-node@v6
+        uses: FigurePOS/github-actions/.github/actions/ci-bugsnag-upload-source-maps-node@pnpm
         with:
           api-key: ${{ env.BUGSNAG_API_KEY }}
           npm-legacy-peer-deps: ${{ inputs.npm-legacy-peer-deps }}
