@@ -4,10 +4,10 @@ on:
   workflow_call:
     inputs:
       pnpm-version:
-        description: pnpm version to use
+        description: "Optional exact pnpm override. Default: package.json packageManager."
         required: false
         type: string
-        default: "11.20.0"
+        default: ""
       service-name:
         required: true
         type: string
@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       lambda_exists: ${{ steps.check.outputs.lambda_exists }}
+      pnpm_version: ${{ steps.pnpm.outputs.version }}
     steps:
       - uses: actions/checkout@v6
       - id: check
@@ -34,6 +35,10 @@ jobs:
           else
             echo "lambda_exists=false" >> "$GITHUB_OUTPUT"
           fi
+      - id: pnpm
+        uses: FigurePOS/github-actions/.github/actions/resolve-pnpm-version@pnpm
+        with:
+          pnpm-version: ${{ inputs.pnpm-version }}
 
   lambda-list:
     if: needs.lambda-check-dir.outputs.lambda_exists == 'true'
@@ -89,10 +94,10 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-unit-lambda@pnpm
         with:
           directory: ${{ matrix.directory }}
-          pnpm-version: ${{ inputs.pnpm-version }}
+          pnpm-version: ${{ needs.lambda-check-dir.outputs.pnpm_version }}
           service-name: ${{ inputs.service-name }}
 
   lambda-test-e2e-or-skip:
@@ -128,8 +133,8 @@ jobs:
       matrix:
         directory: ${{ fromJson(needs.lambda-list.outputs.dirs) }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@v6
+      - uses: FigurePOS/github-actions/.github/actions/ci-node-test-e2e-lambda@pnpm
         with:
           directory: ${{ matrix.directory }}
-          pnpm-version: ${{ inputs.pnpm-version }}
+          pnpm-version: ${{ needs.lambda-check-dir.outputs.pnpm_version }}
           service-name: ${{ inputs.service-name }}
