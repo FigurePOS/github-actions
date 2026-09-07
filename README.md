@@ -22,7 +22,9 @@ Parameters:
 
 Actions in this repository use **pnpm** (`node-pnpm-install`, `node-setup`). Pin **`@v6`** when referencing actions from other repositories.
 
-Workflows and composite actions in this repo use **relative paths** (e.g. `./.github/actions/ci-node-build`, `./../node-setup`) so they always run the matching version from the same commit.
+`service-ci`, `service-cd`, and `lambda-ci` read the exact pnpm version from the caller repo `package.json` `packageManager` field and pass it into jobs (runner install and Docker `PNPM_VERSION`). Optional workflow input `pnpm-version` overrides that pin.
+
+Reusable workflows pin sibling actions with `FigurePOS/github-actions/.github/actions/...@v6` (same as callers). `$/` / `./` fail actionlint here, and `./` would resolve against the service checkout.
 
 ### Set Up Node.js
 

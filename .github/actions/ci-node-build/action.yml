@@ -18,7 +18,7 @@ inputs:
     required: false
     default: "false"
   pnpm-version:
-    description: pnpm version to use
+    description: pnpm version for the runner and the service Docker image (PNPM_VERSION build-arg)
     required: false
     default: "11.20.0"
   service-name:
@@ -89,7 +89,9 @@ runs:
     - name: Build Image
       uses: FigurePOS/github-actions/.github/actions/docker-build-image@v6
       with:
-        build-args: ${{ inputs.extra-apk-packages != '' && format('EXTRA_APK_PACKAGES={0}', inputs.extra-apk-packages) || '' }}
+        build-args: |
+          PNPM_VERSION=${{ inputs.pnpm-version }}
+          EXTRA_APK_PACKAGES=${{ inputs.extra-apk-packages }}
         file: ${{ steps.dockerfile.outputs.path }}
         repository-name: ${{ inputs.ecr-repository-name }}
         service-name: ${{ inputs.service-name }}

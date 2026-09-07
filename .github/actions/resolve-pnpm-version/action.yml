@@ -1,0 +1,45 @@
+name: Resolve pnpm version
+description: Exact pnpm version from package.json packageManager, or an override.
+
+inputs:
+  package-json:
+    description: Path to package.json
+    required: false
+    default: package.json
+  pnpm-version:
+    description: Optional exact override. When empty, reads package.json packageManager.
+    required: false
+    default: ""
+
+outputs:
+  version:
+    description: Exact pnpm version (e.g. 12.3.1)
+    value: ${{ steps.resolve.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - id: resolve
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const fs = require("fs");
+          const override = `${{ inputs.pnpm-version }}`.trim();
+          if (override) {
+            core.setOutput("version", override);
+            console.log(`Using pnpm-version override: ${override}`);
+            return;
+          }
+          const packageJson = `${{ inputs.package-json }}`;
+          if (!fs.existsSync(packageJson)) {
+            core.setFailed(`${packageJson} not found`);
+            return;
+          }
+          const pkg = JSON.parse(fs.readFileSync(packageJson, "utf8"));
+          const match = /^pnpm@([0-9][^+\s]*)/.exec(pkg.packageManager || "");
+          if (!match) {
+            core.setFailed("package.json packageManager must be an exact pnpm@<version> pin");
+            return;
+          }
+          core.setOutput("version", match[1]);
+          console.log(`Using pnpm ${match[1]} from ${packageJson} packageManager`);
