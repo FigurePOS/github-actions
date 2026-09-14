@@ -32,7 +32,8 @@ runs:
           }
           const packageJson = `${{ inputs.package-json }}`;
           if (!fs.existsSync(packageJson)) {
-            core.setFailed(`${packageJson} not found`);
+            core.setOutput("version", "");
+            console.log(`${packageJson} not found; skipping pnpm`);
             return;
           }
           const pkg = JSON.parse(fs.readFileSync(packageJson, "utf8"));
