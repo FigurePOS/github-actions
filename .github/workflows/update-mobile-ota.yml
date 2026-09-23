@@ -173,7 +173,8 @@ jobs:
             --arg title "Finished building *${app_name} ${version}* for _Expo_" \
             --arg text "Commit: *${commit_message}* (\`${commit_hash_short}\`)" \
             --arg repository "${repository_name}" \
-            '{channel: $channel, emoji: $emoji, title: $title, text: $text, repository: $repository}')
+            --arg author "${{ inputs.author }}" \
+            '{channel: $channel, emoji: $emoji, title: $title, text: $text, repository: $repository, author: $author}')
           curl \
             --retry 3 --retry-connrefused \
             -X POST \
