@@ -41,7 +41,7 @@ runs:
 
     - uses: opentofu/setup-opentofu@v2
       with:
-        tofu_version: ~1.10.0
+        tofu_version: ~1.13.0
 
     - run: |
         cd ${{ inputs.dir }}

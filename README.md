@@ -434,7 +434,9 @@ Parameters:
 
 ### Validate
 
-You need to run `terraform-init` job beforehand.
+`ci-terraform-validate` checks out the repo, runs `terraform-init`, then `fgr tf lint` (`tofu fmt -check`, `tflint`, Checkov, init, `tofu validate`). Checkov skips and the tflint config come from `@figurepos/platform-tooling@2.8.0`, the same files a local `fgr tf lint` reads.
+
+`terraform-validate` on its own only runs `tofu validate`. Run `terraform-init` before it.
 
 Parameters:
 

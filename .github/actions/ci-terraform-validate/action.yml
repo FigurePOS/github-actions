@@ -41,23 +41,36 @@ runs:
       env:
         AWS_REGION: ${{ inputs.aws-region }}
 
-    - name: Terraform Validate
-      uses: FigurePOS/github-actions/.github/actions/terraform-validate@v6
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
       with:
-        aws-account-id: ${{ inputs.aws-account-id }}
-        dir: ${{ inputs.dir }}
-        env: development
-        service-name: ${{ inputs.service-name }}
+        node-version: 24
+        registry-url: https://npm.pkg.github.com
+        scope: "@figurepos"
+
+    - name: Install fgr
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ github.token }}
+      run: npm install --global "@figurepos/platform-tooling@2.8.0"
+
+    - name: Set up tflint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: v0.61.0
+
+    - name: Install Checkov
+      shell: bash
+      run: pipx install "checkov==3.3.20"
+
+    - name: fgr tf lint
+      shell: bash
+      working-directory: ${{ inputs.dir }}
       env:
         AWS_REGION: ${{ inputs.aws-region }}
-
-    - name: Misconfigurations Check
-      uses: bridgecrewio/checkov-action@v12
-      with:
-        directory: ${{ inputs.dir }}
-        quiet: true
-        framework: terraform
-        output_format: cli
-        skip_check: CKV_AWS_7,CKV_AWS_18,CKV_AWS_51,CKV_AWS_65,CKV_AWS_68,CKV_AWS_119,CKV_AWS_136,CKV_AWS_144,CKV_AWS_145,CKV_AWS_149,CKV_AWS_158,CKV_AWS_159,CKV_AWS_163,CKV_AWS_191,CKV_AWS_336,CKV_AWS_337,CKV_AWS_378,CKV2_AWS_34,CKV2_AWS_39,CKV2_AWS_62,CKV_TF_1,CKV_TF_3
-      env:
-        GITHUB_PAT: ${{ inputs.github-token-terraform }}
+      run: |
+        args=(tf lint development --quiet --service-name "${{ inputs.service-name }}" --region "${{ inputs.aws-region }}")
+        if [ -n "${{ inputs.backend-s3-key }}" ]; then
+          args+=(--backend-s3-key "${{ inputs.backend-s3-key }}")
+        fi
+        fgr "${args[@]}"
