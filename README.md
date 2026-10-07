@@ -499,6 +499,36 @@ Parameters:
     trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
 ```
 
+### Notify Slack
+
+Posts a message through the Buddy slack-notifier API (`POST /send`). The caller supplies the title and body. `url` defaults to the `BUDDY_SLACK_NOTIFIER_URL` variable.
+
+Parameters:
+
+- `token`: Bearer token (`BUDDY_SLACK_NOTIFIER_AUTH_TOKEN`).
+- `url`: Endpoint override (optional).
+- `channel`: Channel name accepted by slack-notifier.
+- `title`: Message title. Slack mrkdwn is passed through.
+- `emoji`: Emoji name without colons (optional).
+- `text`: Message body (optional).
+- `author`: Release author (optional).
+- `repository`: Repository or service name (optional).
+- `link-text` and `link-url`: Optional link. Set both.
+
+```yml
+- uses: "FigurePOS/github-actions/.github/actions/buddy-slack-notify@v6"
+  with:
+    token: ${{ secrets.BUDDY_SLACK_NOTIFIER_AUTH_TOKEN }}
+    channel: figure-buddy
+    emoji: prod-available
+    title: "*Figure Manage v3* deployed to production"
+    text: "`2026-10-07-abc12345` <https://github.com/FigurePOS/figure-manage-v3/commit/abc|subject>"
+    author: Ada
+    repository: figure-manage-v3
+    link-text: View run
+    link-url: https://github.com/FigurePOS/figure-manage-v3/actions/runs/1
+```
+
 ## How to release a new tag
 
 - create new tag from Github: Releases -> `Draft a new release` -> fill the necessary info (e.g. `v6` for the pnpm migration)

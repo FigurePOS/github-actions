@@ -1,0 +1,98 @@
+name: Notify Slack through Buddy
+description: Posts a Slack message through the Buddy slack-notifier API
+
+inputs:
+  token:
+    description: "Bearer token for the slack-notifier API"
+    required: true
+  url:
+    description: "slack-notifier endpoint. Defaults to the BUDDY_SLACK_NOTIFIER_URL variable."
+    required: false
+  channel:
+    description: "Slack channel name accepted by slack-notifier"
+    required: true
+  title:
+    description: "Message title. Slack mrkdwn is passed through."
+    required: true
+  emoji:
+    description: "Emoji name without colons, for example prod-available"
+    required: false
+  text:
+    description: "Message body. Slack mrkdwn is passed through."
+    required: false
+  author:
+    description: "Release author"
+    required: false
+  repository:
+    description: "Repository or service name"
+    required: false
+  link-text:
+    description: "Link label. Set together with link-url."
+    required: false
+  link-url:
+    description: "Link URL. Set together with link-text."
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Send Slack notification
+      shell: bash
+      env:
+        NOTIFIER_URL: ${{ inputs.url || vars.BUDDY_SLACK_NOTIFIER_URL }}
+        NOTIFIER_TOKEN: ${{ inputs.token }}
+        CHANNEL: ${{ inputs.channel }}
+        TITLE: ${{ inputs.title }}
+        EMOJI: ${{ inputs.emoji }}
+        TEXT: ${{ inputs.text }}
+        AUTHOR: ${{ inputs.author }}
+        REPOSITORY: ${{ inputs.repository }}
+        LINK_TEXT: ${{ inputs.link-text }}
+        LINK_URL: ${{ inputs.link-url }}
+      run: |
+        set -euo pipefail
+        echo "::add-mask::$NOTIFIER_TOKEN"
+
+        if [ -z "$NOTIFIER_URL" ]; then
+          echo "Missing slack notifier URL. Set BUDDY_SLACK_NOTIFIER_URL or pass url."
+          exit 1
+        fi
+        if [ -z "$NOTIFIER_TOKEN" ]; then
+          echo "Missing slack notifier token."
+          exit 1
+        fi
+        if [ -n "${LINK_TEXT}" ] || [ -n "${LINK_URL}" ]; then
+          if [ -z "${LINK_TEXT}" ] || [ -z "${LINK_URL}" ]; then
+            echo "link-text and link-url must both be set."
+            exit 1
+          fi
+        fi
+
+        payload=$(jq -n \
+          --arg channel "$CHANNEL" \
+          --arg title "$TITLE" \
+          --arg emoji "$EMOJI" \
+          --arg text "$TEXT" \
+          --arg author "$AUTHOR" \
+          --arg repository "$REPOSITORY" \
+          --arg link_text "$LINK_TEXT" \
+          --arg link_url "$LINK_URL" \
+          '{channel: $channel, title: $title}
+            + if $emoji != "" then {emoji: $emoji} else {} end
+            + if $text != "" then {text: $text} else {} end
+            + if $author != "" then {author: $author} else {} end
+            + if $repository != "" then {repository: $repository} else {} end
+            + if $link_text != "" then {link: {text: $link_text, url: $link_url}} else {} end')
+
+        echo "Sending Slack notification..."
+        echo "  payload: $payload"
+
+        curl --fail --silent --show-error \
+          --retry 3 --retry-connrefused \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $NOTIFIER_TOKEN" \
+          --data "$payload" \
+          "$NOTIFIER_URL"
+        echo
+        echo "Notification was sent."
