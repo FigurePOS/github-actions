@@ -154,7 +154,7 @@ jobs:
   terraform-validate:
     runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
-      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@tf2
+      - uses: FigurePOS/github-actions/.github/actions/ci-terraform-validate@v6
         with:
           aws-region: ${{ inputs.aws-region }}
           github-token-terraform: ${{ secrets.GH_TOKEN_TERRAFORM }}
