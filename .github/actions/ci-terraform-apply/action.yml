@@ -58,7 +58,7 @@ runs:
       uses: FigurePOS/github-actions/.github/actions/github-deployment-create@v6
       with:
         environment: ${{ inputs.env }}
-        ref: ${{ github.sha }}
+        ref: ${{ inputs.sha != '' && inputs.sha || github.sha }}
         description: Deploy
 
     - name: Set Up Node.js
@@ -129,7 +129,12 @@ runs:
           exit 0
         fi
         echo "Using $FGR"
-        find "${{ inputs.dir }}/.terraform/modules" -name 'lambda.tf' -type f | while read -r f; do
+        modules="${{ inputs.dir }}/.terraform/modules"
+        if [ ! -d "$modules" ]; then
+          echo "No Terraform modules at $modules"
+          exit 0
+        fi
+        find "$modules" -name 'lambda.tf' -type f | while read -r f; do
           if grep -q 'npx --yes @figurepos/platform-tooling' "$f"; then
             echo "Patching $f"
             sed -i "s|npx --yes @figurepos/platform-tooling|${FGR}|g" "$f"

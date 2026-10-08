@@ -52,8 +52,90 @@ permissions:
   # Allows creating and updating Deployments
   deployments: write
 
+# Queue a second production release instead of cancelling the one already applying.
+concurrency:
+  group: service-cd-${{ inputs.service-name }}
+  cancel-in-progress: false
+
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify forward-only production release
+        uses: actions/github-script@v8
+        env:
+          TARGET_SHA: ${{ inputs.sha }}
+        with:
+          script: |
+            const sha = process.env.TARGET_SHA;
+            if (!sha) {
+              core.setFailed("Missing release SHA");
+              return;
+            }
+            const { owner, repo } = context.repo;
+            const commit = await github.rest.repos.getCommit({ owner, repo, ref: sha });
+            const fullSha = commit.data.sha;
+
+            const onMaster = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${fullSha}...master`,
+            });
+            if (onMaster.data.status !== "ahead" && onMaster.data.status !== "identical") {
+              core.setFailed(`${fullSha} is not on master (${onMaster.data.status})`);
+              return;
+            }
+
+            let productionSha;
+            try {
+              const ref = await github.rest.git.getRef({ owner, repo, ref: "tags/production" });
+              productionSha = ref.data.object.sha;
+              if (ref.data.object.type === "tag") {
+                const tag = await github.rest.git.getTag({ owner, repo, tag_sha: productionSha });
+                productionSha = tag.data.object.sha;
+              }
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }
+            if (!productionSha) {
+              core.setFailed("Missing production tag");
+              return;
+            }
+
+            const forward = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${productionSha}...${fullSha}`,
+            });
+            if (forward.data.status !== "ahead") {
+              core.setFailed(`${fullSha} does not follow production tag ${productionSha} (${forward.data.status})`);
+              return;
+            }
+
+            const deployments = await github.rest.repos.listDeployments({
+              owner,
+              repo,
+              sha: fullSha,
+              environment: "development",
+              per_page: 30,
+            });
+            for (const deployment of deployments.data) {
+              const statuses = await github.rest.repos.listDeploymentStatuses({
+                owner,
+                repo,
+                deployment_id: deployment.id,
+                per_page: 20,
+              });
+              if (statuses.data.some((status) => status.state === "success")) {
+                return;
+              }
+            }
+            core.setFailed(`${fullSha} has no successful development deployment`);
+
   resolve-pnpm:
+    needs: [preflight]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.resolve.outputs.version }}
