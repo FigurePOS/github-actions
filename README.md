@@ -501,12 +501,12 @@ Parameters:
 
 ### Notify Slack
 
-Posts a message through the Buddy slack-notifier API (`POST /send`). The caller supplies the title and body. `url` defaults to the `BUDDY_SLACK_NOTIFIER_URL` variable.
+Posts a message through the Buddy slack-notifier API (`POST /send`). The caller supplies the endpoint, the title and the body.
 
 Parameters:
 
 - `token`: Bearer token (`BUDDY_SLACK_NOTIFIER_AUTH_TOKEN`).
-- `url`: Endpoint override (optional).
+- `url`: Endpoint (`vars.BUDDY_SLACK_NOTIFIER_URL`).
 - `channel`: Channel name accepted by slack-notifier.
 - `title`: Message title. Slack mrkdwn is passed through.
 - `emoji`: Emoji name without colons (optional).
@@ -519,6 +519,7 @@ Parameters:
 - uses: "FigurePOS/github-actions/.github/actions/buddy-slack-notify@v6"
   with:
     token: ${{ secrets.BUDDY_SLACK_NOTIFIER_AUTH_TOKEN }}
+    url: ${{ vars.BUDDY_SLACK_NOTIFIER_URL }}
     channel: figure-buddy
     emoji: prod-available
     title: "*Figure Manage v3* deployed to production"

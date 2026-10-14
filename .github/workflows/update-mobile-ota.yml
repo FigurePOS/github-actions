@@ -186,6 +186,7 @@ jobs:
         uses: FigurePOS/github-actions/.github/actions/buddy-slack-notify@v6
         with:
           token: ${{ secrets.BUDDY_SLACK_NOTIFIER_AUTH_TOKEN }}
+          url: ${{ vars.BUDDY_SLACK_NOTIFIER_URL }}
           channel: figure-buddy
           emoji: ${{ steps.slack.outputs.emoji }}
           title: ${{ steps.slack.outputs.title }}
