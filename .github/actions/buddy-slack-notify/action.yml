@@ -6,8 +6,8 @@ inputs:
     description: "Bearer token for the slack-notifier API"
     required: true
   url:
-    description: "slack-notifier endpoint. Defaults to the BUDDY_SLACK_NOTIFIER_URL variable."
-    required: false
+    description: "slack-notifier endpoint. Callers pass the BUDDY_SLACK_NOTIFIER_URL variable."
+    required: true
   channel:
     description: "Slack channel name accepted by slack-notifier"
     required: true
@@ -39,7 +39,7 @@ runs:
     - name: Send Slack notification
       shell: bash
       env:
-        NOTIFIER_URL: ${{ inputs.url || vars.BUDDY_SLACK_NOTIFIER_URL }}
+        NOTIFIER_URL: ${{ inputs.url }}
         NOTIFIER_TOKEN: ${{ inputs.token }}
         CHANNEL: ${{ inputs.channel }}
         TITLE: ${{ inputs.title }}
@@ -54,7 +54,7 @@ runs:
         echo "::add-mask::$NOTIFIER_TOKEN"
 
         if [ -z "$NOTIFIER_URL" ]; then
-          echo "Missing slack notifier URL. Set BUDDY_SLACK_NOTIFIER_URL or pass url."
+          echo "Missing slack notifier URL. Pass url, usually the BUDDY_SLACK_NOTIFIER_URL variable."
           exit 1
         fi
         if [ -z "$NOTIFIER_TOKEN" ]; then
