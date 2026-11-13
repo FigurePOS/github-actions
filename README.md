@@ -276,13 +276,6 @@ jobs:
       with:
         environment: ${{ inputs.environment }}
         platform: ${{ inputs.platform }}
-
-    - name: Send Slack Notification
-      uses: FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v6
-      if: ${{ inputs.should-notify }}
-      with:
-          app-name: ${{ steps.get-app-info.outputs.app-name }}
-          ...
 ```
 
 ## Bugsnag
@@ -453,51 +446,6 @@ Parameters:
 ```
 
 ## Buddy
-
-### Notify about Mobile Deployment
-
-Parameters:
-
-- `app-name`: Name of the app.
-- `app-version`: Version of the app.
-- `author`: Author of the build (optional).
-- `build-type`: Type of the build. Options: `over-the-air`, `native`.
-- `build-url`: URL of the build (optional).
-- `commit-hash` (optional)
-- `commit-message`
-- `environment`: Options: `development`, `production`.
-- `platform`: Options: `ios`, `android`, `all`.
-- `trigger-url`: Buddy URL endpoint.
-
-```yml
-- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-mobile@v6"
-  with:
-    app-name: Figure POS
-    app-version: 1.0.0
-    build-type: native
-    commit-message: "fix: typo"
-    environment: production
-    paltform: all
-    trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-```
-
-### Notify about Service Deployment
-
-Parameters:
-
-- `commit-hash`: Commit hash of the build, last commit hash by default.
-- `commit-message`: Commit message of the build, last commit message by default.
-- `service-name`
-- `trigger-url`: Buddy URL endpoint.
-
-```yml
-- uses: "FigurePOS/github-actions/.github/actions/buddy-notify-deploy-service@v6"
-  with:
-    commit-hash: 1e17438
-    commit-message: "fix: typo"
-    service-name: fgr-service-account
-    trigger-url: ${{ secrets.BUDDY_TRIGGER_URL }}
-```
 
 ### Notify Slack
 
