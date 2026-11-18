@@ -36,8 +36,6 @@ on:
         type: boolean
         default: false
     secrets:
-      BUDDY_TRIGGER_URL:
-        description: Buddy trigger URL
       GH_TOKEN_TERRAFORM:
         description: GitHub token to access other private repositories
         required: false

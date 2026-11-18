@@ -55,9 +55,6 @@ on:
       BUDDY_SLACK_NOTIFIER_AUTH_TOKEN:
         description: "Buddy Slack Notifier Auth Token"
         required: true
-      BUDDY_TRIGGER_URL:
-        description: "Buddy trigger URL"
-        required: true
       BUGSNAG_API_KEY:
         description: "Bugsnag API key"
         required: true
