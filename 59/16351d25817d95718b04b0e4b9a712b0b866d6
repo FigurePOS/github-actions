@@ -1,0 +1,23 @@
+.github/workflows/service-cd.yml
+  s_914cce91c52012::t_cc9a1a42858a27 60,137
+.github/workflows/service-ci.yml
+  s_914cce91c52012::t_a1e5392f70d488 94
+.github/workflows/lambda-ci.yml
+  s_914cce91c52012::t_e5e942fbe76717 22,69,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "5916351d25817d95718b04b0e4b9a712b0b866d6",
+  "prompts": {},
+  "sessions": {
+    "s_914cce91c52012": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "635b488e-a84f-4631-84de-64d8226f9c61",
+        "model": "grok-4.7"
+      },
+      "human_author": "Jakub Matějka <215660+JakubMatejka@users.noreply.github.com>"
+    }
+  }
+}
