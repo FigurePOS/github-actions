@@ -57,7 +57,7 @@ concurrency:
 
 jobs:
   preflight:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     steps:
       - name: Verify forward-only production release
         uses: actions/github-script@v8
@@ -134,7 +134,7 @@ jobs:
 
   resolve-pnpm:
     needs: [preflight]
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.use-github-runners && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     outputs:
       version: ${{ steps.resolve.outputs.version }}
     steps:
